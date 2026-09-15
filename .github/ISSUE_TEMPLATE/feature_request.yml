@@ -1,0 +1,51 @@
+name: Feature request
+description: Suggest a new unfolding method, response function or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement to BSSUnfoldR!
+        Please describe what you want, why you want it, and any alternatives you've considered.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature category
+      options:
+        - New unfolding algorithm (port from Python bssunfold)
+        - New response function dataset
+        - New dose-coefficient dataset
+        - Detector R6 class enhancement
+        - Monte-Carlo / uncertainty
+        - Plotting / output
+        - Performance / numerics
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: e.g. "I cannot reproduce results from paper X using method Y"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: e.g. "Port the MLEM-BS method from bssunfold.core.unfold_mlem_bs"
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: |
+        Links to papers, upstream Python source files, or example implementations.
+        If porting from the Python bssunfold package, mention the specific module
+        (e.g. `core/unfold_mlem_bs.py`).

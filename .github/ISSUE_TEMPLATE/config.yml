@@ -1,0 +1,9 @@
+# Configuration for the issue template chooser (the "blank issue" link).
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/Radiationsafety/BSSUnfoldR/discussions
+    about: Ask questions, share unfolding results, or discuss methodology here.
+  - name: 📖 Upstream Python package
+    url: https://github.com/Radiationsafety/bssunfold
+    about: The original Python bssunfold package (source for many ports in this R package).

@@ -4,3 +4,12 @@
 ^\.github$
 ^cran-comments\.md$
 ^worklog\.md$
+^_pkgdown\.yml$
+^_pkgdown\.yaml$
+^README\.Rmd$
+^README\.files$
+^LICENSE$
+^CITATION\.cff$
+^CONTRIBUTING\.md$
+^\.gitignore$
+^\.Rbuildignore$

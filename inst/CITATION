@@ -1,0 +1,11 @@
+bibentry(
+    bibtype = "Manual",
+    title = "BSSUnfoldR: Neutron Spectrum Unfolding for Bonner Sphere Spectrometers. R port of the Python package 'bssunfold' (Radiationsafety/bssunfold)",
+    author = person(given = "Konstantin", family = "Chizhov",
+                    email = "kchizhov@jinr.ru",
+                    comment = c(ORCID = "0000-0003-1591-4289",
+                                affiliation = "Joint Institute for Nuclear Research")),
+    year = "2026",
+    note = "R package version 0.1.0",
+    url = "https://github.com/Radiationsafety/BSSUnfoldR"
+)

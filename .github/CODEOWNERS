@@ -1,0 +1,15 @@
+# These owners will be automatically requested for review on PRs that touch
+# the listed paths. Update with the correct GitHub usernames when onboarding
+# new maintainers.
+
+*           @Radiationsafety
+
+# Generate .Rd and tarball-relevant areas
+R/          @Radiationsafety
+man/        @Radiationsafety
+NAMESPACE   @Radiationsafety
+DESCRIPTION @Radiationsafety
+
+# Auto-generated numeric data
+R/constants_data.R @Radiationsafety
+scripts/    @Radiationsafety

@@ -1,0 +1,99 @@
+url: https://radiationsafety.github.io/BSSUnfoldR/
+template:
+  bootstrap: 5
+  light-switch: true
+
+home:
+  title: Neutron spectrum unfolding for Bonner Sphere Spectrometers
+  description: |
+    R port of the Python bssunfold package — unfolding neutron spectra from
+    Bonner sphere measurements, with Monte-Carlo uncertainty and ICRP-74/116
+    dose-rate calculation.
+
+reference:
+  - title: Detector object
+    desc: R6 class bundling energy grid, sensitivities, conversion coefficients and result history.
+    contents:
+      - Detector
+  - title: Unfolding algorithms
+    desc: Each algorithm has a `solve_<method>()` raw solver and an `unfold_<method>()` workflow wrapper.
+    contents:
+      - solve_mlem
+      - unfold_mlem
+      - solve_gravel
+      - unfold_gravel
+      - solve_maxed
+      - unfold_maxed
+      - solve_sandii
+      - unfold_sandii
+      - solve_bunki
+      - unfold_bunki
+      - solve_ferdor
+      - unfold_ferdor
+      - solve_staysl
+      - unfold_staysl
+      - solve_landweber
+      - unfold_landweber
+      - solve_cgls
+      - unfold_cgls
+      - solve_tsvd
+      - unfold_tsvd
+  - title: Unified unfolding pipeline
+    desc: The shared workflow every `unfold_*` method plugs into.
+    contents:
+      - run_unfolding
+      - make_solve_wrapper
+  - title: Monte-Carlo uncertainty
+    contents:
+      - monte_carlo_uncertainty
+  - title: Dose-rate calculation
+    contents:
+      - calculate_dose_rates
+      - get_coefficients
+      - interpolate_coefficients
+      - DOSE_COEFFICIENTS_REGISTRY
+  - title: Built-in constants
+    desc: Accessors for ICRP / NRB99 / response-function datasets (numeric data is generated verbatim from the Python bssunfold constants module).
+    contents:
+      - ICRP116_COEFF_EFFECTIVE_DOSE
+      - ICRP74_COEFF_EFFECTIVE_DOSE
+      - NRB99_2009_COEFF_EFFECTIVE_DOSE
+      - ICRP74_COEFF_OPERATIONAL_QUANTITIES
+      - RF_GSF
+      - RF_PTB
+      - RF_LANL
+      - RF_JINR
+      - RF_FERMILAB
+      - RF_EURADOS
+      - RF_IHEP
+  - title: Matrix utilities
+    contents:
+      - create_derivative_matrix
+      - make_regularization_operator
+      - build_tikhonov_system
+      - compute_svd_components
+      - compute_log_steps
+  - title: Input validators
+    contents:
+      - validate_readings
+      - validate_energy_grid
+      - validate_spectrum
+      - validate_response_matrix
+      - validate_system
+
+articles:
+  - title: Getting started
+    contents:
+      - quickstart
+
+news:
+  - title: BSSUnfoldR changelog
+    text: |
+      # BSSUnfoldR 0.1.0
+
+      * First CRAN-style release.
+      * Detector R6 class wrapping PTB / GSF / LANL / JINR / FERMILAB / EURADOS / IHEP response functions.
+      * Ten classic unfolding algorithms: MLEM, GRAVEL, MAXED, SAND-II, BUNKI, FERDOR, STAY'SL, Landweber, CGLS, TSVD.
+      * Monte-Carlo uncertainty estimation via `monte_carlo_uncertainty()`.
+      * Dose-rate calculation using ICRP-74, ICRP-116 and NRB99-2009 coefficients.
+      * R CMD check: Status OK (no ERROR/WARNING/NOTE).

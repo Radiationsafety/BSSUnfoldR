@@ -1,0 +1,53 @@
+# This CITATION.cff file was generated for the BSSUnfoldR R port.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: BSSUnfoldR
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Konstantin
+    family-names: Chizhov
+    orcid: "https://orcid.org/0000-0003-1591-4289"
+    email: kchizhov@jinr.ru
+    affiliation: Joint Institute for Nuclear Research
+abstract: >-
+  BSSUnfoldR is an R port of the Python package 'bssunfold' (Radiationsafety/
+  bssunfold) for unfolding neutron spectra measured with Bonner Sphere
+  Spectrometers. It provides a Detector R6 class, ten classic unfolding
+  algorithms (MLEM, GRAVEL, MAXED, SAND-II, BUNKI, FERDOR, STAY'SL, Landweber,
+  CGLS and TSVD), Monte-Carlo uncertainty estimation, and dose-rate calculation
+  using ICRP-74, ICRP-116 and NRB99-2009 conversion coefficients plus seven
+  published Bonner-sphere response functions (GSF, PTB, LANL, JINR, FERMILAB,
+  EURADOS, IHEP).
+keywords:
+  - neutron-spectroscopy
+  - bonner-sphere
+  - unfolding
+  - radiation-protection
+  - icrp
+  - r-package
+license: GPL-3.0
+repository-code: 'https://github.com/Radiationsafety/BSSUnfoldR'
+version: 0.1.0
+date-released: '2026-09-15'
+preferred-citation:
+  type: software
+  title: 'BSSUnfoldR: Neutron Spectrum Unfolding for Bonner Sphere Spectrometers (R port of bssunfold)'
+  authors:
+    - given-names: Konstantin
+      family-names: Chizhov
+      orcid: "https://orcid.org/0000-0003-1591-4289"
+      email: kchizhov@jinr.ru
+      affiliation: Joint Institute for Nuclear Research
+  repository-code: 'https://github.com/Radiationsafety/BSSUnfoldR'
+  license: GPL-3.0
+  version: 0.1.0
+  date-released: '2026-09-15'
+related-identifiers:
+  - type: software
+    identifier: 'https://github.com/Radiationsafety/bssunfold'
+    relation: isDerivedFrom
+    description: 'Original Python bssunfold package'

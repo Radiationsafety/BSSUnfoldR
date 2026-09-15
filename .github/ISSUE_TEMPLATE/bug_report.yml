@@ -1,0 +1,79 @@
+name: Bug report
+description: Report something that's not working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report! Before submitting, please:
+
+        - Search the existing issues for duplicates: https://github.com/Radiationsafety/BSSUnfoldR/issues
+        - Run `packageVersion("BSSUnfoldR")` to confirm you are on the latest release.
+
+  - type: input
+    id: version
+    attributes:
+      label: BSSUnfoldR version
+      description: Result of `packageVersion("BSSUnfoldR")`
+      placeholder: '0.1.0'
+    validations:
+      required: true
+
+  - type: input
+    id: r-version
+    attributes:
+      label: R version
+      description: Result of `R.version.string`
+      placeholder: 'R version 4.5.3 (2026-03-11)'
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: 'Ubuntu 24.04 / macOS 15 / Windows 11'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: method
+    attributes:
+      label: Unfolding method
+      options:
+        - Detector (R6 class)
+        - MLEM
+        - GRAVEL
+        - MAXED
+        - SAND-II
+        - BUNKI
+        - FERDOR
+        - STAY'SL
+        - Landweber
+        - CGLS
+        - TSVD
+        - run_unfolding (pipeline)
+        - Other / not applicable
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproducible example
+      description: A self-contained R snippet that reproduces the issue
+      value: |
+        ```r
+        library(BSSUnfoldR)
+        # ...your code here...
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual behaviour
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
