@@ -1,0 +1,43 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+.RDataTmp
+
+# User-specific R configuration
+.Rprofile
+.Renviron
+
+# R environment variables
+.Renviron
+
+# Example code in package build process
+*-Ex.R
+
+# Output files from R CMD build
+/*.tar.gz
+
+# R CMD check output
+.Rcheck/
+
+# Source packages
+*.tar.gz
+*.tgz
+
+# Compiled R Markdown / Quarto
+*.html
+*_files/
+
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Worklog / temp
+worklog.md
