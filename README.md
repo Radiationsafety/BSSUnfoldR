@@ -1,9 +1,12 @@
 # BSSUnfoldR
 
 [![R CMD check](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/R-CMD-check.yaml)
+[![Tests](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/test-coverage.yaml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R >= 4.0](https://img.shields.io/badge/R-%3E%3D%204.0-blue.svg)](https://www.r-project.org/)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
+[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-blue.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 Neutron spectrum unfolding for Bonner Sphere Spectrometers — an R port of the
 Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
@@ -14,18 +17,20 @@ Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
   sensitivities, ICRP-116 conversion coefficients and a result-history list.
   One-line construction from any of the seven built-in response functions
   (`GSF`, `PTB`, `LANL`, `JINR`, `FERMILAB`, `EURADOS`, `IHEP`).
-- **Ten classic unfolding algorithms**:
-  - MLEM (Maximum Likelihood Expectation Maximization)
-  - GRAVEL
-  - MAXED (Maximum Entropy Deconvolution)
-  - SAND-II
-  - BUNKI (SPUNIT)
-  - FERDOR (constrained least-squares with second-difference smoothing)
-  - STAY'SL (linear Bayesian update)
-  - Landweber
-  - CGLS (Conjugate Gradient Least Squares)
-  - TSVD (Truncated SVD, with automatic k-selection via discrepancy
-    principle, L-curve, GCV, etc.)
+- **Twenty classic unfolding algorithms** (split into two batches):
+  - **Batch 1 (v0.1.0)**: MLEM (Maximum Likelihood Expectation Maximization),
+    GRAVEL, MAXED (Maximum Entropy Deconvolution), SAND-II, BUNKI (SPUNIT),
+    FERDOR (constrained least-squares with second-difference smoothing),
+    STAY'SL (linear Bayesian update), Landweber, CGLS (Conjugate Gradient
+    Least Squares), TSVD (Truncated SVD, with automatic k-selection via
+    discrepancy principle, L-curve, GCV, etc.)
+  - **Batch 2 (v0.1.1)**: OSEM (ordered-subset EM), MAP-EM (penalised EM with
+    quadratic / logcosh / relative-difference priors), BSREM (block sequential
+    regularised EM), SART (simultaneous algebraic reconstruction), Kaczmarz
+    (cyclic ART), Randomized Kaczmarz (Strohmer-Vershynin), Lanczos
+    (Golub-Kahan bidiagonalization with GCV regularization), Tikhonov-Legendre
+    (Legendre polynomial basis with second-difference regularization),
+    ReBUNKI (modern SPUNIT), Doroshenko (coordinate-update method).
 - **Monte-Carlo uncertainty estimation** — add Gaussian noise to readings,
   run the unfolding N times, return per-bin mean / std / median / 5-95
   percentiles / all-samples matrix.
@@ -101,10 +106,34 @@ head(r_mc$spectrum_uncert_std)
 
 ## Status
 
-This port covers the core infrastructure and ten classic algorithms from
-the upstream Python package. The remaining ~70 specialised methods
-(MLEM-BS, NSDUAZ, NSpline, MCMC, FISTA, Kaczmarz variants, parametric /
-hybrid methods, etc.) can be ported on top of the same `run_unfolding`
-pipeline in the same style as the ten included here.
+This port covers the core infrastructure and twenty classic algorithms
+(two batches of ten) from the upstream Python package. The remaining
+~60 specialised methods (MLEM-BS, NSDUAZ, NSpline, MCMC, FISTA,
+parametric / hybrid methods, etc.) can be ported on top of the same
+`run_unfolding` pipeline in the same style as the methods included here.
 
 R CMD check status: **OK** (no ERRORs, WARNINGs, or NOTEs).
+Tests: 50+ testthat tests covering every solver, the Detector R6 class,
+validators, Monte-Carlo, dose rates, and integration on a PTB-based system.
+
+## Citation
+
+If you use BSSUnfoldR in your research, please cite:
+
+```bibtex
+@software{Chizhov2026BSSUnfoldR,
+  author       = {Chizhov, Konstantin},
+  title        = {{BSSUnfoldR}: Neutron Spectrum Unfolding for Bonner Sphere
+                  Spectrometers. {R} port of the Python package 'bssunfold'
+                  ({Radiationsafety}/bssunfold)},
+  year         = {2026},
+  version      = {0.1.1},
+  url          = {https://github.com/Radiationsafety/BSSUnfoldR},
+  orcid        = {0000-0003-1591-4289},
+  affiliation = {Joint Institute for Nuclear Research}
+}
+```
+
+See `inst/CITATION` for the R-native citation format and `CITATION.cff`
+for the CFF format that GitHub renders in the "Cite this repository"
+button.

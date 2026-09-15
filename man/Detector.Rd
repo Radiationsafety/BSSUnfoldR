@@ -62,6 +62,26 @@ Unfold using Landweber. See \code{\link{unfold_landweber}}.
 Unfold using CGLS. See \code{\link{unfold_cgls}}.
 
 Unfold using TSVD. See \code{\link{unfold_tsvd}}.
+
+Unfold using OSEM. See \code{\link{unfold_osem}}.
+
+Unfold using MAP-EM. See \code{\link{unfold_mapem}}.
+
+Unfold using BSREM. See \code{\link{unfold_bsrem}}.
+
+Unfold using SART. See \code{\link{unfold_sart}}.
+
+Unfold using Kaczmarz. See \code{\link{unfold_kaczmarz}}.
+
+Unfold using Randomized Kaczmarz. See \code{\link{unfold_randomized_kaczmarz}}.
+
+Unfold using Lanczos. See \code{\link{unfold_lanczos}}.
+
+Unfold using Tikhonov-Legendre. See \code{\link{unfold_tikhonov_legendre}}.
+
+Unfold using ReBUNKI. See \code{\link{unfold_rebunki}}.
+
+Unfold using Doroshenko. See \code{\link{unfold_doroshenko}}.
 }
 \details{
 The \code{Detector} class bundles together everything a user needs to unfold

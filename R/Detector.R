@@ -272,6 +272,93 @@ Detector <- R6::R6Class(
                         self$E_MeV, self$sensitivities, self$cc_icrp116,
                         function(out) self$save_result(out),
                         readings, ...)
+        },
+
+        # ------------------------------------------------------------------
+        # Second batch of 10 algorithms (added in v0.1.1)
+        # ------------------------------------------------------------------
+
+        #' @description Unfold using OSEM. See \code{\link{unfold_osem}}.
+        unfold_osem = function(readings, ...) {
+            unfold_osem(self$detector_names, self$n_energy_bins,
+                         self$E_MeV, self$sensitivities, self$cc_icrp116,
+                         function(out) self$save_result(out),
+                         readings, ...)
+        },
+
+        #' @description Unfold using MAP-EM. See \code{\link{unfold_mapem}}.
+        unfold_mapem = function(readings, ...) {
+            unfold_mapem(self$detector_names, self$n_energy_bins,
+                         self$E_MeV, self$sensitivities, self$cc_icrp116,
+                         function(out) self$save_result(out),
+                         readings, ...)
+        },
+
+        #' @description Unfold using BSREM. See \code{\link{unfold_bsrem}}.
+        unfold_bsrem = function(readings, ...) {
+            unfold_bsrem(self$detector_names, self$n_energy_bins,
+                          self$E_MeV, self$sensitivities, self$cc_icrp116,
+                          function(out) self$save_result(out),
+                          readings, ...)
+        },
+
+        #' @description Unfold using SART. See \code{\link{unfold_sart}}.
+        unfold_sart = function(readings, ...) {
+            unfold_sart(self$detector_names, self$n_energy_bins,
+                         self$E_MeV, self$sensitivities, self$cc_icrp116,
+                         function(out) self$save_result(out),
+                         readings, ...)
+        },
+
+        #' @description Unfold using Kaczmarz. See \code{\link{unfold_kaczmarz}}.
+        unfold_kaczmarz = function(readings, ...) {
+            unfold_kaczmarz(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
+        },
+
+        #' @description Unfold using Randomized Kaczmarz. See \code{\link{unfold_randomized_kaczmarz}}.
+        unfold_randomized_kaczmarz = function(readings, ...) {
+            unfold_randomized_kaczmarz(self$detector_names, self$n_energy_bins,
+                                         self$E_MeV, self$sensitivities,
+                                         self$cc_icrp116,
+                                         function(out) self$save_result(out),
+                                         readings, ...)
+        },
+
+        #' @description Unfold using Lanczos. See \code{\link{unfold_lanczos}}.
+        unfold_lanczos = function(readings, ...) {
+            unfold_lanczos(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using Tikhonov-Legendre. See \code{\link{unfold_tikhonov_legendre}}.
+        unfold_tikhonov_legendre = function(readings, ...) {
+            unfold_tikhonov_legendre(self$detector_names, self$n_energy_bins,
+                                        self$E_MeV, self$sensitivities,
+                                        self$cc_icrp116,
+                                        function(out) self$save_result(out),
+                                        readings, ...)
+        },
+
+        #' @description Unfold using ReBUNKI. See \code{\link{unfold_rebunki}}.
+        unfold_rebunki = function(readings, ...) {
+            unfold_rebunki(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using Doroshenko. See \code{\link{unfold_doroshenko}}.
+        unfold_doroshenko = function(readings, ...) {
+            unfold_doroshenko(self$detector_names, self$n_energy_bins,
+                                self$E_MeV, self$sensitivities,
+                                self$cc_icrp116,
+                                function(out) self$save_result(out),
+                                readings, ...)
         }
     ),
     private = list(

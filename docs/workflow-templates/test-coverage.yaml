@@ -1,0 +1,73 @@
+name: Test coverage
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: write
+
+jobs:
+  test-coverage:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      _R_CHECK_FORCE_SUGGESTS_: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::covr
+            any::testthat
+            any::xml2
+          needs: coverage
+      - name: Run testthat tests
+        run: |
+          options(crayon.enabled = TRUE)
+          if (!requireNamespace("testthat", quietly = TRUE)) {
+            install.packages("testthat", repos = "https://cloud.r-project.org")
+          }
+          res <- testthat::test_dir("tests/testthat", reporter = "summary")
+          df <- as.data.frame(res)
+          failed <- sum(df$failed)
+          skipped <- sum(df$skipped)
+          passed <- sum(df$passed)
+          cat(sprintf("Tests: %d passed, %d failed, %d skipped\n",
+                       passed, failed, skipped))
+          if (failed > 0L) {
+            stop("Some tests failed.")
+          }
+        shell: Rscript {0}
+      - name: Compute coverage
+        run: |
+          cov <- covr::package_coverage(
+            path = ".",
+            type = "tests",
+            quiet = FALSE
+          )
+          print(cov)
+          covr::to_cobertura(cov, filename = "coverage.xml")
+          percent <- round(covr::percent_coverage(cov), 1)
+          cat(sprintf("Total coverage: %.1f%%\n", percent))
+          # Write badge-friendly JSON for the next step
+          writeLines(
+            jsonlite::toJSON(list(total = percent), auto_unbox = TRUE),
+            "coverage-summary.json"
+          )
+        shell: Rscript {0}
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: |
+            coverage.xml
+            coverage-summary.json

@@ -1,7 +1,7 @@
 Package: BSSUnfoldR
 Type: Package
 Title: Neutron Spectrum Unfolding for Bonner Sphere Spectrometers
-Version: 0.1.0
+Version: 0.1.1
 Date: 2026-09-16
 Authors@R: c(
     person(given = "Konstantin",
@@ -30,7 +30,9 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
-    pkgdown
+    pkgdown,
+    testthat (>= 3.0)
+Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE, r6 = FALSE)
 VignetteBuilder: knitr
 URL: https://github.com/Radiationsafety/BSSUnfoldR, https://radiationsafety.github.io/BSSUnfoldR/

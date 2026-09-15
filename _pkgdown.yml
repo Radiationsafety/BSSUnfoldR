@@ -15,7 +15,7 @@ reference:
     desc: R6 class bundling energy grid, sensitivities, conversion coefficients and result history.
     contents:
       - Detector
-  - title: Unfolding algorithms
+  - title: Unfolding algorithms (batch 1)
     desc: Each algorithm has a `solve_<method>()` raw solver and an `unfold_<method>()` workflow wrapper.
     contents:
       - solve_mlem
@@ -38,6 +38,34 @@ reference:
       - unfold_cgls
       - solve_tsvd
       - unfold_tsvd
+  - title: Unfolding algorithms (batch 2)
+    desc: Ordered-subset, MAP-EM, Krylov-subspace, regularised EM, row-action methods.
+    contents:
+      - solve_osem
+      - unfold_osem
+      - solve_mapem
+      - unfold_mapem
+      - solve_bsrem
+      - unfold_bsrem
+      - solve_sart
+      - unfold_sart
+      - solve_kaczmarz
+      - unfold_kaczmarz
+      - solve_randomized_kaczmarz
+      - unfold_randomized_kaczmarz
+      - solve_lanczos
+      - unfold_lanczos
+      - solve_tikhonov_legendre
+      - unfold_tikhonov_legendre
+      - solve_rebunki
+      - unfold_rebunki
+      - solve_doroshenko
+      - unfold_doroshenko
+  - title: Nearest-neighbour priors
+    desc: Penalised-EM priors shared by MAP-EM and BSREM.
+    contents:
+      - prior_gradient
+      - prior_value
   - title: Unified unfolding pipeline
     desc: The shared workflow every `unfold_*` method plugs into.
     contents:
