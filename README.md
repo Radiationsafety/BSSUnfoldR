@@ -1,5 +1,10 @@
 # BSSUnfoldR
 
+[![R CMD check](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/R-CMD-check.yaml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![R >= 4.0](https://img.shields.io/badge/R-%3E%3D%204.0-blue.svg)](https://www.r-project.org/)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
+
 Neutron spectrum unfolding for Bonner Sphere Spectrometers — an R port of the
 Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
 
