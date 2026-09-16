@@ -6,7 +6,7 @@
 [![DOI](https://zenodo.org/badge/1372098194.svg)](https://doi.org/10.5281/zenodo.22790648)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R >= 4.0](https://img.shields.io/badge/R-%3E%3D%204.0-blue.svg)](https://www.r-project.org/)
-[![Version](https://img.shields.io/badge/version-0.1.4-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
+[![Version](https://img.shields.io/badge/version-0.1.5-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
 [![Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 Neutron spectrum unfolding for Bonner Sphere Spectrometers — an R port of the
@@ -18,7 +18,7 @@ Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
   sensitivities, ICRP-116 conversion coefficients and a result-history list.
   One-line construction from any of the seven built-in response functions
   (`GSF`, `PTB`, `LANL`, `JINR`, `FERMILAB`, `EURADOS`, `IHEP`).
-- **Fifty-plus classic unfolding algorithms** (split into five batches):
+- **Sixty-plus classic unfolding algorithms** (split into six batches):
   - **Batch 1 (v0.1.0)**: MLEM, GRAVEL, MAXED, SAND-II, BUNKI, FERDOR,
     STAY'SL, Landweber, CGLS, TSVD.
   - **Batch 2 (v0.1.1)**: OSEM, MAP-EM, BSREM, SART, Kaczmarz,
@@ -27,15 +27,17 @@ Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
     refinement, BUNKI-UT, MLEM-STOP, StatReg, Tikhonov-TV, GKS, Crystal Ball.
   - **Batch 4 (v0.1.3)**: IMAXED, AMAXED, FISTA, Bayes-spline, NSDUAZ,
     MLEM-BS, NSpline, MCMC, Reconst, Ensemble / Cascade / Composite.
-  - **Batch 5 (v0.1.4)**: Scipy direct (CG/LSQR/GMRES/MINRES/direct),
-    EKI (Ensemble Kalman Inversion), RFSP-JUL (damped least-squares),
-    FRUIT-like (Maxwellian + 1/E + evaporation parametric model),
-    AMAXED-Reg (AMAXED + Tikhonov regularization, Wong 2024),
-    CS (Compressed Sensing with OMP / K-SVD / SL0),
-    Bayesian parametric (FRUIT-like + Metropolis-Hastings MCMC),
-    Hybrid parametric (FRUIT-like + MLEM residual refinement),
-    Hybrid GMRES (Arnoldi + Tikhonov on projected problem, GCV/DP),
-    Binned (coarse-to-fine bin-wise adaptive unfolding).
+  - **Batch 5 (v0.1.4)**: Scipy direct, EKI, RFSP-JUL, FRUIT-like,
+    AMAXED-Reg, CS, Bayesian parametric, Hybrid parametric, Hybrid GMRES,
+    Binned.
+  - **Batch 6 (v0.1.5)**: Parametric (FRUIT 3-component with P constraint),
+    Parametric2 (BON95 4-component with grid search), EPIC (Equal Posterior
+    Information Condition Tikhonov), NN-KSVD (non-negative dictionary
+    learning + sparse inversion), Genetic (simulated annealing on log
+    spectrum with Landweber warm-start), Mystic (differential evolution),
+    QUBO (quantum-inspired binary-encoded simulated annealing), LMfit
+    (Levenberg-Marquardt via optim L-BFGS-B), QPsolvers (Tikhonov-NNLS via
+    augmented matrix), CVXPY (convex optimization with L1/L2, IRLS for L1).
 - **Monte-Carlo uncertainty estimation** — add Gaussian noise to readings,
   run the unfolding N times, return per-bin mean / std / median / 5-95
   percentiles / all-samples matrix.
@@ -111,9 +113,8 @@ head(r_mc$spectrum_uncert_std)
 
 ## Status
 
-This port covers the core infrastructure and **fifty-plus** classic
-unfolding algorithms (five batches of ten, with batch 4 adding three
-ensemble methods and batch 5 adding ten more) from the upstream Python
+This port covers the core infrastructure and **sixty-plus** classic
+unfolding algorithms (six batches of ten) from the upstream Python
 package.
 
 R CMD check status: **OK** (no ERRORs, WARNINGs, or NOTEs).

@@ -640,6 +640,90 @@ Detector <- R6::R6Class(
                              self$E_MeV, self$sensitivities, self$cc_icrp116,
                              function(out) self$save_result(out),
                              readings, ...)
+        },
+
+        # ------------------------------------------------------------------
+        # Sixth batch of algorithms (added in v0.1.5)
+        # ------------------------------------------------------------------
+
+        #' @description Unfold using Parametric (FRUIT). See \code{\link{unfold_parametric}}.
+        unfold_parametric = function(readings, ...) {
+            unfold_parametric(self$detector_names, self$n_energy_bins,
+                                 self$E_MeV, self$sensitivities, self$cc_icrp116,
+                                 function(out) self$save_result(out),
+                                 readings, ...)
+        },
+
+        #' @description Unfold using Parametric2 (BON95). See \code{\link{unfold_parametric2}}.
+        unfold_parametric2 = function(readings, ...) {
+            unfold_parametric2(self$detector_names, self$n_energy_bins,
+                                  self$E_MeV, self$sensitivities, self$cc_icrp116,
+                                  function(out) self$save_result(out),
+                                  readings, ...)
+        },
+
+        #' @description Unfold using EPIC. See \code{\link{unfold_epic}}.
+        unfold_epic = function(readings, ...) {
+            unfold_epic(self$detector_names, self$n_energy_bins,
+                          self$E_MeV, self$sensitivities, self$cc_icrp116,
+                          function(out) self$save_result(out),
+                          readings, ...)
+        },
+
+        #' @description Unfold using NN-KSVD. See \code{\link{unfold_nnksvd}}.
+        unfold_nnksvd = function(readings, ...) {
+            unfold_nnksvd(self$detector_names, self$n_energy_bins,
+                             self$E_MeV, self$sensitivities, self$cc_icrp116,
+                             function(out) self$save_result(out),
+                             readings, ...)
+        },
+
+        #' @description Unfold using Genetic. See \code{\link{unfold_genetic}}.
+        unfold_genetic = function(readings, ...) {
+            unfold_genetic(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
+        },
+
+        #' @description Unfold using Mystic. See \code{\link{unfold_mystic}}.
+        unfold_mystic = function(readings, ...) {
+            unfold_mystic(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
+        },
+
+        #' @description Unfold using QUBO. See \code{\link{unfold_qubo}}.
+        unfold_qubo = function(readings, ...) {
+            unfold_qubo(self$detector_names, self$n_energy_bins,
+                          self$E_MeV, self$sensitivities, self$cc_icrp116,
+                          function(out) self$save_result(out),
+                          readings, ...)
+        },
+
+        #' @description Unfold using LMfit. See \code{\link{unfold_lmfit}}.
+        unfold_lmfit = function(readings, ...) {
+            unfold_lmfit(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using QPsolvers. See \code{\link{unfold_qpsolvers}}.
+        unfold_qpsolvers = function(readings, ...) {
+            unfold_qpsolvers(self$detector_names, self$n_energy_bins,
+                                 self$E_MeV, self$sensitivities, self$cc_icrp116,
+                                 function(out) self$save_result(out),
+                                 readings, ...)
+        },
+
+        #' @description Unfold using CVXPY. See \code{\link{unfold_cvxpy}}.
+        unfold_cvxpy = function(readings, ...) {
+            unfold_cvxpy(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
         }
     ),
     private = list(
