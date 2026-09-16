@@ -253,7 +253,8 @@ unfold_mlem_bs <- function(detector_names, n_energy_bins, E_MeV,
                             knot_spacing = "auto",
                             calculate_errors = FALSE,
                             noise_level = 0.01, n_montecarlo = 100L,
-                            save_result = FALSE, random_state = NULL) {
+                            save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     x0_default <- rep(0.5, n_energy_bins)
     # Use closure to forward E_MeV
     solver_with_E <- function(A, b, x0 = NULL, ...) {
@@ -279,6 +280,7 @@ unfold_mlem_bs <- function(detector_names, n_energy_bins, E_MeV,
                             knot_spacing = knot_spacing),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

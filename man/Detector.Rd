@@ -29,9 +29,28 @@ subset of \code{names(self$sensitivities)}.}
 \item{readings}{Named numeric vector.}
 
 \item{...}{Extra arguments forwarded to \code{\link{unfold_mlem}}.}
+
+\item{index}{Integer index into \code{self\$history} (1 = oldest).
+Default \code{NULL} = the most recent entry.}
+
+\item{cc_type}{One of \code{"ICRP116"},
+\code{"ICRP74_effective"}, \code{"ICRP74_operational"},
+\code{"NRB99_2009_effective"} or a named list of coefficients
+with an \code{E_MeV} entry.}
+
+\item{reference}{Either a result list with a \code{spectrum}
+entry, or an explicit numeric spectrum of length
+\code{n_energy_bins}.}
+
+\item{result}{Optional result list; defaults to the latest in
+\code{self\$history}.}
 }
 \value{
 An R6 \code{Detector} object.
+
+A list with relative-integral difference, chi-squared,
+ratio statistics, and dose-rate relative difference if
+available.
 }
 \description{
 Create a new Detector object. See \code{\link{Detector}} for the
@@ -126,6 +145,101 @@ Unfold using Ensemble. See \code{\link{unfold_ensemble}}.
 Unfold using Cascade. See \code{\link{unfold_cascade}}.
 
 Unfold using Composite. See \code{\link{unfold_composite}}.
+
+Unfold using Scipy direct method. See \code{\link{unfold_scipy_direct_method}}.
+
+Unfold using EKI. See \code{\link{unfold_eki}}.
+
+Unfold using RFSP-JUL. See \code{\link{unfold_rfsp_jul}}.
+
+Unfold using FRUIT-like. See \code{\link{unfold_fruit_like}}.
+
+Unfold using AMAXED-Reg. See \code{\link{unfold_amaxed_regularization}}.
+
+Unfold using CS. See \code{\link{unfold_cs}}.
+
+Unfold using Bayesian parametric. See \code{\link{unfold_bayesian_parametric}}.
+
+Unfold using Hybrid parametric. See \code{\link{unfold_hybrid_parametric}}.
+
+Unfold using Hybrid GMRES. See \code{\link{unfold_hybrid_gmres}}.
+
+Unfold using Binned. See \code{\link{unfold_binned}}.
+
+Unfold using Parametric (FRUIT). See \code{\link{unfold_parametric}}.
+
+Unfold using Parametric2 (BON95). See \code{\link{unfold_parametric2}}.
+
+Unfold using EPIC. See \code{\link{unfold_epic}}.
+
+Unfold using NN-KSVD. See \code{\link{unfold_nnksvd}}.
+
+Unfold using Genetic. See \code{\link{unfold_genetic}}.
+
+Unfold using Mystic. See \code{\link{unfold_mystic}}.
+
+Unfold using QUBO. See \code{\link{unfold_qubo}}.
+
+Unfold using LMfit. See \code{\link{unfold_lmfit}}.
+
+Unfold using QPsolvers. See \code{\link{unfold_qpsolvers}}.
+
+Unfold using CVXPY. See \code{\link{unfold_cvxpy}}.
+
+Unfold by a named-method pipeline. See \code{\link{unfold_combined}}.
+
+Unfold using P-spline REML. See \code{\link{unfold_pspline_reml}}.
+
+Unfold with AMG/preconditioned Krylov. See \code{\link{unfold_amg}}.
+
+Unfold using SSR (sign-simplicity regression). See \code{\link{unfold_ssr}}.
+
+Unfold using the Mystic hybrid (DE + L-BFGS-B). See \code{\link{unfold_mystic_hybrid}}.
+
+Unfold with the SMT-style exact solver. See \code{\link{unfold_smt}}.
+
+Unfold with the SCIP-style QP engine. See \code{\link{unfold_scip}}.
+
+Unfold with the CPLEX-style QP engine. See \code{\link{unfold_docplex}}.
+
+Unfold with Poisson-likelihood inference. See \code{\link{unfold_zfit}}.
+
+Unfold with MAEO (multi-algorithm evolution). See \code{\link{unfold_maeo}}.
+
+Unfold with operator-based MLEM. See \code{\link{unfold_mlem_odl}}.
+
+Unfold with PDHG (L2 + TV). See \code{\link{unfold_pdhg}}.
+
+Unfold with Douglas-Rachford splitting. See \code{\link{unfold_douglas_rachford}}.
+
+Unfold and attach an interpretation report. See \code{\link{unfold_interpret}}.
+
+Unfold with the cvxpy-SQP parametric variant. See \code{\link{unfold_parametric_cvxpy}}.
+
+Unfold with the qpsolvers-SQP parametric variant. See \code{\link{unfold_parametric_qpsolvers}}.
+
+Unfold with the combined parametric variant. See \code{\link{unfold_parametric_combined}}.
+
+Retrieve a saved result by history index.
+
+List descriptions of all saved results
+(method and residual norm per entry).
+
+Clear the saved-result history.
+
+Switch the dose conversion coefficient dataset
+after construction (Python \code{Detector.set_dose_coefficients}).
+
+Compare two unfolding results (or a result and a
+reference spectrum) with standard metrics.
+
+Plot the response (sensitivity) functions;
+Python \code{Detector.plot_response_functions}.
+\code{requireNamespace("ggplot2")} is required.
+
+Plot the most recent unfolded spectrum with
+uncertainty bands (Monte-Carlo when available); Python
+\code{Detector.plot_with_uncertainty}.
 }
 \details{
 The \code{Detector} class bundles together everything a user needs to unfold
@@ -172,6 +286,9 @@ response function.}
 \item{\code{cc_icrp116}}{Named list of ICRP-116 conversion coefficients.}
 
 \item{\code{history}}{List of saved unfolding results.}
+
+\item{\code{n_detectors}}{Integer; number of entry response functions
+currently registered.}
 }}
 
 \section{Methods}{

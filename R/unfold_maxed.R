@@ -74,7 +74,8 @@ unfold_maxed <- function(detector_names, n_energy_bins, E_MeV,
                           tolerance = 1e-6,
                           calculate_errors = FALSE,
                           noise_level = 0.01, n_montecarlo = 100L,
-                          save_result = FALSE, random_state = NULL) {
+                          save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     x0_ref <- if (!is.null(initial_spectrum)) {
         as.numeric(initial_spectrum)
     } else {
@@ -95,6 +96,7 @@ unfold_maxed <- function(detector_names, n_energy_bins, E_MeV,
         extra_output = list(sigma_factor = sigma_factor),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

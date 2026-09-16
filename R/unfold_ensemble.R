@@ -159,7 +159,8 @@ unfold_ensemble <- function(detector_names, n_energy_bins, E_MeV,
                               weights = NULL, ...,
                               calculate_errors = FALSE,
                               noise_level = 0.01, n_montecarlo = 100L,
-                              save_result = FALSE, random_state = NULL) {
+                              save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     x0 <- if (is.null(initial_spectrum)) rep(0.5, n_energy_bins)
@@ -203,7 +204,8 @@ unfold_cascade <- function(detector_names, n_energy_bins, E_MeV,
                               solver_kwargs_list = NULL, ...,
                               calculate_errors = FALSE,
                               noise_level = 0.01, n_montecarlo = 100L,
-                              save_result = FALSE, random_state = NULL) {
+                              save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     x0 <- if (is.null(initial_spectrum)) rep(0.5, n_energy_bins)
@@ -247,7 +249,8 @@ unfold_composite <- function(detector_names, n_energy_bins, E_MeV,
                               ...,
                               calculate_errors = FALSE,
                               noise_level = 0.01, n_montecarlo = 100L,
-                              save_result = FALSE, random_state = NULL) {
+                              save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     x0 <- if (is.null(initial_spectrum)) rep(0.5, n_energy_bins)

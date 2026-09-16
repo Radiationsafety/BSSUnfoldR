@@ -78,7 +78,8 @@ unfold_hybrid_parametric <- function(detector_names, n_energy_bins, E_MeV,
                                          noise_level = 0.01,
                                          n_montecarlo = 100L,
                                          save_result = FALSE,
-                                         random_state = NULL) {
+                                         random_state = NULL,
+                              max_neutron_energy = NULL) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     log_steps <- compute_log_steps(E_MeV) * log(10.0)

@@ -75,7 +75,8 @@ unfold_parametric <- function(detector_names, n_energy_bins, E_MeV,
                                  max_iterations = 200L, tolerance = 1e-6,
                                  calculate_errors = FALSE,
                                  noise_level = 0.01, n_montecarlo = 100L,
-                                 save_result = FALSE, random_state = NULL) {
+                                 save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     log_steps <- compute_log_steps(E_MeV) * log(10.0)
@@ -183,7 +184,8 @@ unfold_parametric2 <- function(detector_names, n_energy_bins, E_MeV,
                                   max_iterations = 50L, tolerance = 1e-6,
                                   calculate_errors = FALSE,
                                   noise_level = 0.01, n_montecarlo = 100L,
-                                  save_result = FALSE, random_state = NULL) {
+                                  save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     log_steps <- compute_log_steps(E_MeV) * log(10.0)

@@ -99,7 +99,8 @@ unfold_bayes_spline_regularization <- function(detector_names, n_energy_bins,
                                                  noise_level = 0.01,
                                                  n_montecarlo = 100L,
                                                  save_result = FALSE,
-                                                 random_state = NULL) {
+                                                 random_state = NULL,
+                              max_neutron_energy = NULL) {
     x0_default <- rep(1.0, n_energy_bins)
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,
@@ -118,6 +119,7 @@ unfold_bayes_spline_regularization <- function(detector_names, n_energy_bins,
                             spline_smooth = spline_smooth),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

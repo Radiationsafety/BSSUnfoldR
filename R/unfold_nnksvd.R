@@ -237,6 +237,7 @@ unfold_nnksvd <- function(detector_names, n_energy_bins, E_MeV,
                             method = method),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

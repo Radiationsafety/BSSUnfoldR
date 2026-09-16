@@ -116,8 +116,9 @@ unfold_genetic <- function(detector_names, n_energy_bins, E_MeV,
                             smoothness = smoothness),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }
 
 #' Differential evolution unfolding (Mystic-equivalent)
@@ -174,8 +175,9 @@ unfold_mystic <- function(detector_names, n_energy_bins, E_MeV,
         extra_output = list(),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }
 
 #' QUBO quantum-inspired unfolding (simulated annealing on binary encoding)
@@ -274,6 +276,7 @@ unfold_qubo <- function(detector_names, n_energy_bins, E_MeV,
         extra_output = list(n_bits = as.integer(n_bits)),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

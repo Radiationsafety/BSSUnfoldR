@@ -111,7 +111,8 @@ unfold_express <- function(detector_names, n_energy_bins, E_MeV,
                              relative_uncertainty = 0.05,
                              calculate_errors = FALSE,
                              noise_level = 0.01, n_montecarlo = 100L,
-                             save_result = FALSE, random_state = NULL) {
+                             save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     boundaries <- interval_boundaries
     if (is.null(boundaries)) {
         boundaries <- seq(E_MeV[1L], E_MeV[length(E_MeV)],
@@ -142,6 +143,7 @@ unfold_express <- function(detector_names, n_energy_bins, E_MeV,
         ),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

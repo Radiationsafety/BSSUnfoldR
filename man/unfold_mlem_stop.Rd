@@ -20,7 +20,8 @@ unfold_mlem_stop(
   noise_level = 0.01,
   n_montecarlo = 100L,
   save_result = FALSE,
-  random_state = NULL
+  random_state = NULL,
+  max_neutron_energy = NULL
 )
 }
 \arguments{
@@ -64,6 +65,12 @@ Default 0.01.}
 \code{save_result_callback}. Default \code{FALSE}.}
 
 \item{random_state}{Optional integer seed for Monte-Carlo.}
+
+\item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
+above this energy are removed from the response matrix during the
+solve and the returned spectrum is expanded back to the full grid
+with exact zeros above the cutoff (Python \code{max_neutron_energy}
+parameter). Default \code{NULL} = no cutoff.}
 }
 \value{
 A result list as produced by \code{\link{run_unfolding}}.

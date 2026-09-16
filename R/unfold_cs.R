@@ -47,13 +47,19 @@ solve_omp <- function(D, y, sparsity, tolerance = 1e-6) {
         if (correlations[idx] <= 0) break
         support <- c(support, idx)
         D_s <- D[, support, drop = FALSE]
-        coefs <- qr.solve(D_s, y, tol = 1e-12)
+        coefs <- tryCatch(qr.solve(D_s, y, tol = 1e-12),
+                          error = function(e)
+                              qr.solve(D_s + 1e-8 * diag(ncol(D_s)), y,
+                                       tol = 1e-12))
         residual <- y - as.numeric(D_s %*% coefs)
         if (sqrt(sum(residual^2)) < tolerance) break
     }
     if (length(support) > 0L) {
         D_s <- D[, support, drop = FALSE]
-        coefs <- qr.solve(D_s, y, tol = 1e-12)
+        coefs <- tryCatch(qr.solve(D_s, y, tol = 1e-12),
+                          error = function(e)
+                              qr.solve(D_s + 1e-8 * diag(ncol(D_s)), y,
+                                       tol = 1e-12))
         alpha[support] <- coefs
     }
     alpha
@@ -241,6 +247,7 @@ unfold_cs <- function(detector_names, n_energy_bins, E_MeV,
         extra_output = list(sparsity = sparsity, n_atoms = n_atoms),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

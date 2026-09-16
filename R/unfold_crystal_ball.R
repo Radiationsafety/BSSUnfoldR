@@ -58,7 +58,8 @@ unfold_crystal_ball <- function(detector_names, n_energy_bins, E_MeV,
                                   regularization = 0.0,
                                   calculate_errors = FALSE,
                                   noise_level = 0.01, n_montecarlo = 100L,
-                                  save_result = FALSE, random_state = NULL) {
+                                  save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     x0_default <- rep(1.0, n_energy_bins)
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,
@@ -73,6 +74,7 @@ unfold_crystal_ball <- function(detector_names, n_energy_bins, E_MeV,
         extra_output = list(regularization = regularization),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

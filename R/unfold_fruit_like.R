@@ -97,7 +97,8 @@ unfold_fruit_like <- function(detector_names, n_energy_bins, E_MeV,
                                  initial_params = NULL, method = "L-BFGS-B",
                                  calculate_errors = FALSE,
                                  noise_level = 0.01, n_montecarlo = 100L,
-                                 save_result = FALSE, random_state = NULL) {
+                                 save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     log_steps <- compute_log_steps(E_MeV) * log(10.0)
@@ -120,6 +121,7 @@ unfold_fruit_like <- function(detector_names, n_energy_bins, E_MeV,
         extra_output = list(initial_params = initial_params, method = method),
         calculate_errors = calculate_errors,
         noise_level = noise_level, n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

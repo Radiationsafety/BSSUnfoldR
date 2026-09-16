@@ -218,7 +218,8 @@ unfold_gks <- function(detector_names, n_energy_bins, E_MeV,
                         regularization = 1e-8, noise_level = NULL,
                         calculate_errors = FALSE,
                         n_montecarlo = 100L,
-                        save_result = FALSE, random_state = NULL) {
+                        save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     x0_default <- rep(0.0, n_energy_bins)
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,
@@ -242,6 +243,7 @@ unfold_gks <- function(detector_names, n_energy_bins, E_MeV,
         calculate_errors = calculate_errors,
         noise_level = if (is.null(noise_level)) 0.01 else noise_level,
         n_montecarlo = n_montecarlo,
-        random_state = random_state, save_result = save_result
-    )
+        random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
 }

@@ -724,7 +724,315 @@ Detector <- R6::R6Class(
                             self$E_MeV, self$sensitivities, self$cc_icrp116,
                             function(out) self$save_result(out),
                             readings, ...)
+        },
+
+        # ------------------------------------------------------------------
+        # Seventh batch of algorithms (added in v0.2.0)
+        # ------------------------------------------------------------------
+
+        #' @description Unfold by a named-method pipeline. See \code{\link{unfold_combined}}.
+        unfold_combined = function(readings, ...) {
+            unfold_combined(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using P-spline REML. See \code{\link{unfold_pspline_reml}}.
+        unfold_pspline_reml = function(readings, ...) {
+            unfold_pspline_reml(self$detector_names, self$n_energy_bins,
+                                self$E_MeV, self$sensitivities,
+                                self$cc_icrp116,
+                                function(out) self$save_result(out),
+                                readings, ...)
+        },
+
+        #' @description Unfold with AMG/preconditioned Krylov. See \code{\link{unfold_amg}}.
+        unfold_amg = function(readings, ...) {
+            unfold_amg(self$detector_names, self$n_energy_bins,
+                       self$E_MeV, self$sensitivities, self$cc_icrp116,
+                       function(out) self$save_result(out),
+                       readings, ...)
+        },
+
+        #' @description Unfold using SSR (sign-simplicity regression). See \code{\link{unfold_ssr}}.
+        unfold_ssr = function(readings, ...) {
+            unfold_ssr(self$detector_names, self$n_energy_bins,
+                       self$E_MeV, self$sensitivities, self$cc_icrp116,
+                       function(out) self$save_result(out),
+                       readings, ...)
+        },
+
+        #' @description Unfold using the Mystic hybrid (DE + L-BFGS-B). See \code{\link{unfold_mystic_hybrid}}.
+        unfold_mystic_hybrid = function(readings, ...) {
+            unfold_mystic_hybrid(self$detector_names, self$n_energy_bins,
+                                 self$E_MeV, self$sensitivities,
+                                 self$cc_icrp116,
+                                 function(out) self$save_result(out),
+                                 readings, ...)
+        },
+
+        #' @description Unfold with the SMT-style exact solver. See \code{\link{unfold_smt}}.
+        unfold_smt = function(readings, ...) {
+            unfold_smt(self$detector_names, self$n_energy_bins,
+                       self$E_MeV, self$sensitivities, self$cc_icrp116,
+                       function(out) self$save_result(out),
+                       readings, ...)
+        },
+
+        #' @description Unfold with the SCIP-style QP engine. See \code{\link{unfold_scip}}.
+        unfold_scip = function(readings, ...) {
+            unfold_scip(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out),
+                        readings, ...)
+        },
+
+        #' @description Unfold with the CPLEX-style QP engine. See \code{\link{unfold_docplex}}.
+        unfold_docplex = function(readings, ...) {
+            unfold_docplex(self$detector_names, self$n_energy_bins,
+                           self$E_MeV, self$sensitivities, self$cc_icrp116,
+                           function(out) self$save_result(out),
+                           readings, ...)
+        },
+
+        #' @description Unfold with Poisson-likelihood inference. See \code{\link{unfold_zfit}}.
+        unfold_zfit = function(readings, ...) {
+            unfold_zfit(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out),
+                        readings, ...)
+        },
+
+        #' @description Unfold with MAEO (multi-algorithm evolution). See \code{\link{unfold_maeo}}.
+        unfold_maeo = function(readings, ...) {
+            unfold_maeo(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out),
+                        readings, ...)
+        },
+
+        #' @description Unfold with operator-based MLEM. See \code{\link{unfold_mlem_odl}}.
+        unfold_mlem_odl = function(readings, ...) {
+            unfold_mlem_odl(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold with PDHG (L2 + TV). See \code{\link{unfold_pdhg}}.
+        unfold_pdhg = function(readings, ...) {
+            unfold_pdhg(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out),
+                        readings, ...)
+        },
+
+        #' @description Unfold with Douglas-Rachford splitting. See \code{\link{unfold_douglas_rachford}}.
+        unfold_douglas_rachford = function(readings, ...) {
+            unfold_douglas_rachford(self$detector_names,
+                                    self$n_energy_bins,
+                                    self$E_MeV, self$sensitivities,
+                                    self$cc_icrp116,
+                                    function(out) self$save_result(out),
+                                    readings, ...)
+        },
+
+        #' @description Unfold and attach an interpretation report. See \code{\link{unfold_interpret}}.
+        unfold_interpret = function(readings, ...) {
+            unfold_interpret(self$detector_names, self$n_energy_bins,
+                             self$E_MeV, self$sensitivities, self$cc_icrp116,
+                             function(out) self$save_result(out),
+                             readings, ...)
+        },
+
+        #' @description Unfold with the cvxpy-SQP parametric variant. See \code{\link{unfold_parametric_cvxpy}}.
+        unfold_parametric_cvxpy = function(readings, ...) {
+            unfold_parametric_cvxpy(self$detector_names, self$n_energy_bins,
+                                    self$E_MeV, self$sensitivities,
+                                    self$cc_icrp116,
+                                    function(out) self$save_result(out),
+                                    readings, ...)
+        },
+
+        #' @description Unfold with the qpsolvers-SQP parametric variant. See \code{\link{unfold_parametric_qpsolvers}}.
+        unfold_parametric_qpsolvers = function(readings, ...) {
+            unfold_parametric_qpsolvers(self$detector_names,
+                                        self$n_energy_bins,
+                                        self$E_MeV, self$sensitivities,
+                                        self$cc_icrp116,
+                                        function(out) self$save_result(out),
+                                        readings, ...)
+        },
+
+        #' @description Unfold with the combined parametric variant. See \code{\link{unfold_parametric_combined}}.
+        unfold_parametric_combined = function(readings, ...) {
+            unfold_parametric_combined(self$detector_names,
+                                       self$n_energy_bins,
+                                       self$E_MeV, self$sensitivities,
+                                       self$cc_icrp116,
+                                       function(out) self$save_result(out),
+                                       readings, ...)
+        },
+
+        # ------------------------------------------------------------------
+        # Result management / dose coefficients / comparison
+        # ------------------------------------------------------------------
+
+        #' @description Retrieve a saved result by history index.
+        #' @param index Integer index into \code{self\$history} (1 = oldest).
+        #'   Default \code{NULL} = the most recent entry.
+        get_result = function(index = NULL) {
+            if (length(self$history) == 0L) return(NULL)
+            if (is.null(index)) index <- length(self$history)
+            index <- as.integer(index)
+            if (index <= 0L || index > length(self$history)) return(NULL)
+            self$history[[index]]
+        },
+
+        #' @description List descriptions of all saved results
+        #'   (method and residual norm per entry).
+        list_results = function() {
+            out <- lapply(self$history, function(h)
+                list(method = if (!is.null(h$method)) h$method else "?",
+                     residual_norm = if (!is.null(h$residual_norm))
+                         h$residual_norm else NA_real_))
+            out
+        },
+
+        #' @description Clear the saved-result history.
+        clear_results = function() {
+            self$history <- list()
+            invisible(self)
+        },
+
+        #' @description Switch the dose conversion coefficient dataset
+#'   after construction (Python \code{Detector.set_dose_coefficients}).
+        #' @param cc_type One of \code{"ICRP116"},
+        #'   \code{"ICRP74_effective"}, \code{"ICRP74_operational"},
+        #'   \code{"NRB99_2009_effective"} or a named list of coefficients
+        #'   with an \code{E_MeV} entry.
+        set_dose_coefficients = function(cc_type) {
+            if (is.list(cc_type)) {
+                cc <- cc_type
+            } else {
+                key <- tolower(cc_type)
+                factory <- switch(key,
+                    icrp116 = ICRP116_COEFF_EFFECTIVE_DOSE,
+                    icrp74_effective = ICRP74_COEFF_EFFECTIVE_DOSE,
+                    icrp74_operational =
+                        ICRP74_COEFF_OPERATIONAL_QUANTITIES,
+                    nrb99_2009_effective =
+                        NRB99_2009_COEFF_EFFECTIVE_DOSE,
+                    stop("Unknown dose coefficient set: ", cc_type))
+                cc <- factory()
+            }
+            self$cc_icrp116 <- interpolate_coefficients(cc, self$E_MeV)
+            invisible(self)
+        },
+
+        #' @description Compare two unfolding results (or a result and a
+        #'   reference spectrum) with standard metrics.
+        #' @param reference Either a result list with a \code{spectrum}
+        #'   entry, or an explicit numeric spectrum of length
+        #'   \code{n_energy_bins}.
+        #' @return A list with relative-integral difference, chi-squared,
+        #'   ratio statistics, and dose-rate relative difference if
+        #'   available.
+        compare = function(reference) {
+            ref_spec <- if (is.list(reference) &&
+                                !is.null(reference$spectrum))
+                            as.numeric(reference$spectrum)
+                        else as.numeric(reference)
+            if (length(ref_spec) != self$n_energy_bins) {
+                stop("Reference spectrum length mismatch.")
+            }
+            last <- if (length(self$history)) {
+                self$history[[length(self$history)]]
+            } else {
+                stop("No unfolded result stored in history to compare.")
+            }
+            xy <- last$spectrum
+            integrate_rel <- if (length(ref_spec) == length(xy))
+                abs(sum(xy) - sum(ref_spec)) / max(abs(sum(ref_spec)),
+                    1e-30)
+            chi2 <- sum((xy - ref_spec)^2 / pmax(ref_spec^2, 1e-30))
+            list(method = last$method,
+                 relative_integral_difference = integrate_rel,
+                 chi_squared = chi2,
+                 max_relative_deviation =
+                     max(abs(xy - ref_spec) / pmax(abs(ref_spec), 1e-30)),
+                 reference = ref_spec)
+        },
+
+        # --- Plot methods (ggplot2) -----------------------------------------
+
+        #' @description Plot the response (sensitivity) functions;
+        #'   Python \code{Detector.plot_response_functions}.
+        #' \code{requireNamespace("ggplot2")} is required.
+        plot_response_functions = function() {
+            require_ggplot2()
+            df <- do.call(rbind, lapply(names(self$sensitivities), function(k)
+                data.frame(E_MeV = self$E_MeV,
+                           sensitivity = self$sensitivities[[k]],
+                           detector = k)))
+            ggplot2::ggplot(df, ggplot2::aes(x = .data$E_MeV,
+                    y = .data$sensitivity, color = .data$detector)) +
+                ggplot2::geom_line() + ggplot2::scale_x_log10() +
+                ggplot2::scale_y_log10() +
+                ggplot2::labs(x = "Energy [MeV]", y = "Response",
+                              title = "Bonner sphere response functions")
+        },
+
+        #' @description Plot the most recent unfolded spectrum with
+        #'   uncertainty bands (Monte-Carlo when available); Python
+        #'   \code{Detector.plot_with_uncertainty}.
+        #' @param result Optional result list; defaults to the latest in
+        #'   \code{self\$history}.
+        plot_with_uncertainty = function(result = NULL) {
+            require_ggplot2()
+            if (is.null(result)) {
+                if (!length(self$history)) {
+                    stop("No unfolded result to plot; unfold first.")
+                }
+                result <- self$history[[length(self$history)]]
+            }
+            e <- result$energy; s <- result$spectrum
+            if (!is.null(result$montecarlo_std)) {
+                lo <- pmax(result$spectrum - 2 * result$montecarlo_std, 0)
+                up <- result$spectrum + 2 * result$montecarlo_std
+            } else if (!is.null(result$montecarlo_samples)) {
+                ms <- result$montecarlo_samples
+                if (!is.null(result$montecarlo_mean)) {
+                    sd <- result$montecarlo_std
+                    lo <- pmax(result$spectrum - 2 * sd, 0)
+                    up <- result$spectrum + 2 * sd
+                } else {
+                    lo <- result$spectrum; up <- result$spectrum
+                }
+            } else {
+                lo <- result$spectrum; up <- result$spectrum
+            }
+            if (is.null(lo)) lo <- result$spectrum
+            df <- data.frame(E_MeV = e, spectrum = s, lo = lo, up = up)
+            G <- ggplot2::ggplot(df, ggplot2::aes(x = .data$E_MeV,
+                    y = .data$spectrum)) +
+                ggplot2::geom_point() + ggplot2::geom_line() +
+                ggplot2::geom_ribbon(
+                    ggplot2::aes(ymin = .data$lo, ymax = .data$up),
+                    alpha = 0.3) +
+                ggplot2::scale_x_log10() + ggplot2::scale_y_log10(
+                    limits = c(NA, NA)) +
+                ggplot2::labs(x = "Energy [MeV]",
+                              y = "Fluence per unit lethargy",
+                              title = "Unfolded neutron spectrum")
+            G
         }
+    ),
+    active = list(
+        #' @field n_detectors Integer; number of entry response functions
+        #'   currently registered.
+        n_detectors = function() length(self$detector_names)
     ),
     private = list(
         .E_MeV = numeric(0L)

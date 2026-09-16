@@ -102,7 +102,8 @@ unfold_iterative_refinement <- function(detector_names, n_energy_bins, E_MeV,
                                           noise_level = 0.01,
                                           n_montecarlo = 100L,
                                           save_result = FALSE,
-                                          random_state = NULL) {
+                                          random_state = NULL,
+                              max_neutron_energy = NULL) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     x0_default <- rep(0.5, n_energy_bins)

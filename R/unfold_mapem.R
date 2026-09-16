@@ -76,7 +76,8 @@ unfold_mapem <- function(detector_names, n_energy_bins, E_MeV,
                          max_iterations = 50L, tolerance = 1e-6,
                          calculate_errors = FALSE,
                          noise_level = 0.01, n_montecarlo = 100L,
-                         save_result = FALSE, random_state = NULL) {
+                         save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     x0_default <- rep(1.0, n_energy_bins)
     x0_default[1L] <- 0.0
     result <- run_unfolding(

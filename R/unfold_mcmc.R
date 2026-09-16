@@ -119,7 +119,8 @@ unfold_mcmc <- function(detector_names, n_energy_bins, E_MeV,
                           relative_uncertainty = 0.1,
                           calculate_errors = FALSE,
                           noise_level = 0.01, n_montecarlo = 100L,
-                          save_result = FALSE, random_state = NULL) {
+                          save_result = FALSE, random_state = NULL,
+                              max_neutron_energy = NULL) {
     x0_default <- rep(0.5, n_energy_bins)
     # MCMC does not fit the run_unfolding solve_func pattern naturally
     # because it returns posterior samples, not a single spectrum. We

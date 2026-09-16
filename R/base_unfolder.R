@@ -47,6 +47,11 @@
 #' @param random_state Optional integer seed for Monte-Carlo.
 #' @param save_result Logical; if \code{TRUE}, call
 #'   \code{save_result_callback}. Default \code{FALSE}.
+#' @param max_neutron_energy Optional numeric energy cutoff in MeV: bins
+#'   above this energy are removed from the response matrix during the
+#'   solve and the returned spectrum is expanded back to the full grid
+#'   with exact zeros above the cutoff (Python \code{max_neutron_energy}
+#'   parameter). Default \code{NULL} = no cutoff.
 #' @return A list with at minimum the following components:
 #' \describe{
 #'   \item{energy}{copy of E_MeV.}
@@ -95,7 +100,8 @@ run_unfolding <- function(detector_names, n_energy_bins, E_MeV,
                           calculate_errors = FALSE,
                           noise_level = 0.01, n_montecarlo = 100L,
                           random_state = NULL,
-                          save_result = FALSE) {
+                          save_result = FALSE,
+                          max_neutron_energy = NULL) {
     # ---- 0. Validate inputs ----
     if (!is.numeric(readings) || length(readings) == 0L) {
         stop("'readings' must be a non-empty named numeric vector.")
@@ -127,12 +133,40 @@ run_unfolding <- function(detector_names, n_energy_bins, E_MeV,
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
 
-    # ---- 2. Normalize the initial spectrum ----
-    x0 <- .normalize_initial(initial_spectrum, default_initial, n_energy_bins)
+    # ---- 1b. Optional energy cutoff (Python max_neutron_energy) ----
+    E_full <- as.numeric(E_MeV)
+    n_full <- n_energy_bins
+    A_kept <- A
+    if (!is.null(max_neutron_energy)) {
+        cutoff <- as.numeric(max_neutron_energy)
+        if (is.finite(cutoff) && cutoff > 0) {
+            keep <- E_full <= cutoff
+            if (sum(keep) == 0L) {
+                stop("max_neutron_energy (", cutoff,
+                     ") is below the lowest energy bin.")
+            }
+            A_kept <- A[, keep, drop = FALSE]
+        }
+    }
 
-    # ---- 3. Solve ----
+    # ---- 2. Normalize the initial spectrum (validated on the full grid) --
+    x0 <- .normalize_initial(initial_spectrum, default_initial, n_full)
+
+    # ---- 3. Solve (on the trimmed matrix when a cutoff is set) -----------
     kwargs <- c(list(x0 = x0), solve_kwargs)
-    solve_result <- do.call(solve_func, c(list(A = A, b = b), kwargs))
+    use_cutoff <- (!is.null(max_neutron_energy) &&
+                       is.finite(as.numeric(max_neutron_energy)) &&
+                       as.numeric(max_neutron_energy) > 0 &&
+                       ncol(A_kept) < ncol(A))
+    if (!isTRUE(use_cutoff)) {
+        solve_result <- do.call(solve_func, c(list(A = A, b = b), kwargs))
+    } else {
+        kwargs_kept <- kwargs
+        x0_kept <- as.numeric(x0)[keep_idx <- which(E_full <= as.numeric(max_neutron_energy))]
+        kwargs_kept$x0 <- x0_kept
+        solve_result <- do.call(solve_func,
+                                c(list(A = A_kept, b = b), kwargs_kept))
+    }
 
     extra_meta <- list()
     if (is.list(solve_result) &&
@@ -148,18 +182,24 @@ run_unfolding <- function(detector_names, n_energy_bins, E_MeV,
     } else {
         spectrum <- as.numeric(solve_result)
     }
-    if (length(spectrum) != n_energy_bins) {
-        stop("Solver returned a spectrum of length ", length(spectrum),
-             " but n_energy_bins = ", n_energy_bins)
+    # Expand a cut-off solve back to the full energy grid with exact zeros
+    # above the cutoff, and standardize on the full grid.
+    if (isTRUE(use_cutoff)) {
+        spectrum_full <- numeric(length(E_full))
+        spectrum_full[keep_idx] <- spectrum
+        spectrum <- spectrum_full
     }
-
+    if (length(spectrum) != n_full) {
+        stop("Solver returned a spectrum of length ", length(spectrum),
+             " but n_energy_bins = ", n_full)
+    }
+    E_MeV <- E_full
     if (!is.null(extra_output)) {
         extra_output <- c(extra_output, extra_meta)
     } else {
         extra_output <- extra_meta
     }
-
-    # ---- 4. Standardize output ----
+    # The computed model must be evaluated on the FULL response matrix:
     output <- .standardize_output(
         spectrum = spectrum, A = A, b = b, E_MeV = E_MeV,
         selected = selected, cc_icrp116 = cc_icrp116,
