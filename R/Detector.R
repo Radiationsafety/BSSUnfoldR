@@ -548,6 +548,98 @@ Detector <- R6::R6Class(
                               self$E_MeV, self$sensitivities, self$cc_icrp116,
                               function(out) self$save_result(out),
                               readings, ...)
+        },
+
+        # ------------------------------------------------------------------
+        # Fifth batch of algorithms (added in v0.1.4)
+        # ------------------------------------------------------------------
+
+        #' @description Unfold using Scipy direct method. See \code{\link{unfold_scipy_direct_method}}.
+        unfold_scipy_direct_method = function(readings, ...) {
+            unfold_scipy_direct_method(self$detector_names, self$n_energy_bins,
+                                          self$E_MeV, self$sensitivities,
+                                          self$cc_icrp116,
+                                          function(out) self$save_result(out),
+                                          readings, ...)
+        },
+
+        #' @description Unfold using EKI. See \code{\link{unfold_eki}}.
+        unfold_eki = function(readings, ...) {
+            unfold_eki(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out),
+                        readings, ...)
+        },
+
+        #' @description Unfold using RFSP-JUL. See \code{\link{unfold_rfsp_jul}}.
+        unfold_rfsp_jul = function(readings, ...) {
+            unfold_rfsp_jul(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
+        },
+
+        #' @description Unfold using FRUIT-like. See \code{\link{unfold_fruit_like}}.
+        unfold_fruit_like = function(readings, ...) {
+            unfold_fruit_like(self$detector_names, self$n_energy_bins,
+                                 self$E_MeV, self$sensitivities, self$cc_icrp116,
+                                 function(out) self$save_result(out),
+                                 readings, ...)
+        },
+
+        #' @description Unfold using AMAXED-Reg. See \code{\link{unfold_amaxed_regularization}}.
+        unfold_amaxed_regularization = function(readings, ...) {
+            unfold_amaxed_regularization(self$detector_names,
+                                             self$n_energy_bins,
+                                             self$E_MeV, self$sensitivities,
+                                             self$cc_icrp116,
+                                             function(out) self$save_result(out),
+                                             readings, ...)
+        },
+
+        #' @description Unfold using CS. See \code{\link{unfold_cs}}.
+        unfold_cs = function(readings, ...) {
+            unfold_cs(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out),
+                        readings, ...)
+        },
+
+        #' @description Unfold using Bayesian parametric. See \code{\link{unfold_bayesian_parametric}}.
+        unfold_bayesian_parametric = function(readings, ...) {
+            unfold_bayesian_parametric(self$detector_names,
+                                          self$n_energy_bins,
+                                          self$E_MeV, self$sensitivities,
+                                          self$cc_icrp116,
+                                          function(out) self$save_result(out),
+                                          readings, ...)
+        },
+
+        #' @description Unfold using Hybrid parametric. See \code{\link{unfold_hybrid_parametric}}.
+        unfold_hybrid_parametric = function(readings, ...) {
+            unfold_hybrid_parametric(self$detector_names,
+                                         self$n_energy_bins,
+                                         self$E_MeV, self$sensitivities,
+                                         self$cc_icrp116,
+                                         function(out) self$save_result(out),
+                                         readings, ...)
+        },
+
+        #' @description Unfold using Hybrid GMRES. See \code{\link{unfold_hybrid_gmres}}.
+        unfold_hybrid_gmres = function(readings, ...) {
+            unfold_hybrid_gmres(self$detector_names, self$n_energy_bins,
+                                   self$E_MeV, self$sensitivities,
+                                   self$cc_icrp116,
+                                   function(out) self$save_result(out),
+                                   readings, ...)
+        },
+
+        #' @description Unfold using Binned. See \code{\link{unfold_binned}}.
+        unfold_binned = function(readings, ...) {
+            unfold_binned(self$detector_names, self$n_energy_bins,
+                             self$E_MeV, self$sensitivities, self$cc_icrp116,
+                             function(out) self$save_result(out),
+                             readings, ...)
         }
     ),
     private = list(
