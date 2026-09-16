@@ -31,8 +31,11 @@ keywords:
   - r-package
 license: GPL-3.0
 repository-code: 'https://github.com/Radiationsafety/BSSUnfoldR'
-version: 0.1.0
-date-released: '2026-09-15'
+version: 0.1.3
+date-released: '2026-09-16'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22790648
 preferred-citation:
   type: software
   title: 'BSSUnfoldR: Neutron Spectrum Unfolding for Bonner Sphere Spectrometers (R port of bssunfold)'
@@ -44,8 +47,9 @@ preferred-citation:
       affiliation: Joint Institute for Nuclear Research
   repository-code: 'https://github.com/Radiationsafety/BSSUnfoldR'
   license: GPL-3.0
-  version: 0.1.0
-  date-released: '2026-09-15'
+  version: 0.1.3
+  date-released: '2026-09-16'
+  doi: 10.5281/zenodo.22790648
 related-identifiers:
   - type: software
     identifier: 'https://github.com/Radiationsafety/bssunfold'

@@ -2,10 +2,11 @@
 
 [![R CMD check](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/R-CMD-check.yaml)
 [![Tests](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/test-coverage.yaml)
+[![pkgdown](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/pkgdown.yaml/badge.svg)](https://radiationsafety.github.io/BSSUnfoldR/)
+[![DOI](https://zenodo.org/badge/1372098194.svg)](https://doi.org/10.5281/zenodo.22790648)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R >= 4.0](https://img.shields.io/badge/R-%3E%3D%204.0-blue.svg)](https://www.r-project.org/)
 [![Version](https://img.shields.io/badge/version-0.1.3-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
-[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-blue.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 Neutron spectrum unfolding for Bonner Sphere Spectrometers — an R port of the
