@@ -22,6 +22,7 @@ require_ggplot2 <- function() {
 #' Extract a tidy data frame from an unfold result
 #'
 #' @param result A result list with \code{energy} and \code{spectrum} elements.
+#' @keywords internal
 .to_df <- function(result) {
     data.frame(E_MeV = as.numeric(result$energy),
                spectrum = as.numeric(result$spectrum))

@@ -44,3 +44,5 @@ worklog.md
 
 
 BSSUnfoldR.Rcheck
+# pkgdown build output (built in CI and uploaded as artifact)
+/public/

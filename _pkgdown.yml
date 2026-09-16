@@ -11,12 +11,22 @@ home:
     dose-rate calculation.
 
 reference:
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Detector class
+# ─────────────────────────────────────────────────────────────────────────────
+
   - title: Detector object
     desc: R6 class bundling energy grid, sensitivities, conversion coefficients and result history.
     contents:
       - Detector
-  - title: Unfolding algorithms (batch 1)
-    desc: Each algorithm has a `solve_<method>()` raw solver and an `unfold_<method>()` workflow wrapper.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Classic iterative methods (batch 1)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Classic iterative methods
+    desc: Maximum-likelihood, GRAVEL, MAXED, SAND-II, BUNKI, FERDOR, STAY'SL, Landweber, CGLS, TSVD. Each algorithm has a `solve_<method>()` raw solver and an `unfold_<method>()` workflow wrapper.
     contents:
       - solve_mlem
       - unfold_mlem
@@ -38,8 +48,13 @@ reference:
       - unfold_cgls
       - solve_tsvd
       - unfold_tsvd
-  - title: Unfolding algorithms (batch 2)
-    desc: Ordered-subset, MAP-EM, Krylov-subspace, regularised EM, row-action methods.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ordered-subset / MAP-EM / row-action methods (batch 2)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Ordered-subset, MAP-EM and row-action methods
+    desc: OSEM, MAP-EM, BSREM, SART, Kaczmarz and randomized Kaczmarz iterations.
     contents:
       - solve_osem
       - unfold_osem
@@ -53,6 +68,14 @@ reference:
       - unfold_kaczmarz
       - solve_randomized_kaczmarz
       - unfold_randomized_kaczmarz
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Krylov-subspace and Tikhonov-regularised methods
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Krylov-subspace and Tikhonov methods
+    desc: Lanczos bidiagonalisation, Tikhonov-Legendre, RE-BUNKI, Doroshenko, EPIC and direct sparse solvers (scipy-direct analogue).
+    contents:
       - solve_lanczos
       - unfold_lanczos
       - solve_tikhonov_legendre
@@ -61,14 +84,17 @@ reference:
       - unfold_rebunki
       - solve_doroshenko
       - unfold_doroshenko
-  - title: Nearest-neighbour priors
-    desc: Penalised-EM priors shared by MAP-EM and BSREM.
-    contents:
-      - prior_gradient
-      - prior_value
-      - ensemble-methods
-  - title: Unfolding algorithms (batch 3)
-    desc: Bayesian / regularized / Krylov / direct methods.
+      - solve_epic
+      - unfold_epic
+      - solve_scipy_direct
+      - unfold_scipy_direct_method
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Bayesian / regularised methods (batch 3)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Bayesian / regularised methods
+    desc: Bayesian unfolding, directed divergence, EXPRESS, iterative refinement, BUNKIUT, MLEM-stopping, statistical regularization, Tikhonov-TV, GKS, Crystal-Ball.
     contents:
       - solve_bayes
       - unfold_bayes
@@ -90,15 +116,30 @@ reference:
       - unfold_gks
       - solve_crystal_ball
       - unfold_crystal_ball
-  - title: Unfolding algorithms (batch 4)
-    desc: Newton / FISTA / B-spline / catalogue / Bayesian MCMC / ensemble.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Newton / FISTA / AMAXED (batch 4)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Newton-type and FISTA methods
+    desc: IMAXED with Armijo line search, AMAXED with Newton-KKT, AMAXED with Tikhonov regularization, FISTA with L1/L2/TV regularization.
     contents:
       - solve_imaxed
       - unfold_imaxed
       - solve_amaxed
       - unfold_amaxed
+      - solve_amaxed_regularization
+      - unfold_amaxed_regularization
       - solve_fista
       - unfold_fista
+
+# ─────────────────────────────────────────────────────────────────────────────
+# B-spline, catalogue and NSDUAZ methods
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: B-spline, catalogue and NSDUAZ methods
+    desc: Bayes-spline regularization, NSDUAZ, NSpline, MLEM-BS, built-in catalogues and helper builders.
+    contents:
       - solve_bayes_spline
       - unfold_bayes_spline_regularization
       - solve_nsduaz
@@ -114,33 +155,335 @@ reference:
       - unfold_nspline
       - auto_knots
       - build_continuity_matrix
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Bayesian MCMC
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Bayesian MCMC
+    desc: Posterior exploration via Metropolis-Hastings on the unfolding solution.
+    contents:
       - solve_bayesian_mcmc
       - unfold_mcmc
-      - solve_reconst
-      - unfold_reconst
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ensemble, cascade, composite and reconst
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Ensemble, cascade and composite pipelines
+    desc: Multi-method pipelines that combine or refine the output of base solvers.
+    contents:
       - solve_ensemble
       - unfold_ensemble
       - solve_cascade
       - unfold_cascade
       - solve_composite
       - unfold_composite
+      - solve_reconst
+      - unfold_reconst
+      - ensemble-methods
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Binned adaptive unfolding
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Binned adaptive unfolding
+    desc: Adaptive energy-bin selection during unfolding.
+    contents:
+      - solve_binned
+      - unfold_binned
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Compressed sensing & dictionary learning
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Compressed sensing and dictionary learning
+    desc: CS unfolding, OMP, SL0, K-SVD, non-negative K-SVD and supporting sparse coders.
+    contents:
+      - cs-methods
+      - solve_cs
+      - unfold_cs
+      - solve_omp
+      - solve_sl0
+      - solve_ksvd
+      - solve_nnksvd
+      - unfold_nnksvd
+      - solve_nn_omp
+      - solve_nnls_topk
+      - solve_tikhonov_nnls
+
+# ─────────────────────────────────────────────────────────────────────────────
+# QP and convex optimization solvers
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: QP and convex-optimization solvers
+    desc: Tikhonov-regularised NNLS solved via QP engines (SCIP / CPLEX analogues), CVXPY-equivalent, SMT exact KKT.
+    contents:
+      - qp-engines
+      - solve_qpsolvers
+      - unfold_qpsolvers
+      - solve_qp_scip
+      - solve_qp_docplex
+      - unfold_scip
+      - unfold_docplex
+      - solve_cvxpy
+      - unfold_cvxpy
+      - solve_smt
+      - unfold_smt
+      - smt-methods
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Parametric and FRUIT-like methods
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Parametric and FRUIT-like methods
+    desc: Full 3-component and BON95 4-component parametric models, FRUIT-like, Bayesian parametric, hybrid parametric and named-engine parametric variants.
+    contents:
+      - parametric-variants
+      - solve_parametric
+      - unfold_parametric
+      - solve_parametric2
+      - unfold_parametric2
+      - solve_fruit_like
+      - unfold_fruit_like
+      - solve_bayesian_parametric
+      - unfold_bayesian_parametric
+      - solve_hybrid_parametric
+      - unfold_hybrid_parametric
+      - unfold_parametric_engine
+      - unfold_parametric_combined
+      - unfold_parametric_cvxpy
+      - unfold_parametric_qpsolvers
+      - solve_hybrid_gmres
+      - unfold_hybrid_gmres
+
+# ─────────────────────────────────────────────────────────────────────────────
+# P-spline REML and SSR
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: P-spline REML and sign-simplicity regression
+    desc: Mixed-model P-spline smoothing (REML) and sign-simplicity regularisation with minimum-statistic scoring.
+    contents:
+      - pspline-reml-methods
+      - solve_pspline_reml
+      - unfold_pspline_reml
+      - ssr-methods
+      - solve_ssr
+      - unfold_ssr
+      - ssr3d
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Meta-heuristic and evolutionary methods
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Meta-heuristic and evolutionary methods
+    desc: Genetic algorithm, Mystic differential evolution, Mystic-hybrid, MAEO, QUBO quantum-inspired and ensemble Kalman inversion.
+    contents:
+      - meta-heuristic-methods
+      - solve_genetic
+      - unfold_genetic
+      - solve_mystic
+      - unfold_mystic
+      - solve_mystic_hybrid
+      - unfold_mystic_hybrid
+      - mystic-hybrid
+      - solve_maeo
+      - unfold_maeo
+      - maeo-methods
+      - solve_qubo_unfold
+      - unfold_qubo
+      - solve_eki
+      - unfold_eki
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AMG / preconditioned Krylov
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: AMG and preconditioned Krylov methods
+    desc: Algebraic multi-grid preconditioned Krylov unfolding.
+    contents:
+      - amg-methods
+      - solve_amg
+      - unfold_amg
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Variational splitting (PDHG / Douglas-Rachford)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Variational splitting methods
+    desc: Primal-Dual Hybrid Gradient (Chambolle-Pock) and Douglas-Rachford splitting for L2 + TV regularised unfolding.
+    contents:
+      - pdhg-methods
+      - solve_pdhg
+      - unfold_pdhg
+      - solve_douglas_rachford
+      - unfold_douglas_rachford
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GEE (Generalized Estimating Equations)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Generalized Estimating Equations
+    desc: GEE/IRLS unfolding with three working correlations (independence, exchangeable, AR-1) and three quasi-likelihood families, plus robust and naive sandwich covariance estimators of Liang & Zeger.
+    contents:
+      - gee-methods
+      - working_correlation
+      - estimate_alpha
+      - gee_fit
+      - solve_gee
+      - unfold_gee
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Uno NLP solver
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Uno-style NLP solver
+    desc: "Constrained quadratic unfolding solved with Lagrange-Newton iterations: the `filter_sqp` preset (exact-Hessian SQP with the Vanaret-Leyffer filter) and the `ipopt_like` preset (primal-dual interior point with exact or BFGS Hessian)."
+    contents:
+      - uno-methods
+      - uno_objective
+      - uno_gradient
+      - uno_filter
+      - solve_uno_full
+      - solve_uno
+      - unfold_uno
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RFSP-JUL and combined pipelines
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: RFSP-JUL and combined pipelines
+    desc: Damped least-squares RFSP-JUL and named-method pipeline composition.
+    contents:
+      - solve_rfsp_jul
+      - unfold_rfsp_jul
+      - solve_combined
+      - unfold_combined
+      - combined-methods
+
+# ─────────────────────────────────────────────────────────────────────────────
+# lmfit / zfit / Poisson-likelihood methods
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Levenberg-Marquardt and Poisson-likelihood methods
+    desc: lmfit-style Levenberg-Marquardt and zfit-style Poisson-likelihood with smoothness prior.
+    contents:
+      - optimization-methods
+      - solve_lmfit
+      - unfold_lmfit
+      - solve_zfit_poisson
+      - unfold_zfit
+      - zfit-like
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Operator-based MLEM (ODL analogue)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Operator-based MLEM (ODL analogue)
+    desc: Pure-R MLEM exposing the operator interface for forward/backward projection plug-ins.
+    contents:
+      - mlem-odl-methods
+      - solve_mlem_odl
+      - unfold_mlem_odl
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Nearest-neighbour priors for penalised EM
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Nearest-neighbour priors
+    desc: Penalised-EM priors shared by MAP-EM and BSREM.
+    contents:
+      - prior_gradient
+      - prior_value
+      - em-priors
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Unified unfolding pipeline
+# ─────────────────────────────────────────────────────────────────────────────
+
   - title: Unified unfolding pipeline
     desc: The shared workflow every `unfold_*` method plugs into.
     contents:
       - run_unfolding
-      - make_solve_wrapper
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Monte-Carlo uncertainty
+# ─────────────────────────────────────────────────────────────────────────────
+
   - title: Monte-Carlo uncertainty
+    desc: Per-bin uncertainty estimation by perturbing readings with Poisson/Gaussian noise and re-solving.
     contents:
       - monte_carlo_uncertainty
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Benchmarking and comparison
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Benchmarking and comparison
+    desc: Run multiple solvers on synthetic probes, score against ground truth, and compute divergence / similarity metrics between two spectra.
+    contents:
+      - benchmark-methods
+      - benchmark_unfold_methods
+      - compare_spectra
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Plotting and visualization (ggplot2)
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Plotting and visualization
+    desc: ggplot2-based spectrum, comparison and residual plots; result converters to data frame / list.
+    contents:
+      - plotting-utils
+      - plot_spectrum
+      - plot_comparison
+      - plot_residuals
+      - require_ggplot2
+      - convert_to_dataframe
+      - convert_to_dict
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Interpretation / explanation report
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Interpretation report
+    desc: Post-unfold interpretation/explanation report (pyoptexplain analogue).
+    contents:
+      - interpret-methods
+      - interpret_result
+      - unfold_interpret
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Spectrum discretization and bin lookup
+# ─────────────────────────────────────────────────────────────────────────────
+
+  - title: Spectrum discretization and bin lookup
+    desc: Helpers to discretize analytic spectra on an energy grid and to build / save / load uniform log-energy bin lookups.
+    contents:
+      - discretize_spectrum
+      - build_bin_lookup
+      - save_bin_lookup
+      - load_bin_lookup
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Dose-rate calculation
+# ─────────────────────────────────────────────────────────────────────────────
+
   - title: Dose-rate calculation
+    desc: Compute ambient/personal dose rates from an unfolded spectrum using ICRP-74, ICRP-116 or NRB99-2009 conversion coefficients.
     contents:
       - calculate_dose_rates
       - get_coefficients
       - interpolate_coefficients
       - DOSE_COEFFICIENTS_REGISTRY
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Built-in constants
+# ─────────────────────────────────────────────────────────────────────────────
+
   - title: Built-in constants
     desc: Accessors for ICRP / NRB99 / response-function datasets (numeric data is generated verbatim from the Python bssunfold constants module).
     contents:
+      - constants
       - ICRP116_COEFF_EFFECTIVE_DOSE
       - ICRP74_COEFF_EFFECTIVE_DOSE
       - NRB99_2009_COEFF_EFFECTIVE_DOSE
@@ -152,15 +495,29 @@ reference:
       - RF_FERMILAB
       - RF_EURADOS
       - RF_IHEP
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Matrix utilities
+# ─────────────────────────────────────────────────────────────────────────────
+
   - title: Matrix utilities
+    desc: Sparse / dense finite-difference derivative matrices and Tikhonov regularization operators.
     contents:
+      - matrix-utils
       - create_derivative_matrix
       - make_regularization_operator
       - build_tikhonov_system
       - compute_svd_components
       - compute_log_steps
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Input validators
+# ─────────────────────────────────────────────────────────────────────────────
+
   - title: Input validators
+    desc: Defensive validation of readings, energy grids, response matrices, spectra and the full unfolding system.
     contents:
+      - validators
       - validate_readings
       - validate_energy_grid
       - validate_spectrum
@@ -175,11 +532,36 @@ articles:
 news:
   - title: BSSUnfoldR changelog
     text: |
+      # BSSUnfoldR 0.2.1
+
+      * Add `unfold_gee`, `unfold_uno`, `unfold_douglas_rachford` and the
+        supporting `solve_*` / helper functions; register them on the
+        `Detector` R6 class.
+      * Rewrite `solve_nnksvd` to match the Python reference (proper
+        dictionary orientation, equivalent-dictionary normalization,
+        scale-fix step); the `solve_nnksvd` example now runs cleanly.
+      * Complete the pkgdown reference index so all exported topics are
+        documented and discoverable.
+      * `R CMD check`: 0 errors, 0 warnings, 1 note (offline timestamp).
+
+      # BSSUnfoldR 0.2.0
+
+      * Add 40+ unfolding methods across iterative, Bayesian, Krylov,
+        sparse-dictionary, optimization/meta-heuristic, parametric and
+        pipeline/ensemble families.
+      * Monte-Carlo uncertainty estimation, ggplot2 visualization, and
+        ICRP-74/116 + NRB99-2009 dose-rate calculation.
+      * Seven built-in Bonner-sphere response functions: GSF, PTB, LANL,
+        JINR, FERMILAB, EURADOS, IHEP.
+
       # BSSUnfoldR 0.1.0
 
       * First CRAN-style release.
-      * Detector R6 class wrapping PTB / GSF / LANL / JINR / FERMILAB / EURADOS / IHEP response functions.
-      * Ten classic unfolding algorithms: MLEM, GRAVEL, MAXED, SAND-II, BUNKI, FERDOR, STAY'SL, Landweber, CGLS, TSVD.
+      * Detector R6 class wrapping PTB / GSF / LANL / JINR / FERMILAB /
+        EURADOS / IHEP response functions.
+      * Ten classic unfolding algorithms: MLEM, GRAVEL, MAXED, SAND-II,
+        BUNKI, FERDOR, STAY'SL, Landweber, CGLS, TSVD.
       * Monte-Carlo uncertainty estimation via `monte_carlo_uncertainty()`.
-      * Dose-rate calculation using ICRP-74, ICRP-116 and NRB99-2009 coefficients.
+      * Dose-rate calculation using ICRP-74, ICRP-116 and NRB99-2009
+        coefficients.
       * R CMD check: Status OK (no ERROR/WARNING/NOTE).
