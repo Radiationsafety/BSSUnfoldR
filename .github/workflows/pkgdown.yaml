@@ -39,7 +39,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
-          name: pkgdown-site
 
   deploy:
     needs: build
