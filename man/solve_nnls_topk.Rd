@@ -4,7 +4,7 @@
 \alias{solve_nnls_topk}
 \title{NNLS with top-K screening}
 \usage{
-solve_nnls_topk(A, b, K)
+solve_nnls_topk(A, b, K, lambda_tik = 0.01, prior_wt = 0, alpha_prior = NULL)
 }
 \arguments{
 \item{A}{Numeric matrix (m x k).}
@@ -12,14 +12,25 @@ solve_nnls_topk(A, b, K)
 \item{b}{Numeric vector (length m).}
 
 \item{K}{Integer; number of top atoms to keep.}
+
+\item{lambda_tik}{Numeric; Tikhonov regularization. Default 0.01.}
+
+\item{prior_wt}{Numeric; prior weight. Default 0.}
+
+\item{alpha_prior}{Optional prior coefficient vector (length k).}
 }
 \value{
 Numeric vector (length k).
 }
 \description{
-NNLS with top-K screening
+Three-stage hierarchical sparse coding:
+\enumerate{
+\item global NNLS coarse solution, 2. top-K atom screening,
+\item local NNLS fine optimization on the screened support.
+}
 }
 \examples{
+set.seed(1)
 A <- matrix(runif(5 * 10), nrow = 5)
 b <- c(1, 2, 3, 4, 5)
 x <- solve_nnls_topk(A, b, K = 3L)

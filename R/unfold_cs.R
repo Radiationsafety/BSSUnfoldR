@@ -82,7 +82,7 @@ solve_omp <- function(D, y, sparsity, tolerance = 1e-6) {
 solve_ksvd <- function(signals, n_atoms, n_iterations = 20L, sparsity = 5L,
                          random_state = NULL) {
     if (!is.null(random_state)) set.seed(as.integer(random_state))
-    signals <- as.matrix(signals); storage.mode(signals <- "double")
+    signals <- as.matrix(signals); storage.mode(signals) <- "double"
     n <- nrow(signals); m <- ncol(signals)
     n_atoms <- min(n_atoms, m)
     idx <- sample.int(m, size = n_atoms, replace = FALSE)

@@ -212,6 +212,10 @@ Unfold with PDHG (L2 + TV). See \code{\link{unfold_pdhg}}.
 
 Unfold with Douglas-Rachford splitting. See \code{\link{unfold_douglas_rachford}}.
 
+Unfold with Generalized Estimating Equations. See \code{\link{unfold_gee}}.
+
+Unfold with an Uno-style NLP preset. See \code{\link{unfold_uno}}.
+
 Unfold and attach an interpretation report. See \code{\link{unfold_interpret}}.
 
 Unfold with the cvxpy-SQP parametric variant. See \code{\link{unfold_parametric_cvxpy}}.

@@ -13,7 +13,7 @@ ssr3d(x, y, z, n_grid = 20L, lambda = 0.1, max_iterations = 50L)
 
 \item{z}{Numeric response at each (x, y).}
 
-\item{n_grid}{Integer size of the target grid (\\code{[n_grid x
+\item{n_grid}{Integer size of the target grid (\code{[n_grid x
 n_grid]}). Default 20.}
 
 \item{lambda}{Numeric minimal-surface smoothness weight. Default 0.1.}
@@ -22,7 +22,7 @@ n_grid]}). Default 20.}
 }
 \value{
 A list \code{list(grid_x, grid_y, surface)} where \code{surface}
-is an \\code{(n_grid x n_grid)} matrix of fitted values.
+is an \code{(n_grid x n_grid)} matrix of fitted values.
 }
 \description{
 Minimal-surface regression on scattered planar data (ssr3d analogue)

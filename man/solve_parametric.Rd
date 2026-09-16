@@ -33,7 +33,20 @@ solve_parametric(
 A list \code{list(spectrum, iterations, converged)}.
 }
 \description{
-
+Solves the unfolding problem by fitting a 3-component
+parametric spectral model (thermal, epithermal, fast) to the measured
+detector readings via constrained nonlinear least-squares.
+}
+\details{
+R port of \code{bssunfold/src/bssunfold/core/unfold_parametric.py}.
+The spectrum is a weighted superposition of three components with
+constraint P_th + P_epi + P_f = 1:
+\describe{
+\item{Thermal}{\eqn{(E/T_0^2) \exp(-E/T_0)} for E < 1e-7 MeV}
+\item{Epithermal}{\eqn{[1-\exp(-(E/E_d)^2)] E^{b-1} \exp(-E/\beta')}
+for 1e-7 < E < 0.1 MeV}
+\item{Fast}{\eqn{E^\alpha \exp(-E/\beta)} for E > 0.1 MeV}
+}
 }
 \examples{
 E <- 10^seq(-9, 1, length.out = 60)

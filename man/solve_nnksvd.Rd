@@ -9,11 +9,14 @@ solve_nnksvd(
   b,
   x0 = NULL,
   n_atoms = NULL,
-  sparsity = 5L,
+  sparsity = 2L,
   lambda_tik = 0.01,
-  n_dictionary_iterations = 10L,
-  method = "tikhonov_nnls",
-  random_state = NULL
+  prior_wt = 0.5,
+  n_dictionary_iterations = 80L,
+  method = "nnls_topk",
+  E_MeV = NULL,
+  random_state = NULL,
+  tolerance = 1e-06
 )
 }
 \arguments{
@@ -21,22 +24,29 @@ solve_nnksvd(
 
 \item{b}{Numeric measurement vector (length m).}
 
-\item{x0}{Optional initial spectrum (used as training signal).}
+\item{x0}{Optional initial spectrum (used as training-signal prior).}
 
-\item{n_atoms}{Integer; number of dictionary atoms. Default \code{NULL} = n/5.}
+\item{n_atoms}{Integer; number of dictionary atoms. Default \code{NULL} = n/4.}
 
-\item{sparsity}{Integer; sparsity for NN-OMP. Default 5.}
+\item{sparsity}{Integer; sparsity for sparse coding. Default 2.}
 
 \item{lambda_tik}{Numeric; Tikhonov regularization for NNLS. Default 0.01.}
 
-\item{n_dictionary_iterations}{Integer; K-SVD iterations. Default 10.}
+\item{prior_wt}{Numeric; training-sample prior weight. Default 0.5.}
 
-\item{method}{Character: \code{"nnls_topk"}, \code{"nn_omp"}, \code{"tikhonov_nnls"}. Default \code{"tikhonov_nnls"}.}
+\item{n_dictionary_iterations}{Integer; K-SVD iterations. Default 80.}
+
+\item{method}{Character: \code{"nnls_topk"}, \code{"nn_omp"}, \code{"omp"}.
+Default \code{"nnls_topk"}.}
+
+\item{E_MeV}{Optional energy grid for log-spaced training signals.}
 
 \item{random_state}{Optional seed.}
+
+\item{tolerance}{Numeric; early-stopping tolerance. Default 1e-6.}
 }
 \value{
-A list \code{list(spectrum, iterations, converged)}.
+A list \code{list(spectrum, iterations, converged, dictionary, alpha)}.
 }
 \description{
 R port of \code{bssunfold/src/bssunfold/core/unfold_nnksvd.py}.
@@ -44,9 +54,9 @@ Two-step pipeline: (1) non-negative K-SVD dictionary learning, (2)
 sparse inversion via NNLS-top-K / NN-OMP / Tikhonov-NNLS.
 }
 \examples{
+set.seed(7)
 A <- matrix(runif(5 * 60), nrow = 5)
 b <- as.numeric(A \%*\% rep(0.5, 60))
-set.seed(7)
-r <- solve_nnksvd(A, b, rep(0.5, 60), n_atoms = 10L,
+r <- solve_nnksvd(A, b, rep(0.5, 60), n_atoms = 8L,
                    n_dictionary_iterations = 3)
 }

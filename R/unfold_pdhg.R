@@ -189,3 +189,39 @@ solve_douglas_rachford <- function(A, b, x0 = NULL, use_tv = TRUE,
     list(spectrum = pmax(pf, 0), iterations = as.integer(iterations),
          converged = converged)
 }
+
+#' Wrapper around \code{\link{solve_douglas_rachford}} for the unified workflow.
+#' @inheritParams run_unfolding
+#' @inheritParams solve_douglas_rachford
+#' @export
+unfold_douglas_rachford <- function(detector_names, n_energy_bins, E_MeV,
+                                       sensitivities, cc_icrp116,
+                                       save_result_callback, readings,
+                                       initial_spectrum = NULL, use_tv = TRUE,
+                                       tv_weight = 0.05, relaxation = 1.0,
+                                       tolerance = 1e-6,
+                                       max_iterations = 500L,
+                                       method_name = "Douglas-Rachford",
+                                       calculate_errors = FALSE,
+                                       noise_level = 0.01,
+                                       n_montecarlo = 100L,
+                                       save_result = FALSE,
+                                       random_state = NULL,
+                                       max_neutron_energy = NULL) {
+    run_unfolding(
+        detector_names = detector_names, n_energy_bins = n_energy_bins,
+        E_MeV = E_MeV, sensitivities = sensitivities,
+        cc_icrp116 = cc_icrp116,
+        save_result_callback = save_result_callback,
+        readings = readings, initial_spectrum = initial_spectrum,
+        default_initial = rep(1, n_energy_bins),
+        solve_func = solve_douglas_rachford,
+        solve_kwargs = list(use_tv = use_tv, tv_weight = tv_weight,
+                            relaxation = relaxation, tolerance = tolerance,
+                            max_iterations = max_iterations),
+        method_name = method_name,
+        calculate_errors = calculate_errors, noise_level = noise_level,
+        n_montecarlo = n_montecarlo, random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
+}

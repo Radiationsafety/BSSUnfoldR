@@ -4,7 +4,7 @@
 \alias{solve_tikhonov_nnls}
 \title{Tikhonov-regularized NNLS}
 \usage{
-solve_tikhonov_nnls(A, b, lambda = 0.01)
+solve_tikhonov_nnls(A, b, lambda = 0.01, prior_wt = 0, alpha_prior = NULL)
 }
 \arguments{
 \item{A}{Numeric matrix (m x n).}
@@ -12,14 +12,20 @@ solve_tikhonov_nnls(A, b, lambda = 0.01)
 \item{b}{Numeric vector (length m).}
 
 \item{lambda}{Numeric; Tikhonov regularization. Default 0.01.}
+
+\item{prior_wt}{Numeric; optional prior weight. Default 0.}
+
+\item{alpha_prior}{Optional prior coefficient vector (length n).}
 }
 \value{
 Numeric vector (length n).
 }
 \description{
-Tikhonov-regularized NNLS
+Solves \eqn{\min || y - A x ||^2 + \lambda ||x||^2} s.t. \eqn{x \ge 0}
+via the augmented-matrix form.
 }
 \examples{
+set.seed(1)
 A <- matrix(runif(3 * 5), nrow = 3)
 b <- c(1, 2, 3)
 x <- solve_tikhonov_nnls(A, b, lambda = 0.01)

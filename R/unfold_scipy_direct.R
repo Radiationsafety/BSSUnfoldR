@@ -65,14 +65,15 @@ solve_scipy_direct <- function(A, b, x0 = NULL, tolerance = 1e-8,
         iters <- 1L
         converged <- TRUE
     } else if (method == "gmres" || method == "minres") {
-        # Use pracma's gmres / minres if available; fallback to CG
+        # Use pracma's gmres if available (MINRES is not exported by pracma;
+        # we fall back to conjugate-gradient for both 'gmres' without pracma
+        # and for 'minres' entirely -- on the symmetric normal-equation
+        # system CG is a good stand-in for MINRES).
         x <- tryCatch({
             if (method == "gmres" && requireNamespace("pracma", quietly = TRUE)) {
                 pracma::gmres(AT_A, AT_b, tol = tolerance, maxiter = max_iterations)
-            } else if (method == "minres" && requireNamespace("pracma", quietly = TRUE)) {
-                pracma::minres(AT_A, AT_b, tol = tolerance, maxiter = max_iterations)
             } else {
-                # Fallback to CG
+                # Fallback to CG (used for 'minres' and 'gmres' without pracma).
                 x_int <- rep(0.0, n)
                 r <- AT_b - as.numeric(AT_A %*% x_int)
                 p <- r

@@ -6,6 +6,9 @@
 \usage{
 .to_df(result)
 }
+\arguments{
+\item{result}{A result list with \code{energy} and \code{spectrum} elements.}
+}
 \description{
 Extract a tidy data frame from an unfold result
 }

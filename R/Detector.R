@@ -838,6 +838,22 @@ Detector <- R6::R6Class(
                                     readings, ...)
         },
 
+        #' @description Unfold with Generalized Estimating Equations. See \code{\link{unfold_gee}}.
+        unfold_gee = function(readings, ...) {
+            unfold_gee(self$detector_names, self$n_energy_bins,
+                       self$E_MeV, self$sensitivities, self$cc_icrp116,
+                       function(out) self$save_result(out),
+                       readings, ...)
+        },
+
+        #' @description Unfold with an Uno-style NLP preset. See \code{\link{unfold_uno}}.
+        unfold_uno = function(readings, ...) {
+            unfold_uno(self$detector_names, self$n_energy_bins,
+                       self$E_MeV, self$sensitivities, self$cc_icrp116,
+                       function(out) self$save_result(out),
+                       readings, ...)
+        },
+
         #' @description Unfold and attach an interpretation report. See \code{\link{unfold_interpret}}.
         unfold_interpret = function(readings, ...) {
             unfold_interpret(self$detector_names, self$n_energy_bins,

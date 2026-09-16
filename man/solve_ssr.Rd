@@ -30,9 +30,6 @@ sweep. Default 1.6.}
 
 \item{statistic_window}{Integer; window of the minimum-statistics
 scoring. Default 5.}
-
-\item{threshold_start}{Numeric; first relative parsimony threshold.
-Default 0.05.}
 }
 \value{
 A list \code{list(spectrum, iterations, converged, threshold)}.

@@ -7,9 +7,9 @@
 solve_nn_omp(A, b, sparsity)
 }
 \arguments{
-\item{A}{Numeric dictionary matrix (m x k).}
+\item{A}{Numeric dictionary matrix (n x k).}
 
-\item{b}{Numeric signal vector (length m).}
+\item{b}{Numeric signal vector (length n).}
 
 \item{sparsity}{Integer; maximum non-zero entries.}
 }
@@ -20,7 +20,8 @@ Numeric vector (length k).
 Non-negative OMP
 }
 \examples{
-A <- matrix(runif(5 * 10), nrow = 5)
-b <- c(1, 2, 3, 4, 5)
+set.seed(1)
+A <- matrix(runif(10 * 5), nrow = 10)
+b <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 x <- solve_nn_omp(A, b, sparsity = 3L)
 }

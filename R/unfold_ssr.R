@@ -21,8 +21,6 @@ NULL
 #' @param A Numeric response matrix (m x n).
 #' @param b Numeric measurement vector (length m).
 #' @param x0 Numeric initial spectrum (length n).
-#' @param threshold_start Numeric; first relative parsimony threshold.
-#'   Default 0.05.
 #' @param threshold_growth Numeric multiplicative growth of the threshold
 #'   sweep. Default 1.6.
 #' @param n_thresholds Integer number of thresholds swept. Default 12.
@@ -131,12 +129,12 @@ unfold_ssr <- function(detector_names, n_energy_bins, E_MeV, sensitivities,
 #' @param x Numeric vector of x coordinates of scattered points.
 #' @param y Numeric vector of y coordinates of scattered points.
 #' @param z Numeric response at each (x, y).
-#' @param n_grid Integer size of the target grid (\\code{[n_grid x
+#' @param n_grid Integer size of the target grid (\code{[n_grid x
 #'   n_grid]}). Default 20.
 #' @param lambda Numeric minimal-surface smoothness weight. Default 0.1.
 #' @param max_iterations Integer Fall sweeps. Default 50.
 #' @return A list \code{list(grid_x, grid_y, surface)} where \code{surface}
-#'   is an \\code{(n_grid x n_grid)} matrix of fitted values.
+#'   is an \code{(n_grid x n_grid)} matrix of fitted values.
 #' @export
 #' @examples
 #' r <- ssr3d(1:5, (1:5)^1.3, runif(5), n_grid = 10, max_iterations = 100)

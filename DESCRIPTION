@@ -36,6 +36,7 @@ Suggests:
     rmarkdown,
     pkgdown,
     ggplot2,
+    pracma,
     testthat (>= 3.0)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE, r6 = FALSE)
