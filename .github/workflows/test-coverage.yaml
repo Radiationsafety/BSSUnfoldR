@@ -42,6 +42,10 @@ jobs:
           if (!requireNamespace("testthat", quietly = TRUE)) {
             install.packages("testthat", repos = "https://cloud.r-project.org")
           }
+          # Load the installed package so that testthat tests, which call
+          # solve_* directly without a library() call inside each test
+          # file, can find BSSUnfoldR functions in the search path.
+          library(BSSUnfoldR)
           res <- testthat::test_dir("tests/testthat", reporter = "summary")
           df <- as.data.frame(res)
           failed <- sum(df$failed)

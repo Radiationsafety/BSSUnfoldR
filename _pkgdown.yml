@@ -66,6 +66,7 @@ reference:
     contents:
       - prior_gradient
       - prior_value
+      - ensemble-methods
   - title: Unfolding algorithms (batch 3)
     desc: Bayesian / regularized / Krylov / direct methods.
     contents:
