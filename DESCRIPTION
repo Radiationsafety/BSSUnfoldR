@@ -1,8 +1,8 @@
 Package: BSSUnfoldR
 Type: Package
 Title: Neutron Spectrum Unfolding for Bonner Sphere Spectrometers
-Version: 0.2.0
-Date: 2026-09-16
+Version: 0.2.1
+Date: 2026-09-17
 Authors@R: c(
     person(given = "Konstantin",
            family = "Chizhov",

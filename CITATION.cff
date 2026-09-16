@@ -16,9 +16,12 @@ authors:
 abstract: >-
   BSSUnfoldR is an R port of the Python package 'bssunfold' (Radiationsafety/
   bssunfold) for unfolding neutron spectra measured with Bonner Sphere
-  Spectrometers. It provides a Detector R6 class, ten classic unfolding
-  algorithms (MLEM, GRAVEL, MAXED, SAND-II, BUNKI, FERDOR, STAY'SL, Landweber,
-  CGLS and TSVD), Monte-Carlo uncertainty estimation, and dose-rate calculation
+  Spectrometers. It provides a Detector R6 class with 60+ unfolding
+  algorithms (iterative, Bayesian, maximum-entropy, Krylov/regularization,
+  statistical regularization, sparse/dictionary, optimization/meta-heuristic,
+  parametric and pipeline/ensemble families), Monte-Carlo uncertainty
+  estimation, a max_neutron_energy cutoff on every method, comparisons and
+  benchmarking utilities, ggplot2 visualisation, and dose-rate calculation
   using ICRP-74, ICRP-116 and NRB99-2009 conversion coefficients plus seven
   published Bonner-sphere response functions (GSF, PTB, LANL, JINR, FERMILAB,
   EURADOS, IHEP).
@@ -31,8 +34,8 @@ keywords:
   - r-package
 license: GPL-3.0
 repository-code: 'https://github.com/Radiationsafety/BSSUnfoldR'
-version: 0.1.3
-date-released: '2026-09-16'
+version: 0.2.1
+date-released: '2026-09-17'
 identifiers:
   - type: doi
     value: 10.5281/zenodo.22790648
@@ -47,8 +50,8 @@ preferred-citation:
       affiliation: Joint Institute for Nuclear Research
   repository-code: 'https://github.com/Radiationsafety/BSSUnfoldR'
   license: GPL-3.0
-  version: 0.1.3
-  date-released: '2026-09-16'
+  version: 0.2.1
+  date-released: '2026-09-17'
   doi: 10.5281/zenodo.22790648
 related-identifiers:
   - type: software

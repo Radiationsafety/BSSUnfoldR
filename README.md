@@ -6,7 +6,7 @@
 [![DOI](https://zenodo.org/badge/1372098194.svg)](https://doi.org/10.5281/zenodo.22790648)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R >= 4.0](https://img.shields.io/badge/R-%3E%3D%204.0-blue.svg)](https://www.r-project.org/)
-[![Version](https://img.shields.io/badge/version-0.1.5-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
+[![Version](https://img.shields.io/badge/version-0.2.1-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
 [![Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 Neutron spectrum unfolding for Bonner Sphere Spectrometers — an R port of the
@@ -18,7 +18,7 @@ Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
   sensitivities, ICRP-116 conversion coefficients and a result-history list.
   One-line construction from any of the seven built-in response functions
   (`GSF`, `PTB`, `LANL`, `JINR`, `FERMILAB`, `EURADOS`, `IHEP`).
-- **Sixty-plus classic unfolding algorithms** (split into six batches):
+- **Sixty-plus classic unfolding algorithms** (split into eight batches):
   - **Batch 1 (v0.1.0)**: MLEM, GRAVEL, MAXED, SAND-II, BUNKI, FERDOR,
     STAY'SL, Landweber, CGLS, TSVD.
   - **Batch 2 (v0.1.1)**: OSEM, MAP-EM, BSREM, SART, Kaczmarz,
@@ -38,6 +38,26 @@ Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
     QUBO (quantum-inspired binary-encoded simulated annealing), LMfit
     (Levenberg-Marquardt via optim L-BFGS-B), QPsolvers (Tikhonov-NNLS via
     augmented matrix), CVXPY (convex optimization with L1/L2, IRLS for L1).
+  - **Batch 7 (v0.2.0)**: PDHG (Primal-Dual Hybrid Gradient with TV),
+    Douglas-Rachford splitting, AMG (algebraic multigrid preconditioned
+    Krylov), SSR (Sign-Simplicity Regression with minimum-statistic
+    scoring), P-spline REML (mixed-model smoothing), SMT (exact KKT/L2
+    solver), Combined (named-method pipeline), Mystic-hybrid
+    (differential-evolution global + L-BFGS-B local), MAEO
+    (Multi-Algorithm Evolutionary Optimization), MLEM-ODL (operator
+    interface), Zfit (Poisson-likelihood Minuit analogue), plus
+    `max_neutron_energy` cutoff on every method, ggplot2 visualization
+    utilities, comparison/benchmarking helpers and interpretation report.
+  - **Batch 8 (v0.2.1)**: GEE (Generalized Estimating Equations with
+    independence / exchangeable / AR-1 working correlations and gaussian /
+    poisson / gamma quasi-likelihood families; robust and naive sandwich
+    covariance estimators of Liang & Zeger), Uno (constrained quadratic
+    unfolding solved with Lagrange-Newton iterations — `filter_sqp` preset
+    with exact-Hessian SQP and the Vanaret-Leyffer filter, `ipopt_like`
+    preset with primal-dual interior point, exact or BFGS Hessian),
+    Douglas-Rachford Detector-facing wrapper, and a complete rewrite of
+    `solve_nnksvd` matching the Python reference (proper dictionary
+    orientation, equivalent-dictionary normalization, scale-fix step).
 - **Monte-Carlo uncertainty estimation** — add Gaussian noise to readings,
   run the unfolding N times, return per-bin mean / std / median / 5-95
   percentiles / all-samples matrix.
@@ -58,7 +78,7 @@ Each algorithm has two entry points:
 
 ```r
 # Install the source tarball
-install.packages("BSSUnfoldR_0.1.0.tar.gz", repos = NULL, type = "source")
+install.packages("BSSUnfoldR_0.2.1.tar.gz", repos = NULL, type = "source")
 
 # Or, if the package directory is on disk:
 install.packages("path/to/bssunfoldr", repos = NULL, type = "source")
@@ -114,13 +134,14 @@ head(r_mc$spectrum_uncert_std)
 ## Status
 
 This port covers the core infrastructure and **sixty-plus** classic
-unfolding algorithms (six batches of ten) from the upstream Python
-package.
+unfolding algorithms (eight batches) from the upstream Python package,
+plus Generalized Estimating Equations (GEE) and the Uno NLP solver.
 
-R CMD check status: **OK** (no ERRORs, WARNINGs, or NOTEs).
-Tests: 315+ testthat tests covering every solver, the Detector R6 class,
+R CMD check status: **OK** (0 errors, 0 warnings, 1 note — offline
+future-timestamp verification, an environment artefact).
+Tests: 595+ testthat tests covering every solver, the Detector R6 class,
 validators, Monte-Carlo, dose rates, B-spline basis (partition of unity),
-and PTB integration tests.
+GEE / Uno / Douglas-Rachford end-to-end, and PTB integration tests.
 
 ## Citation
 
@@ -133,7 +154,7 @@ If you use BSSUnfoldR in your research, please cite:
                   Spectrometers. {R} port of the Python package 'bssunfold'
                   ({Radiationsafety}/bssunfold)},
   year         = {2026},
-  version      = {0.1.1},
+  version      = {0.2.1},
   url          = {https://github.com/Radiationsafety/BSSUnfoldR},
   orcid        = {0000-0003-1591-4289},
   affiliation = {Joint Institute for Nuclear Research}

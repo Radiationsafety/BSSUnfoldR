@@ -820,6 +820,10 @@ Detector <- R6::R6Class(
                             readings, ...)
         },
 
+        # ------------------------------------------------------------------
+        # Seventh batch of algorithms (added in v0.2.0)
+        # ------------------------------------------------------------------
+
         #' @description Unfold with PDHG (L2 + TV). See \code{\link{unfold_pdhg}}.
         unfold_pdhg = function(readings, ...) {
             unfold_pdhg(self$detector_names, self$n_energy_bins,
@@ -837,6 +841,10 @@ Detector <- R6::R6Class(
                                     function(out) self$save_result(out),
                                     readings, ...)
         },
+
+        # ------------------------------------------------------------------
+        # Eighth batch of algorithms (added in v0.2.1)
+        # ------------------------------------------------------------------
 
         #' @description Unfold with Generalized Estimating Equations. See \code{\link{unfold_gee}}.
         unfold_gee = function(readings, ...) {

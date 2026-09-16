@@ -6,7 +6,7 @@ bibentry(
                     comment = c(ORCID = "0000-0003-1591-4289",
                                 affiliation = "Joint Institute for Nuclear Research")),
     year = "2026",
-    note = "R package version 0.1.3",
+    note = "R package version 0.2.1",
     url = "https://github.com/Radiationsafety/BSSUnfoldR",
     doi = "10.5281/zenodo.22790648"
 )
