@@ -86,3 +86,36 @@ test_that("Monte-Carlo uncertainty estimation works for a batch-1 method", {
     expect_equal(r$noise_level, 0.05)
     expect_equal(dim(r$spectrum_uncert_all), c(5L, 60L))
 })
+
+test_that("PTB unfolding runs end-to-end for every batch-3 method", {
+    det <- make_ptb_detector()
+    rds <- make_ptb_readings(det, target_0in = 1000)
+    common <- list(max_iterations = 50L)
+    method_calls <- list(
+        unfold_bayes                  = common,
+        unfold_directed_divergence    = c(common, list(smoothness_order = 2L,
+                                                       smoothness_weight = 0.01)),
+        unfold_express                = list(n_groups = 6L, max_iterations = 3L),
+        unfold_iterative_refinement   = list(),
+        unfold_bunkiut                = common,
+        unfold_mlem_stop              = c(common, list(j_threshold = 0.01)),
+        unfold_statreg                = list(),
+        unfold_tikhonov_tv            = common,
+        unfold_gks                    = list(max_iterations = 5L),
+        unfold_crystal_ball           = list(regularization = 1.0)
+    )
+    for (fn_name in names(method_calls)) {
+        fn <- get(fn_name)
+        r <- do.call(fn, c(list(
+            detector_names = det$detector_names,
+            n_energy_bins = det$n_energy_bins, E_MeV = det$E_MeV,
+            sensitivities = det$sensitivities, cc_icrp116 = det$cc_icrp116,
+            save_result_callback = function(o) det$save_result(o),
+            readings = rds
+        ), method_calls[[fn_name]]))
+        expect_length(r$spectrum, 60L)
+        expect_true(all(r$spectrum >= 0))
+        expect_named(r$doserates,
+                     c("AP", "PA", "LLAT", "RLAT", "ROT", "ISO"))
+    }
+})

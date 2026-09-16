@@ -82,6 +82,26 @@ Unfold using Tikhonov-Legendre. See \code{\link{unfold_tikhonov_legendre}}.
 Unfold using ReBUNKI. See \code{\link{unfold_rebunki}}.
 
 Unfold using Doroshenko. See \code{\link{unfold_doroshenko}}.
+
+Unfold using Bayes (D'Agostini). See \code{\link{unfold_bayes}}.
+
+Unfold using Directed divergence. See \code{\link{unfold_directed_divergence}}.
+
+Unfold using Express. See \code{\link{unfold_express}}.
+
+Unfold using Iterative refinement. See \code{\link{unfold_iterative_refinement}}.
+
+Unfold using BUNKI-UT. See \code{\link{unfold_bunkiut}}.
+
+Unfold using MLEM-STOP. See \code{\link{unfold_mlem_stop}}.
+
+Unfold using StatReg. See \code{\link{unfold_statreg}}.
+
+Unfold using Tikhonov-TV. See \code{\link{unfold_tikhonov_tv}}.
+
+Unfold using GKS. See \code{\link{unfold_gks}}.
+
+Unfold using Crystal Ball. See \code{\link{unfold_crystal_ball}}.
 }
 \details{
 The \code{Detector} class bundles together everything a user needs to unfold

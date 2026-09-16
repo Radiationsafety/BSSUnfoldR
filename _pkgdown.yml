@@ -66,6 +66,29 @@ reference:
     contents:
       - prior_gradient
       - prior_value
+  - title: Unfolding algorithms (batch 3)
+    desc: Bayesian / regularized / Krylov / direct methods.
+    contents:
+      - solve_bayes
+      - unfold_bayes
+      - solve_directed_divergence
+      - unfold_directed_divergence
+      - solve_express
+      - unfold_express
+      - solve_iterative_refinement
+      - unfold_iterative_refinement
+      - solve_bunkiut
+      - unfold_bunkiut
+      - solve_mlem_stop
+      - unfold_mlem_stop
+      - solve_statreg
+      - unfold_statreg
+      - solve_tikhonov_tv
+      - unfold_tikhonov_tv
+      - solve_gks
+      - unfold_gks
+      - solve_crystal_ball
+      - unfold_crystal_ball
   - title: Unified unfolding pipeline
     desc: The shared workflow every `unfold_*` method plugs into.
     contents:

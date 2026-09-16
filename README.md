@@ -4,7 +4,7 @@
 [![Tests](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/Radiationsafety/BSSUnfoldR/actions/workflows/test-coverage.yaml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R >= 4.0](https://img.shields.io/badge/R-%3E%3D%204.0-blue.svg)](https://www.r-project.org/)
-[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
+[![Version](https://img.shields.io/badge/version-0.1.2-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
 [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-blue.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
@@ -17,7 +17,7 @@ Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
   sensitivities, ICRP-116 conversion coefficients and a result-history list.
   One-line construction from any of the seven built-in response functions
   (`GSF`, `PTB`, `LANL`, `JINR`, `FERMILAB`, `EURADOS`, `IHEP`).
-- **Twenty classic unfolding algorithms** (split into two batches):
+- **Thirty classic unfolding algorithms** (split into three batches):
   - **Batch 1 (v0.1.0)**: MLEM (Maximum Likelihood Expectation Maximization),
     GRAVEL, MAXED (Maximum Entropy Deconvolution), SAND-II, BUNKI (SPUNIT),
     FERDOR (constrained least-squares with second-difference smoothing),
@@ -31,6 +31,15 @@ Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
     (Golub-Kahan bidiagonalization with GCV regularization), Tikhonov-Legendre
     (Legendre polynomial basis with second-difference regularization),
     ReBUNKI (modern SPUNIT), Doroshenko (coordinate-update method).
+  - **Batch 3 (v0.1.2)**: Bayes (D'Agostini iterative Bayesian unfolding),
+    Directed divergence (Poisson/I-divergence multiplicative updates with
+    optional Tikhonov smoothing), Express (piecewise-exponential spectrum
+    model), Iterative refinement (two-pass MLEM + Landweber with line
+    search), BUNKI-UT (BON31G variant), MLEM-STOP (J-factor early stopping,
+    Montgomery et al. 2020), StatReg (Turchin's statistical regularization
+    with L-curve), Tikhonov-TV (TV + Tikhonov via ADMM, Gazzola-Gholami),
+    GKS (Generalized Krylov Subspace, with GCV/DP/L-curve), Crystal Ball
+    (direct response-function superposition).
 - **Monte-Carlo uncertainty estimation** — add Gaussian noise to readings,
   run the unfolding N times, return per-bin mean / std / median / 5-95
   percentiles / all-samples matrix.
@@ -106,14 +115,14 @@ head(r_mc$spectrum_uncert_std)
 
 ## Status
 
-This port covers the core infrastructure and twenty classic algorithms
-(two batches of ten) from the upstream Python package. The remaining
-~60 specialised methods (MLEM-BS, NSDUAZ, NSpline, MCMC, FISTA,
+This port covers the core infrastructure and thirty classic algorithms
+(three batches of ten) from the upstream Python package. The remaining
+~50 specialised methods (MLEM-BS, NSDUAZ, NSpline, MCMC, FISTA,
 parametric / hybrid methods, etc.) can be ported on top of the same
 `run_unfolding` pipeline in the same style as the methods included here.
 
 R CMD check status: **OK** (no ERRORs, WARNINGs, or NOTEs).
-Tests: 50+ testthat tests covering every solver, the Detector R6 class,
+Tests: 225 testthat tests covering every solver, the Detector R6 class,
 validators, Monte-Carlo, dose rates, and integration on a PTB-based system.
 
 ## Citation

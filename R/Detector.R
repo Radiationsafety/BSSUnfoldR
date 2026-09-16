@@ -359,6 +359,93 @@ Detector <- R6::R6Class(
                                 self$cc_icrp116,
                                 function(out) self$save_result(out),
                                 readings, ...)
+        },
+
+        # ------------------------------------------------------------------
+        # Third batch of 10 algorithms (added in v0.1.2)
+        # ------------------------------------------------------------------
+
+        #' @description Unfold using Bayes (D'Agostini). See \code{\link{unfold_bayes}}.
+        unfold_bayes = function(readings, ...) {
+            unfold_bayes(self$detector_names, self$n_energy_bins,
+                          self$E_MeV, self$sensitivities, self$cc_icrp116,
+                          function(out) self$save_result(out),
+                          readings, ...)
+        },
+
+        #' @description Unfold using Directed divergence. See \code{\link{unfold_directed_divergence}}.
+        unfold_directed_divergence = function(readings, ...) {
+            unfold_directed_divergence(self$detector_names, self$n_energy_bins,
+                                          self$E_MeV, self$sensitivities,
+                                          self$cc_icrp116,
+                                          function(out) self$save_result(out),
+                                          readings, ...)
+        },
+
+        #' @description Unfold using Express. See \code{\link{unfold_express}}.
+        unfold_express = function(readings, ...) {
+            unfold_express(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using Iterative refinement. See \code{\link{unfold_iterative_refinement}}.
+        unfold_iterative_refinement = function(readings, ...) {
+            unfold_iterative_refinement(self$detector_names, self$n_energy_bins,
+                                           self$E_MeV, self$sensitivities,
+                                           self$cc_icrp116,
+                                           function(out) self$save_result(out),
+                                           readings, ...)
+        },
+
+        #' @description Unfold using BUNKI-UT. See \code{\link{unfold_bunkiut}}.
+        unfold_bunkiut = function(readings, ...) {
+            unfold_bunkiut(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using MLEM-STOP. See \code{\link{unfold_mlem_stop}}.
+        unfold_mlem_stop = function(readings, ...) {
+            unfold_mlem_stop(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
+        },
+
+        #' @description Unfold using StatReg. See \code{\link{unfold_statreg}}.
+        unfold_statreg = function(readings, ...) {
+            unfold_statreg(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using Tikhonov-TV. See \code{\link{unfold_tikhonov_tv}}.
+        unfold_tikhonov_tv = function(readings, ...) {
+            unfold_tikhonov_tv(self$detector_names, self$n_energy_bins,
+                                self$E_MeV, self$sensitivities, self$cc_icrp116,
+                                function(out) self$save_result(out),
+                                readings, ...)
+        },
+
+        #' @description Unfold using GKS. See \code{\link{unfold_gks}}.
+        unfold_gks = function(readings, ...) {
+            unfold_gks(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out),
+                        readings, ...)
+        },
+
+        #' @description Unfold using Crystal Ball. See \code{\link{unfold_crystal_ball}}.
+        unfold_crystal_ball = function(readings, ...) {
+            unfold_crystal_ball(self$detector_names, self$n_energy_bins,
+                                  self$E_MeV, self$sensitivities,
+                                  self$cc_icrp116,
+                                  function(out) self$save_result(out),
+                                  readings, ...)
         }
     ),
     private = list(
