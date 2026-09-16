@@ -102,6 +102,30 @@ Unfold using Tikhonov-TV. See \code{\link{unfold_tikhonov_tv}}.
 Unfold using GKS. See \code{\link{unfold_gks}}.
 
 Unfold using Crystal Ball. See \code{\link{unfold_crystal_ball}}.
+
+Unfold using IMAXED. See \code{\link{unfold_imaxed}}.
+
+Unfold using AMAXED. See \code{\link{unfold_amaxed}}.
+
+Unfold using FISTA. See \code{\link{unfold_fista}}.
+
+Unfold using Bayes-spline. See \code{\link{unfold_bayes_spline_regularization}}.
+
+Unfold using NSDUAZ. See \code{\link{unfold_nsduaz}}.
+
+Unfold using MLEM-BS. See \code{\link{unfold_mlem_bs}}.
+
+Unfold using NSpline. See \code{\link{unfold_nspline}}.
+
+Unfold using MCMC. See \code{\link{unfold_mcmc}}.
+
+Unfold using Reconst. See \code{\link{unfold_reconst}}.
+
+Unfold using Ensemble. See \code{\link{unfold_ensemble}}.
+
+Unfold using Cascade. See \code{\link{unfold_cascade}}.
+
+Unfold using Composite. See \code{\link{unfold_composite}}.
 }
 \details{
 The \code{Detector} class bundles together everything a user needs to unfold

@@ -446,6 +446,108 @@ Detector <- R6::R6Class(
                                   self$cc_icrp116,
                                   function(out) self$save_result(out),
                                   readings, ...)
+        },
+
+        # ------------------------------------------------------------------
+        # Fourth batch of algorithms (added in v0.1.3)
+        # ------------------------------------------------------------------
+
+        #' @description Unfold using IMAXED. See \code{\link{unfold_imaxed}}.
+        unfold_imaxed = function(readings, ...) {
+            unfold_imaxed(self$detector_names, self$n_energy_bins,
+                           self$E_MeV, self$sensitivities, self$cc_icrp116,
+                           function(out) self$save_result(out),
+                           readings, ...)
+        },
+
+        #' @description Unfold using AMAXED. See \code{\link{unfold_amaxed}}.
+        unfold_amaxed = function(readings, ...) {
+            unfold_amaxed(self$detector_names, self$n_energy_bins,
+                           self$E_MeV, self$sensitivities, self$cc_icrp116,
+                           function(out) self$save_result(out),
+                           readings, ...)
+        },
+
+        #' @description Unfold using FISTA. See \code{\link{unfold_fista}}.
+        unfold_fista = function(readings, ...) {
+            unfold_fista(self$detector_names, self$n_energy_bins,
+                          self$E_MeV, self$sensitivities, self$cc_icrp116,
+                          function(out) self$save_result(out),
+                          readings, ...)
+        },
+
+        #' @description Unfold using Bayes-spline. See \code{\link{unfold_bayes_spline_regularization}}.
+        unfold_bayes_spline_regularization = function(readings, ...) {
+            unfold_bayes_spline_regularization(self$detector_names,
+                                                  self$n_energy_bins,
+                                                  self$E_MeV, self$sensitivities,
+                                                  self$cc_icrp116,
+                                                  function(out) self$save_result(out),
+                                                  readings, ...)
+        },
+
+        #' @description Unfold using NSDUAZ. See \code{\link{unfold_nsduaz}}.
+        unfold_nsduaz = function(readings, ...) {
+            unfold_nsduaz(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using MLEM-BS. See \code{\link{unfold_mlem_bs}}.
+        unfold_mlem_bs = function(readings, ...) {
+            unfold_mlem_bs(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using NSpline. See \code{\link{unfold_nspline}}.
+        unfold_nspline = function(readings, ...) {
+            unfold_nspline(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using MCMC. See \code{\link{unfold_mcmc}}.
+        unfold_mcmc = function(readings, ...) {
+            unfold_mcmc(self$detector_names, self$n_energy_bins,
+                         self$E_MeV, self$sensitivities, self$cc_icrp116,
+                         function(out) self$save_result(out),
+                         readings, ...)
+        },
+
+        #' @description Unfold using Reconst. See \code{\link{unfold_reconst}}.
+        unfold_reconst = function(readings, ...) {
+            unfold_reconst(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold using Ensemble. See \code{\link{unfold_ensemble}}.
+        unfold_ensemble = function(readings, ...) {
+            unfold_ensemble(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
+        },
+
+        #' @description Unfold using Cascade. See \code{\link{unfold_cascade}}.
+        unfold_cascade = function(readings, ...) {
+            unfold_cascade(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
+        },
+
+        #' @description Unfold using Composite. See \code{\link{unfold_composite}}.
+        unfold_composite = function(readings, ...) {
+            unfold_composite(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
         }
     ),
     private = list(

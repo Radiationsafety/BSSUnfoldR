@@ -119,3 +119,43 @@ test_that("PTB unfolding runs end-to-end for every batch-3 method", {
                      c("AP", "PA", "LLAT", "RLAT", "ROT", "ISO"))
     }
 })
+
+test_that("PTB unfolding runs end-to-end for every batch-4 method", {
+    det <- make_ptb_detector()
+    rds <- make_ptb_readings(det, target_0in = 1000)
+    common <- list(max_iterations = 50L)
+    method_calls <- list(
+        unfold_imaxed     = c(common, list(tolerance = 1e-4)),
+        unfold_amaxed     = c(common, list(tolerance = 1e-4)),
+        unfold_fista      = c(common, list(regularization = 1e-2)),
+        unfold_bayes_spline_regularization = c(common, list(tolerance = 1e-2)),
+        unfold_nsduaz     = common,
+        unfold_mlem_bs    = list(max_iterations = 30L, beta_relative = 1e-3,
+                                 n_basis = 10L),
+        unfold_nspline    = list(max_iterations = 30L),
+        unfold_mcmc       = list(n_samples = 30L, n_burn = 5L,
+                                 random_state = 42L),
+        unfold_reconst    = list(alpha = 1.0),
+        unfold_ensemble   = list(solvers = list(solve_mlem, solve_gravel),
+                                  max_iterations = 30L),
+        unfold_cascade    = list(solvers = list(solve_mlem, solve_gravel),
+                                  max_iterations = 30L),
+        unfold_composite  = list(solvers = list(solve_mlem, solve_gravel,
+                                                  solve_sandii),
+                                  max_iterations = 30L)
+    )
+    for (fn_name in names(method_calls)) {
+        fn <- get(fn_name)
+        r <- do.call(fn, c(list(
+            detector_names = det$detector_names,
+            n_energy_bins = det$n_energy_bins, E_MeV = det$E_MeV,
+            sensitivities = det$sensitivities, cc_icrp116 = det$cc_icrp116,
+            save_result_callback = function(o) det$save_result(o),
+            readings = rds
+        ), method_calls[[fn_name]]))
+        expect_length(r$spectrum, 60L)
+        expect_true(all(r$spectrum >= 0))
+        expect_named(r$doserates,
+                     c("AP", "PA", "LLAT", "RLAT", "ROT", "ISO"))
+    }
+})

@@ -89,6 +89,40 @@ reference:
       - unfold_gks
       - solve_crystal_ball
       - unfold_crystal_ball
+  - title: Unfolding algorithms (batch 4)
+    desc: Newton / FISTA / B-spline / catalogue / Bayesian MCMC / ensemble.
+    contents:
+      - solve_imaxed
+      - unfold_imaxed
+      - solve_amaxed
+      - unfold_amaxed
+      - solve_fista
+      - unfold_fista
+      - solve_bayes_spline
+      - unfold_bayes_spline_regularization
+      - solve_nsduaz
+      - unfold_nsduaz
+      - builtin_catalogue
+      - select_catalogue_initial
+      - solve_mlem_bs
+      - unfold_mlem_bs
+      - build_bspline_basis
+      - second_difference_matrix
+      - ks_statistic
+      - solve_nspline
+      - unfold_nspline
+      - auto_knots
+      - build_continuity_matrix
+      - solve_bayesian_mcmc
+      - unfold_mcmc
+      - solve_reconst
+      - unfold_reconst
+      - solve_ensemble
+      - unfold_ensemble
+      - solve_cascade
+      - unfold_cascade
+      - solve_composite
+      - unfold_composite
   - title: Unified unfolding pipeline
     desc: The shared workflow every `unfold_*` method plugs into.
     contents:
