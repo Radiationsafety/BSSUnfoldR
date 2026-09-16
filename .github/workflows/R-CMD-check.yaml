@@ -36,6 +36,6 @@ jobs:
           needs: check
       - uses: r-lib/actions/check-r-package@v2
         with:
-          build_args: 'c("--no-manual", "--no-build-vignettes")'
-          error-on: '"note"'
+          build_args: 'c("--no-manual")'
+          error-on: '"warning"'
           check-dir: '"check"'

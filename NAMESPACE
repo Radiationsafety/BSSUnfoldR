@@ -129,6 +129,8 @@ importFrom(stats,
   approx,
   median,
   optim,
+  predict,
   quantile,
+  rnorm,
   setNames
 )

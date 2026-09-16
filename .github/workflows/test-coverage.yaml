@@ -28,7 +28,14 @@ jobs:
             any::covr
             any::testthat
             any::xml2
+            any::jsonlite
           needs: coverage
+      - name: Install BSSUnfoldR package
+        run: |
+          # Install the package itself so that test_dir can find its functions
+          # via library(BSSUnfoldR) called from tests/testthat.R.
+          install.packages(".", repos = NULL, type = "source")
+        shell: Rscript {0}
       - name: Run testthat tests
         run: |
           options(crayon.enabled = TRUE)
@@ -57,7 +64,6 @@ jobs:
           covr::to_cobertura(cov, filename = "coverage.xml")
           percent <- round(covr::percent_coverage(cov), 1)
           cat(sprintf("Total coverage: %.1f%%\n", percent))
-          # Write badge-friendly JSON for the next step
           writeLines(
             jsonlite::toJSON(list(total = percent), auto_unbox = TRUE),
             "coverage-summary.json"

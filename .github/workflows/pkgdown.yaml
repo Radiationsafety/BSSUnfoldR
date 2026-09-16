@@ -30,12 +30,8 @@ jobs:
         with:
           extra-packages: |
             any::pkgdown
-            any::rcmdcheck
+            local::.
           needs: website
-      - uses: r-lib/actions/check-r-package@v2
-        with:
-          build_args: 'c("--no-manual", "--no-build-vignettes")'
-          error-on: '"note"'
       - name: Build pkgdown site
         run: pkgdown::build_site_github_pages(dest_dir = "public", clean = TRUE)
         shell: Rscript {0}
