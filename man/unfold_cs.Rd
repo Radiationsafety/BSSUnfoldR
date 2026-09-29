@@ -26,7 +26,8 @@ unfold_cs(
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
-  save_result = FALSE
+  save_result = FALSE,
+  max_neutron_energy = NULL
 )
 }
 \arguments{
@@ -72,6 +73,12 @@ Default 0.01.}
 
 \item{save_result}{Logical; if \code{TRUE}, call
 \code{save_result_callback}. Default \code{FALSE}.}
+
+\item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
+above this energy are removed from the response matrix during the
+solve and the returned spectrum is expanded back to the full grid
+with exact zeros above the cutoff (Python \code{max_neutron_energy}
+parameter). Default \code{NULL} = no cutoff.}
 }
 \value{
 A result list as produced by \code{\link{run_unfolding}}.

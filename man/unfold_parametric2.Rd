@@ -13,11 +13,21 @@ unfold_parametric2(
   save_result_callback,
   readings,
   initial_spectrum = NULL,
+  optimizer = "grid",
+  b_range = .bon95_B_RANGE,
+  Tf_range = .bon95_TF_RANGE,
+  c_range = .bon95_C_RANGE,
+  alpha = 1e-04,
+  solver_backend = "auto",
+  max_iter_qp = 50L,
+  tol_qp = 1e-06,
+  noise_level = 0.05,
+  max_iter = 200L,
+  tol_chi2 = 1,
   initial_params = NULL,
-  max_iterations = 50L,
+  max_iterations = 200L,
   tolerance = 1e-06,
   calculate_errors = FALSE,
-  noise_level = 0.01,
   n_montecarlo = 100L,
   save_result = FALSE,
   random_state = NULL,
@@ -45,30 +55,41 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{initial_params}{Optional named list.}
+\item{optimizer}{Character: \code{"grid"} (default), \code{"cvxpy"},
+\code{"qpsolvers"} or \code{"combined"}.}
 
-\item{max_iterations}{Integer; max optim iterations. Default 200.}
+\item{b_range, Tf_range, c_range}{Length-3 numeric vectors
+\code{c(min, max, n_points)} for the shape grid search.}
 
-\item{tolerance}{Numeric; convergence tolerance. Default 1e-6.}
+\item{alpha}{Numeric; Tikhonov weight for the SQP optimizers. Default 1e-4.}
 
-\item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
-uncertainty estimation. Default \code{FALSE}.}
+\item{solver_backend}{Character; QP backend label (accepted for parity;
+the pure-R engine always uses the internal box-QP active set).}
 
-\item{noise_level}{Numeric; relative Gaussian noise level for Monte-Carlo.
-Default 0.01.}
+\item{max_iter_qp}{Integer; maximum SQP iterations. Default 50.}
 
-\item{n_montecarlo}{Integer; number of Monte-Carlo samples. Default 100.}
+\item{tol_qp}{Numeric; SQP convergence tolerance. Default 1e-6.}
 
-\item{save_result}{Logical; if \code{TRUE}, call
-\code{save_result_callback}. Default \code{FALSE}.}
+\item{noise_level}{Numeric; relative measurement uncertainty feeding the
+BON95 weights (\code{b_meas = |b| * noise_level + 1e-30}). Default 0.05.}
 
-\item{random_state}{Optional integer seed for Monte-Carlo.}
+\item{max_iter}{Integer; maximum directed-divergence iterations. Default 200.}
 
-\item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
-above this energy are removed from the response matrix during the
-solve and the returned spectrum is expanded back to the full grid
-with exact zeros above the cutoff (Python \code{max_neutron_energy}
-parameter). Default \code{NULL} = no cutoff.}
+\item{tol_chi2}{Numeric; chi-square stop threshold for the DD phase.
+Default 1.}
+
+\item{calculate_errors}{Logical; run Monte-Carlo uncertainty estimation.}
+
+\item{n_montecarlo}{Integer; Monte-Carlo sample count.}
+
+\item{save_result}{Logical; hand the result to \code{save_result_callback}.}
+
+\item{random_state}{Optional integer seed for the Monte-Carlo part.}
+
+\item{max_neutron_energy}{Optional energy cutoff in MeV.}
+}
+\value{
+A result list as produced by \code{\link{run_unfolding}}.
 }
 \description{
 Wrapper around \code{\link{solve_parametric2}} for the unified workflow.

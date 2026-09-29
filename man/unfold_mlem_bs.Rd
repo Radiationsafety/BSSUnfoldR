@@ -16,9 +16,15 @@ unfold_mlem_bs(
   n_basis = NULL,
   beta = 0,
   beta_relative = 0,
-  max_iterations = 200L,
+  max_iterations = 1000L,
   tolerance = 1e-06,
   knot_spacing = "auto",
+  spline_order = 4L,
+  auto_params = FALSE,
+  ks_patience = 50L,
+  bootstrap_ci = FALSE,
+  n_bootstrap = 100L,
+  ci_alpha = 0.05,
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
@@ -48,8 +54,8 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{n_basis}{Integer; number of B-spline basis functions. Default
-\code{NULL} = \code{max(5, n/4)}.}
+\item{n_basis}{Integer; number of B-spline basis functions \eqn{N_s}.
+Default \code{NULL} = \code{max(spline_order + 1, min(n \%/\% 2, 40))}.}
 
 \item{beta}{Numeric; absolute penalty strength. Exactly one of
 \code{beta} / \code{beta_relative} may be non-zero. Default 0.}
@@ -57,12 +63,28 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{beta_relative}{Numeric; penalty strength relative to the mean
 column sum of \eqn{RB}. Default 0.}
 
-\item{max_iterations}{Positive integer; default 200.}
+\item{max_iterations}{Positive integer; default 1000.}
 
 \item{tolerance}{Positive numeric; default 1e-6.}
 
 \item{knot_spacing}{Character; \code{"auto"}, \code{"uniform"}, or
-\code{"log"}. Default \code{"auto"} = log when span > 2 decades.}
+\code{"log"}. Default \code{"auto"} = log when the grid spans more
+than two decades.}
+
+\item{spline_order}{Integer; B-spline order (degree \code{spline_order -
+1}); the paper uses \code{4L}.}
+
+\item{auto_params}{Logical; select \eqn{N_s}, penalty strength and
+iteration count by minimising \eqn{K_S}.}
+
+\item{ks_patience}{Integer; patience of the \eqn{K_S}-based early stop.}
+
+\item{bootstrap_ci}{Logical; add Poisson-bootstrap confidence intervals
+(Eqs. 7-9) to the output.}
+
+\item{n_bootstrap}{Integer; number of bootstrap replicates.}
+
+\item{ci_alpha}{Numeric; CI significance level.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}

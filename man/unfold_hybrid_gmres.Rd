@@ -18,6 +18,7 @@ unfold_hybrid_gmres(
   regularization = 0,
   noise_level = NULL,
   eta = 1.01,
+  reorthogonalization = TRUE,
   calculate_errors = FALSE,
   n_montecarlo = 100L,
   save_result = FALSE,
@@ -48,15 +49,22 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 
 \item{max_iterations}{Positive integer; max Krylov dimension. Default 100.}
 
-\item{regularization_method}{Character; \code{"gcv"} (default), \code{"dp"},
-\code{"manual"}.}
+\item{regularization_method}{Character; \code{"gcv"} (default) or
+\code{"modgcv"} (identical search grid, as in Python), \code{"discrep"}
+(discrepancy principle, requires \code{noise_level}), or any other
+string to use the fixed \code{regularization}.}
 
-\item{regularization}{Numeric; manual regularization. Default 0.0.}
+\item{regularization}{Numeric; fixed regularization parameter, also used
+as the starting value of the discrepancy search. Default 0.0.}
 
 \item{noise_level}{Numeric; relative Gaussian noise level for Monte-Carlo.
 Default 0.01.}
 
-\item{eta}{Numeric; safety factor for DP. Default 1.01.}
+\item{eta}{Numeric; safety factor for the discrepancy principle.
+Default 1.01.}
+
+\item{reorthogonalization}{Logical; re-orthogonalize each new basis vector
+against the previous ones. Default \code{TRUE}.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}

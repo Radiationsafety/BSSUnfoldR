@@ -2,22 +2,27 @@
 % Please edit documentation in R/unfold_nnksvd.R
 \name{solve_nn_omp}
 \alias{solve_nn_omp}
-\title{Non-negative OMP}
+\title{Non-negative Orthogonal Matching Pursuit}
 \usage{
-solve_nn_omp(A, b, sparsity)
+solve_nn_omp(D, y, sparsity, tolerance = 1e-06)
 }
 \arguments{
-\item{A}{Numeric dictionary matrix (n x k).}
+\item{D}{Numeric dictionary matrix \code{(n x p)}.}
 
-\item{b}{Numeric signal vector (length n).}
+\item{y}{Numeric signal vector (length \code{n}).}
 
-\item{sparsity}{Integer; maximum non-zero entries.}
+\item{sparsity}{Integer; maximum number of non-zero coefficients (K).}
+
+\item{tolerance}{Numeric; early-stopping residual tolerance. Default \code{1e-6}.}
 }
 \value{
-Numeric vector (length k).
+Numeric vector (length \code{p}) of non-negative coefficients.
 }
 \description{
-Non-negative OMP
+Greedy sparse coding with a non-negativity constraint: at every step the
+atom with the largest \emph{positive} normalised projection onto the
+residual is appended to the support and the support coefficients are
+re-solved as an NNLS problem.
 }
 \examples{
 set.seed(1)

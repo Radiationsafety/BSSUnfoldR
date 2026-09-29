@@ -13,7 +13,7 @@ unfold_maxed(
   save_result_callback,
   readings,
   initial_spectrum = NULL,
-  sigma_factor = 0.1,
+  sigma_factor = 0.01,
   max_iterations = 5000L,
   tolerance = 1e-06,
   calculate_errors = FALSE,
@@ -45,7 +45,10 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{sigma_factor}{Numeric; relative measurement uncertainty. Default 0.1.}
+\item{sigma_factor}{Numeric; relative measurement uncertainty. Default 0.01,
+which is the value \code{bssunfold}'s \code{Detector.unfold_maxed} uses
+(its module-level function defaults to 0.1, but the Detector wrapper that
+this package's \code{Detector} R6 class mirrors overrides it to 0.01).}
 
 \item{max_iterations}{Positive integer; default 5000.}
 

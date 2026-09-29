@@ -4,7 +4,16 @@
 \alias{solve_reconst}
 \title{RECONST unfolding (Turchin/Vapnik statistical regularization)}
 \usage{
-solve_reconst(A, b, x0 = NULL, alpha = 1, pp = 0)
+solve_reconst(
+  A,
+  b,
+  x0 = NULL,
+  E_MeV = NULL,
+  pp = 0.001,
+  alpha = -1,
+  beta = 0,
+  sigma_b = NULL
+)
 }
 \arguments{
 \item{A}{Numeric response matrix (m x n).}
@@ -13,29 +22,47 @@ solve_reconst(A, b, x0 = NULL, alpha = 1, pp = 0)
 
 \item{x0}{Unused; accepted for API compatibility.}
 
-\item{alpha}{Numeric regularization parameter for the smoothing matrix
-\eqn{\Omega}. Default 1.0.}
+\item{E_MeV}{Unused; accepted for API compatibility.}
 
-\item{pp}{Numeric; smoothing parameter (influences the diagonal of
-\eqn{\Omega}). Default 0.0.}
+\item{pp}{Numeric; smoothing parameter added to the diagonal of
+\eqn{\Omega}. Default 1e-3 (Python's value).}
+
+\item{alpha}{Numeric regularization parameter for the smoothing matrix
+\eqn{\Omega}. \code{> 0} fixes it, \code{< 0} selects \code{|alpha|}
+automatically. Default -1 (auto), as in \code{bssunfold}.}
+
+\item{beta}{Numeric data-fidelity weight. \code{> 0} fixes it,
+\code{<= 0} selects it automatically. Default 0 (auto).}
+
+\item{sigma_b}{Optional measurement uncertainties (length m). Default
+\code{NULL} = \code{sqrt(b)}.}
 }
 \value{
 A list \code{list(spectrum, iterations = 1L, converged = TRUE)}.
 }
 \description{
-Simplified R port of \code{bssunfold/src/bssunfold/core/unfold_reconst.py}.
-Implements the STREG1 algorithm from RECONST.FOR — solves
+R port of \code{bssunfold/src/bssunfold/core/unfold_reconst.py}. Implements
+the STREG1 algorithm from RECONST.FOR — solves
 \eqn{(B \beta + \Omega \alpha) f = A_{vec} \beta} where \eqn{\Omega} is a
-5-diagonal smoothing matrix and \eqn{B = A^T A}.
+5-diagonal smoothing matrix and \eqn{B = (A/S)^T (A/S)},
+\eqn{A_{vec} = A^T (F/S^2)}, with \eqn{S} the measurement uncertainties
+(\eqn{\sqrt{b}} when not supplied) normalised to geometric mean one.
 }
-\section{Limitations vs. Python bssunfold}{
-
-The original code includes an automatic alpha/beta selection via the
-Vapnik-Chervonenkis bound. This R port uses the simpler L-curve
-heuristic (one alpha, beta fixed at 1). The full RECONST.FOR has multiple
-smoothing parameter selection criteria that are not ported here.
+\details{
+The regularisation weight \eqn{\alpha} and the data-fidelity weight
+\eqn{\beta} are selected automatically (Vapnik bounds of the original
+Fortran code) when \code{alpha < 0} and/or \code{beta <= 0}; see
+\code{\link{solve_reconst}}.
 }
-
+\note{
+The automatic selection brackets \code{omega} and \code{delta}, each a
+difference of terms of order \eqn{10^{10}} against a result near zero, on a
+system matrix conditioned to \eqn{10^{11}}--\eqn{10^{13}}.  The branch the
+bisection takes is therefore decided below the precision of the evaluation,
+so it is not reproducible between BLAS implementations.  Both branches fit
+the readings equally well; pass \code{alpha} and \code{beta} explicitly for
+a reproducible spectrum.
+}
 \examples{
 A <- matrix(c(0.9, 0.05, 0.05,
               0.10, 0.8, 0.10,

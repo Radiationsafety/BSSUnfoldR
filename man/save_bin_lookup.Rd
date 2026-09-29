@@ -2,21 +2,24 @@
 % Please edit documentation in R/unfold_binned.R
 \name{save_bin_lookup}
 \alias{save_bin_lookup}
-\alias{load_bin_lookup}
-\title{Save / load bin lookup}
+\title{Save a bin lookup table}
 \usage{
 save_bin_lookup(lookup, path)
-
-load_bin_lookup(path)
 }
 \arguments{
-\item{lookup}{Integer vector.}
+\item{lookup}{A lookup list as returned by \code{\link{load_bin_lookup}}.}
 
-\item{path}{File path.}
+\item{path}{File path; parent directories are created if needed.}
 }
 \value{
-Invisible \code{lookup} (for save) or the loaded integer vector.
+Invisible \code{lookup}.
 }
 \description{
-Save / load bin lookup
+Persist a bin lookup table to JSON, mirroring \code{save_bin_lookup} in
+\code{bssunfold.core.unfold_binned}.
+}
+\examples{
+\dontrun{
+save_bin_lookup(load_bin_lookup(), tempfile(fileext = ".json"))
+}
 }

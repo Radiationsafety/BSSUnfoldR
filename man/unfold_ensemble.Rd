@@ -16,6 +16,8 @@ unfold_ensemble(
   solvers = list(solve_mlem, solve_gravel),
   weights = NULL,
   ...,
+  combination = "weighted_average",
+  trim_fraction = 0.2,
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
@@ -49,9 +51,13 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \code{solver(A, b, x0, ...)}.}
 
 \item{weights}{Optional numeric vector of solver weights. Default
-\code{NULL} = uniform.}
+\code{NULL} = inverse-residual weights (as in Python).}
 
 \item{...}{Extra arguments forwarded to each solver.}
+
+\item{combination}{Combination strategy (default \code{"weighted_average"}).}
+
+\item{trim_fraction}{Trim fraction for \code{trimmed_mean}.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
@@ -76,5 +82,9 @@ parameter). Default \code{NULL} = no cutoff.}
 A result list as produced by \code{\link{run_unfolding}}.
 }
 \description{
-Wrapper around \code{\link{solve_ensemble}} for the unified workflow.
+Mirrors \code{unfold_ensemble} from
+\code{bssunfold/core/unfold_ensemble.py}: when \code{solvers} is not
+supplied, the Python default ensemble (MLEM, Bayes, Landweber, CGLS,
+GRAVEL; \code{max_iterations = 200}, \code{tolerance = 1e-4}) is used and
+the members are combined with inverse-residual weights.
 }

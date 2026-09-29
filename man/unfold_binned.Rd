@@ -21,7 +21,10 @@ unfold_binned(
   n_montecarlo = 100L,
   save_result = FALSE,
   random_state = NULL,
-  max_neutron_energy = NULL
+  max_neutron_energy = NULL,
+  bin_lookup = NULL,
+  lookup_path = NULL,
+  timeout_per_method = 30
 )
 }
 \arguments{
@@ -45,14 +48,6 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{n_super_bins}{Integer; number of super-bins. Default \code{NULL} =
-\code{max(3, n/10)}.}
-
-\item{max_iterations}{Positive integer; passed to the underlying MLEM solver.
-Default 1000.}
-
-\item{tolerance}{Positive numeric; default 1e-6.}
-
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
 
@@ -71,6 +66,14 @@ above this energy are removed from the response matrix during the
 solve and the returned spectrum is expanded back to the full grid
 with exact zeros above the cutoff (Python \code{max_neutron_energy}
 parameter). Default \code{NULL} = no cutoff.}
+
+\item{bin_lookup}{Pre-computed lookup table, or \code{NULL} to load
+\code{lookup_path} (default: the shipped table).}
+
+\item{lookup_path}{Path to a JSON lookup file; ignored when \code{bin_lookup}
+is supplied.}
+
+\item{timeout_per_method}{Wall-clock timeout per candidate method, seconds.}
 }
 \value{
 A result list as produced by \code{\link{run_unfolding}}.

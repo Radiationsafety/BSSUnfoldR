@@ -2,31 +2,45 @@
 % Please edit documentation in R/unfold_nnksvd.R
 \name{solve_tikhonov_nnls}
 \alias{solve_tikhonov_nnls}
-\title{Tikhonov-regularized NNLS}
+\title{Tikhonov-regularised non-negative least squares}
 \usage{
-solve_tikhonov_nnls(A, b, lambda = 0.01, prior_wt = 0, alpha_prior = NULL)
+solve_tikhonov_nnls(
+  M_norm,
+  y,
+  lambda_tik = 0.01,
+  prior_wt = 0,
+  alpha_prior = NULL,
+  max_iter = NULL
+)
 }
 \arguments{
-\item{A}{Numeric matrix (m x n).}
+\item{M_norm}{Numeric matrix \code{(m x p)}.}
 
-\item{b}{Numeric vector (length m).}
+\item{y}{Numeric measurement vector (length \code{m}).}
 
-\item{lambda}{Numeric; Tikhonov regularization. Default 0.01.}
+\item{lambda_tik}{Numeric; Tikhonov regularisation weight. Default \code{0.01}.}
 
-\item{prior_wt}{Numeric; optional prior weight. Default 0.}
+\item{prior_wt}{Numeric; training-sample-driven prior weight. Default \code{0}.}
 
-\item{alpha_prior}{Optional prior coefficient vector (length n).}
+\item{alpha_prior}{Optional prior coefficient vector (length \code{p});
+required when \code{prior_wt > 0}.}
+
+\item{max_iter}{Integer or \code{NULL}; maximum NNLS iterations.}
 }
 \value{
-Numeric vector (length n).
+Numeric vector (length \code{p}) of non-negative coefficients.
 }
 \description{
-Solves \eqn{\min || y - A x ||^2 + \lambda ||x||^2} s.t. \eqn{x \ge 0}
-via the augmented-matrix form.
+Solves \eqn{\min \|y - M \alpha\|^2 + \lambda_{tik}\|\alpha\|^2} s.t.
+\eqn{\alpha \ge 0} through the augmented-matrix equivalent
+\deqn{\min \|[y;0] - [M; \sqrt{\lambda_{tik}} I] \alpha\|^2.}
+When \code{prior_wt > 0} the training-sample-driven prior rows
+\eqn{\sqrt{w} I} with right-hand side \eqn{\sqrt{w} \alpha_{prior}} are
+appended as well.
 }
 \examples{
 set.seed(1)
 A <- matrix(runif(3 * 5), nrow = 3)
 b <- c(1, 2, 3)
-x <- solve_tikhonov_nnls(A, b, lambda = 0.01)
+x <- solve_tikhonov_nnls(A, b, lambda_tik = 0.01)
 }

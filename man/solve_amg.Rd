@@ -9,14 +9,13 @@ solve_amg(
   b,
   x0 = NULL,
   method = "cg",
-  preconditioner = "jacobi",
-  omega = 1.2,
-  max_iterations = 500L,
-  tolerance = 1e-06,
-  outer_iterations = 10L,
+  preconditioner = "amg",
+  omega = 1,
+  max_iterations = 200L,
+  tolerance = 1e-10,
+  outer_iterations = 3L,
   nonnegativity = TRUE,
-  regularization = 0,
-  smooth_sweeps = 3L
+  regularization = NULL
 )
 }
 \arguments{
@@ -24,32 +23,36 @@ solve_amg(
 
 \item{b}{Numeric measurement vector (length m).}
 
-\item{x0}{Not used (Krylov starts from zero), kept for API compatibility.}
+\item{x0}{Numeric initial guess (length n) or \code{NULL} for zeros,
+matching \code{default_initial = np.zeros(n)} of the Python workflow.}
 
-\item{method}{Character; \code{"cg"}, \code{"bicgstab"}, or
-\code{"gmres"}.}
+\item{method}{Character; \code{"cg"} (default), \code{"bicgstab"}, or
+\code{"gmres"}.  With \code{"cg"} the non-symmetric preconditioners
+\code{"gs"} and \code{"sor"} are replaced by \code{"ssor"}.}
 
-\item{preconditioner}{Character; \code{"amg"}, \code{"jacobi"},
-\code{"gs"}, \code{"sor"}, \code{"ssor"}, or \code{"none"}.}
+\item{preconditioner}{Character; \code{"amg"} (default), \code{"jacobi"},
+\code{"gs"}, \code{"sor"}, \code{"ssor"}, or \code{"none"}.
+\code{"amg"} falls back to \code{"jacobi"} (warning), as \code{bssunfold}
+does when \code{pyamg} is unavailable.}
 
-\item{omega}{Numeric; SOR relaxation factor (for sor/ssor/amg). Default
-1.2.}
+\item{omega}{Numeric; SOR/SSOR relaxation factor. Default 1.0,
+recommended range \eqn{(0, 2]}{(0, 2]}.}
 
-\item{max_iterations}{Integer; max outer iterations. Default 500.}
+\item{max_iterations}{Integer; Krylov iterations per outer restart.
+Default 200.}
 
-\item{tolerance}{Numeric; relative residual tolerance. Default 1e-6.}
+\item{tolerance}{Numeric; relative residual tolerance of the normal
+equations. Default 1e-10.}
 
-\item{outer_iterations}{Integer; number of GMRES restart cycles. Default
-10.}
-
-\item{nonnegativity}{Logical; clamp negative entries to zero at the end.
-Default TRUE.}
-
-\item{regularization}{Numeric; Tikhonov regularization added to the
-normal matrix. Default 0.}
-
-\item{smooth_sweeps}{Integer; smoothing sweeps per AMG application.
+\item{outer_iterations}{Integer; projected non-negativity restarts.
 Default 3.}
+
+\item{nonnegativity}{Logical; clamp the spectrum to \code{x >= 0}
+between restarts. Default TRUE.}
+
+\item{regularization}{Numeric Tikhonov damping added to the diagonal of
+\eqn{A^\top A}{A'A}, or \code{NULL} (default) for the automatic
+\code{1e-4 * mean(diag(A'A))}.}
 }
 \value{
 A list \code{list(spectrum, iterations, converged)}.

@@ -42,11 +42,15 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{initial_params}{Optional named list.}
+\item{initial_params}{Optional named list or vector overriding any of
+\code{b}, \code{beta_prime}, \code{alpha}, \code{beta}, \code{P_th},
+\code{P_epi}.  When \code{NULL} a grid scan supplies the starting points.}
 
-\item{max_iterations}{Integer; max optim iterations. Default 200.}
-
-\item{tolerance}{Numeric; convergence tolerance. Default 1e-6.}
+\item{max_iterations, tolerance}{Accepted for API compatibility but not
+used: the ported solver must apply the fixed
+\code{lmfit}/{@scipy} \code{leastsq} tolerances
+(\code{ftol = xtol = 1.5e-8}) and evaluation budget to reproduce the
+original result.}
 
 \item{save_result}{Logical; if \code{TRUE}, call
 \code{save_result_callback}. Default \code{FALSE}.}

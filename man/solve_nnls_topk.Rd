@@ -2,36 +2,45 @@
 % Please edit documentation in R/unfold_nnksvd.R
 \name{solve_nnls_topk}
 \alias{solve_nnls_topk}
-\title{NNLS with top-K screening}
+\title{NNLS with top-K atom screening}
 \usage{
-solve_nnls_topk(A, b, K, lambda_tik = 0.01, prior_wt = 0, alpha_prior = NULL)
+solve_nnls_topk(
+  M_norm,
+  y,
+  sparsity,
+  lambda_tik = 0.01,
+  prior_wt = 0,
+  alpha_prior = NULL,
+  max_iter = NULL
+)
 }
 \arguments{
-\item{A}{Numeric matrix (m x k).}
+\item{M_norm}{Numeric matrix \code{(m x p)}.}
 
-\item{b}{Numeric vector (length m).}
+\item{y}{Numeric measurement vector (length \code{m}).}
 
-\item{K}{Integer; number of top atoms to keep.}
+\item{sparsity}{Integer; target sparsity \code{K}.}
 
-\item{lambda_tik}{Numeric; Tikhonov regularization. Default 0.01.}
+\item{lambda_tik}{Numeric; Tikhonov weight. Default \code{0.01}.}
 
-\item{prior_wt}{Numeric; prior weight. Default 0.}
+\item{prior_wt}{Numeric; prior weight. Default \code{0}.}
 
-\item{alpha_prior}{Optional prior coefficient vector (length k).}
+\item{alpha_prior}{Optional prior coefficient vector (length \code{p}).}
+
+\item{max_iter}{Integer or \code{NULL}; maximum NNLS iterations.}
 }
 \value{
-Numeric vector (length k).
+Numeric K-sparse non-negative vector (length \code{p}).
 }
 \description{
-Three-stage hierarchical sparse coding:
-\enumerate{
-\item global NNLS coarse solution, 2. top-K atom screening,
-\item local NNLS fine optimization on the screened support.
-}
+Three-stage hierarchical sparse coding: (1) a global Tikhonov-regularised
+NNLS coarse solution on the full dictionary, (2) screening of the \code{K}
+atoms with the largest coarse coefficients, (3) a local Tikhonov-regularised
+NNLS re-optimisation restricted to the screened support.
 }
 \examples{
 set.seed(1)
 A <- matrix(runif(5 * 10), nrow = 5)
 b <- c(1, 2, 3, 4, 5)
-x <- solve_nnls_topk(A, b, K = 3L)
+x <- solve_nnls_topk(A, b, sparsity = 3L)
 }

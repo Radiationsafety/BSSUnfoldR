@@ -8,12 +8,16 @@ solve_pspline_reml(
   A,
   b,
   x0 = NULL,
-  n_basis = 15L,
-  lambda_init = 1,
+  E_MeV = NULL,
+  n_basis = NULL,
+  spline_order = 4L,
+  diff_order = 2L,
+  knot_spacing = "auto",
+  weights = "uniform",
+  lam_relative = NULL,
+  lam_bounds = .pspline_LAMBDA_REL_BOUNDS,
   max_iterations = 50L,
-  tolerance = 0.001,
-  n_grid = 7L,
-  nonneg = TRUE
+  tolerance = 0.001
 )
 }
 \arguments{
@@ -24,31 +28,51 @@ solve_pspline_reml(
 \item{x0}{Numeric initial spectrum (length n); reserved for API
 compatibility (the fit is linear in the basis).}
 
-\item{n_basis}{Integer; number of B-spline basis functions. Default 15.}
+\item{E_MeV}{Numeric energy grid (length n), used for knot placement.
+Required, as in Python; knot placement on a \code{NULL} grid is not
+meaningful.}
 
-\item{lambda_init}{Numeric; starting smoothness parameter. Default 1.0.}
+\item{n_basis}{Integer; dimension of the B-spline space. Default
+\code{NULL} = \code{max(diff_order + 2, min(n \%/\% 2, 30))}, the same
+rule Python uses.}
 
-\item{max_iterations}{Integer; outer REML iterations. Default 50.}
+\item{spline_order}{Integer; B-spline order. Default 4 (cubic).}
 
-\item{tolerance}{Numeric; convergence on \code{log10(lambda)}. Default
-1e-3.}
+\item{diff_order}{Integer; difference order of the penalty. Default 2.}
 
-\item{n_grid}{Integer; number of \code{lambda} values tried per iteration.
-Default 7.}
+\item{knot_spacing}{One of \code{"auto"}, \code{"uniform"} or
+\code{"log"}. Default \code{"auto"}.}
 
-\item{nonneg}{Logical; clip final spectrum to be non-negative. Default
-TRUE.}
+\item{weights}{\code{"uniform"}, \code{"poisson"} or a numeric vector of
+length \code{m}. Default \code{"uniform"}.}
+
+\item{lam_relative}{Optional fixed relative smoothing parameter; when set,
+REML selection is skipped. Default \code{NULL}.}
+
+\item{lam_bounds}{Length-2 search interval for the relative smoothing
+parameter.}
+
+\item{max_iterations}{Integer; maximum number of REML profile evaluations
+(function evaluations of the bounded Brent search). Default 50.}
+
+\item{tolerance}{Numeric; absolute tolerance of the bounded Brent search on
+\code{log10(lam/lam_ref)}. Default 1e-3; when left at its default the
+search instead uses the reference tolerance 1e-5, which matches the
+Python implementation.}
 }
 \value{
 A list \code{list(spectrum, iterations, converged, lambda,
-  coefficients)}.
+  coefficients, ...)} with the REML diagnostics \code{lam_relative},
+\code{lam_ref}, \code{sigma2}, \code{reml_loglik}, \code{ed} and
+\code{ed_norm}.
 }
 \description{
 Solve by P-spline REML
 }
 \examples{
-A <- matrix(c(0.9, 0.05, 0.05, 0.10, 0.8, 0.10, 0.30, 0.30, 0.40),
-            nrow = 3, byrow = TRUE)
-b <- c(1, 0.6, 0.4)
-r <- solve_pspline_reml(A, b, NULL, n_basis = 5, max_iterations = 5L)
+E <- 10^seq(-9, 1, length.out = 12)
+A <- matrix(runif(3 * 12), nrow = 3)
+b <- as.numeric(A \%*\% rep(0.5, 12))
+r <- solve_pspline_reml(A, b, NULL, E_MeV = E, n_basis = 5,
+                        max_iterations = 5L)
 }

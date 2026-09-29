@@ -35,7 +35,7 @@ covariance diagonal for numerical stability. Default 1e-4.}
 collapse. Default 1.02.}
 
 \item{noise_std}{Optional numeric; standard deviation of measurement noise.
-If \code{NULL}, estimated as 5\% of \code{||b|| / sqrt(m)}.}
+If \code{NULL}, estimated as 5\\% of \code{||b|| / sqrt(m)}.}
 
 \item{random_state}{Optional integer seed.}
 }
@@ -48,6 +48,13 @@ Implements the EKI method of Iglesias et al. (2013) for Bayesian posterior
 approximation without MCMC. The ensemble of particles is propagated through
 the forward model and updated via the Kalman gain equation with optional
 regularization for stability.
+}
+\details{
+The ensemble and the perturbed observations are drawn from a bit-exact
+emulation of numpy's legacy \code{RandomState}, so \code{random_state = k}
+reproduces the Python result for the same \code{k}. As in Python the
+generator is private: R's global RNG state is neither read beyond one seed
+draw when \code{random_state} is \code{NULL}, nor reseeded.
 }
 \examples{
 A <- matrix(c(0.9, 0.05, 0.05,

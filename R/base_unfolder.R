@@ -269,6 +269,9 @@ run_unfolding <- function(detector_names, n_energy_bins, E_MeV,
     spectrum_nonneg <- pmax(as.numeric(spectrum), 0)
     computed_readings <- as.numeric(A %*% spectrum_nonneg)
     residual <- b - computed_readings
+    # Per-bin d(ln E) widths in dex: the spectrum is a lethargy density, so
+    # both the response fold-up and the dose integral must weight by them.
+    dlnE_dex <- compute_log_steps(E_MeV)
     out <- list(
         energy = E_MeV,
         spectrum = spectrum_nonneg,
@@ -277,14 +280,34 @@ run_unfolding <- function(detector_names, n_energy_bins, E_MeV,
         residual = residual,
         residual_norm = sqrt(sum(residual^2)),
         method = method,
+        spectrum_definition = "differential_fluence_per_dlnE",
+        spectrum_units = "cm^-2 s^-1 (d ln E)^-1",
+        integration_rule = "rectangular_midpoint_dlnE",
+        energy_bin_edges_MeV = .bin_edges_from_centers(E_MeV),
         doserates = if (!is.null(cc_icrp116))
-                        calculate_dose_rates(spectrum_nonneg, cc_icrp116)
+                        calculate_dose_rates(spectrum_nonneg, cc_icrp116,
+                                             dlnE_array = dlnE_dex)
                     else numeric(0L)
     )
     if (!is.null(extra)) {
         for (n in names(extra)) out[[n]] <- extra[[n]]
     }
     out
+}
+
+# Geometric bin edges consistent with the midpoint convention of the energy
+# grid, mirroring _bin_edges_from_centers() in the Python package.
+.bin_edges_from_centers <- function(E_MeV) {
+    E_MeV <- as.numeric(E_MeV)
+    n <- length(E_MeV)
+    if (n == 0L) return(numeric(0L))
+    if (n == 1L) return(E_MeV * c(1 / sqrt(10), sqrt(10)))
+    edges <- numeric(n + 1L)
+    geomean <- sqrt(E_MeV[-n] * E_MeV[-1L])
+    edges[seq_len(n - 1L) + 1L] <- geomean
+    edges[1L] <- E_MeV[1L]^2 / geomean[1L]
+    edges[n + 1L] <- E_MeV[n]^2 / geomean[n - 1L]
+    edges
 }
 
 .montecarlo_for_run <- function(solve_func, readings, noise_level,

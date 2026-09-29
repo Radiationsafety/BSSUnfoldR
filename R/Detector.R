@@ -71,6 +71,9 @@ Detector <- R6::R6Class(
         n_energy_bins = 0L,
         #' @field sensitivities Named list of numeric sensitivity vectors.
         sensitivities = list(),
+        #' @field ln_steps Numeric per-bin \eqn{d\ln E} widths (natural log),
+        #'   used both to weight the response matrix and for dose integration.
+        ln_steps = numeric(0L),
         #' @field detector_names Character vector of detector names to use.
         detector_names = character(0L),
         #' @field cc_icrp116 Named list of ICRP-116 conversion coefficients.
@@ -110,6 +113,7 @@ Detector <- R6::R6Class(
             }
             self$E_MeV <- private$.E_MeV
             self$n_energy_bins <- length(private$.E_MeV)
+            self$ln_steps <- compute_log_steps(private$.E_MeV) * log(10.0)
 
             # Sensitivities: interpolate every detector vector to E_MeV
             sens <- list()
@@ -123,7 +127,12 @@ Detector <- R6::R6Class(
                                           rule = 2)$y
                 }
             }
-            self$sensitivities <- sens
+            # The spectra returned by every method are lethargy densities
+            # (fluence per d ln E), so the response matrix carries the bin
+            # widths: b_j = sum_i R_j(E_i) * phi_i * dlnE_i. Same convention
+            # as bssunfold's Detector, which stores sensitivities already
+            # scaled by ln_steps.
+            self$sensitivities <- lapply(sens, function(s) s * self$ln_steps)
             if (is.null(detector_names)) {
                 self$detector_names <- names(sens)
             } else {
@@ -159,7 +168,7 @@ Detector <- R6::R6Class(
                 stop("sensitivity length (", length(sensitivity),
                      ") must match n_energy_bins (", self$n_energy_bins, ")")
             }
-            self$sensitivities[[name]] <- sensitivity
+            self$sensitivities[[name]] <- sensitivity * self$ln_steps
             if (!(name %in% self$detector_names)) {
                 self$detector_names <- c(self$detector_names, name)
             }
@@ -842,6 +851,24 @@ Detector <- R6::R6Class(
                                     readings, ...)
         },
 
+        #' @description Alias of \code{unfold_pdhg}, matching bssunfold's
+        #'   \code{unfold_odl_pdhg} name.
+        unfold_odl_pdhg = function(readings, ...) {
+            unfold_odl_pdhg(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
+        #' @description Unfold with Douglas-Rachford splitting as formulated by
+        #'   bssunfold's ODL backend. See \code{\link{unfold_odl_douglas_rachford}}.
+        unfold_odl_douglas_rachford = function(readings, ...) {
+            unfold_odl_douglas_rachford(self$detector_names, self$n_energy_bins,
+                            self$E_MeV, self$sensitivities, self$cc_icrp116,
+                            function(out) self$save_result(out),
+                            readings, ...)
+        },
+
         # ------------------------------------------------------------------
         # Eighth batch of algorithms (added in v0.2.1)
         # ------------------------------------------------------------------
@@ -897,6 +924,159 @@ Detector <- R6::R6Class(
                                        self$cc_icrp116,
                                        function(out) self$save_result(out),
                                        readings, ...)
+        },
+
+        # ------------------------------------------------------------------
+        # Additional solvers ported from bssunfold 0.28.0
+        # ------------------------------------------------------------------
+
+        #' @description Unfold with ADMM. See \code{\link{unfold_admm}}.
+        unfold_admm = function(readings, ...) {
+            unfold_admm(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with coordinate descent. See \code{\link{unfold_coordinate_descent}}.
+        unfold_coordinate_descent = function(readings, ...) {
+            unfold_coordinate_descent(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with the extragradient method. See \code{\link{unfold_extragradient}}.
+        unfold_extragradient = function(readings, ...) {
+            unfold_extragradient(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with Frank-Wolfe. See \code{\link{unfold_frank_wolfe}}.
+        unfold_frank_wolfe = function(readings, ...) {
+            unfold_frank_wolfe(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with projected gradient descent. See \code{\link{unfold_pgd}}.
+        unfold_pgd = function(readings, ...) {
+            unfold_pgd(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with mirror descent. See \code{\link{unfold_mirror_descent}}.
+        unfold_mirror_descent = function(readings, ...) {
+            unfold_mirror_descent(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with a subgradient method. See \code{\link{unfold_subgradient}}.
+        unfold_subgradient = function(readings, ...) {
+            unfold_subgradient(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with L-BFGS-B. See \code{\link{unfold_lbfgsb}}.
+        unfold_lbfgsb = function(readings, ...) {
+            unfold_lbfgsb(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with GNOWEE. See \code{\link{unfold_gnowee}}.
+        unfold_gnowee = function(readings, ...) {
+            unfold_gnowee(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with LOUHI. See \code{\link{unfold_louhi}}.
+        unfold_louhi = function(readings, ...) {
+            unfold_louhi(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with OSEM-ANLM. See \code{\link{unfold_osem_anlm}}.
+        unfold_osem_anlm = function(readings, ...) {
+            unfold_osem_anlm(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with a non-negative QP solver. See \code{\link{unfold_nnqp}}.
+        unfold_nnqp = function(readings, ...) {
+            unfold_nnqp(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with QPMAD. See \code{\link{unfold_qpmad}}.
+        unfold_qpmad = function(readings, ...) {
+            unfold_qpmad(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with Tikhonov-Sobolev and the discrepancy principle.
+        #'   See \code{\link{unfold_tikhonov_sobolev_dp}}.
+        unfold_tikhonov_sobolev_dp = function(readings, ...) {
+            unfold_tikhonov_sobolev_dp(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with a genetic algorithm on fission/fusion spectra.
+        #'   See \code{\link{unfold_fission_ga}}.
+        unfold_fission_ga = function(readings, ...) {
+            unfold_fission_ga(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with the Gurobi QP formulation. See \code{\link{unfold_gurobi}}.
+        unfold_gurobi = function(readings, ...) {
+            unfold_gurobi(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with the MOSEK QP formulation. See \code{\link{unfold_mosek}}.
+        unfold_mosek = function(readings, ...) {
+            unfold_mosek(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with the CPLEX QP formulation. See \code{\link{unfold_cplex}}.
+        unfold_cplex = function(readings, ...) {
+            unfold_cplex(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with the COPT QP formulation. See \code{\link{unfold_copt}}.
+        unfold_copt = function(readings, ...) {
+            unfold_copt(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with the XPRESS QP formulation. See \code{\link{unfold_xpress}}.
+        unfold_xpress = function(readings, ...) {
+            unfold_xpress(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
+        },
+
+        #' @description Unfold with the CUQI Bayesian formulation. See \code{\link{unfold_cuqi}}.
+        unfold_cuqi = function(readings, ...) {
+            unfold_cuqi(self$detector_names, self$n_energy_bins,
+                        self$E_MeV, self$sensitivities, self$cc_icrp116,
+                        function(out) self$save_result(out), readings, ...)
         },
 
         # ------------------------------------------------------------------

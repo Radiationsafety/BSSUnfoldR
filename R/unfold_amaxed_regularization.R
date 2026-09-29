@@ -14,7 +14,9 @@
 #'   closer to the prior. Default 1.0.
 #' @param max_iterations Positive integer; default 5000.
 #' @param tolerance Positive numeric; gradient convergence tolerance. Default 1e-8.
-#' @param line_search_tol Numeric; Armijo c1. Default 1e-6.
+#' @param line_search_tol Numeric; kept for signature compatibility with the
+#'   Python implementation, which does not use it here (the Armijo constant is
+#'   hard-coded to \code{1e-4}). Default 1e-6.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
 #' @examples
@@ -40,30 +42,32 @@ solve_amaxed_regularization <- function(A, b, x0, sigma_factor = 0.1,
     S_b_diag <- 1.0 / sigma^2
     A_weighted <- A * matrix(S_b_diag, nrow = m, ncol = n, byrow = FALSE)
     At_Sb_A <- t(A) %*% A_weighted
-    ATb <- as.numeric(t(A) %*% (b_work * S_b_diag))
 
-    # Objective: 0.5 * chi^2 + tau * sum(phi_0_norm / phi - 1 + log(phi/phi_0))
-    # Gradient: AT_Sb_A phi - ATb + tau * (-phi_0_norm / phi^2 + 1/phi)
-    # Hessian: AT_Sb_A + tau * diag(2 * phi_0_norm / phi^3 - 1/phi^2)
+    # Objective L = tau * D_KL(phi || phi_0_norm) + chi^2 with
+    #   D_KL(phi || phi_0) = sum_i phi_i log(phi_i / phi_0_i) - phi_i + phi_0_i
+    #   chi^2             = residual' S_b residual,  residual = A phi - b_work
+    # so the gradient is tau * log(phi / phi_0_norm) + 2 A' S_b residual and
+    # the Hessian is tau * diag(1 / phi) + 2 A' S_b A.
     objective <- function(phi) {
         p <- pmax(phi, phi_floor)
         residual <- as.numeric(A %*% p) - b_work
-        chi2 <- 0.5 * sum(residual^2 * S_b_diag)
-        kl <- tau * sum(phi_0_norm / p - 1 + log(p / phi_0_norm))
-        as.numeric(chi2 + kl)
+        chi2 <- as.numeric(residual %*% (S_b_diag * residual))
+        kl <- sum(p * log(p / phi_0_norm + 1e-300) - p + phi_0_norm)
+        as.numeric(tau * kl + chi2)
     }
     gradient <- function(phi) {
         p <- pmax(phi, phi_floor)
         residual <- as.numeric(A %*% p) - b_work
-        as.numeric(t(A) %*% (residual * S_b_diag) +
-                    tau * (-phi_0_norm / p^2 + 1 / p))
+        kl_grad <- log(p / phi_0_norm + 1e-300)
+        chi2_grad <- as.numeric(t(A) %*% (S_b_diag * residual))
+        tau * kl_grad + 2 * chi2_grad
     }
     hessian <- function(phi) {
         p <- pmax(phi, phi_floor)
-        At_Sb_A + tau * diag(2 * phi_0_norm / p^3 - 1 / p^2, nrow = n)
+        kl_hess <- diag(1.0 / (p + 1e-300), nrow = n)
+        tau * kl_hess + 2 * At_Sb_A
     }
     phi <- phi_0_norm
-    c1 <- min(max(line_search_tol, 1e-12), 0.5)
     grad_norm <- Inf
     iteration <- 0L
     for (iteration in seq_len(max_iterations)) {
@@ -71,30 +75,25 @@ solve_amaxed_regularization <- function(A, b, x0, sigma_factor = 0.1,
         grad_norm <- sqrt(sum(grad^2))
         if (grad_norm < tolerance) break
         Hess <- hessian(phi)
-        delta <- tryCatch(as.numeric(qr.solve(Hess, -grad)),
+        delta <- tryCatch(as.numeric(solve(Hess, -grad)),
                           error = function(e) {
             reg <- 1e-6 * max(abs(diag(Hess)))
-            if (reg <= 0) reg <- 1e-12
-            as.numeric(qr.solve(Hess + reg * diag(n), -grad))
+            if (!is.finite(reg) || reg <= 0) reg <- 1e-12
+            as.numeric(solve(Hess + reg * diag(n), -grad))
         })
+        base_obj <- objective(phi)
         slope <- sum(grad * delta)
-        if (slope >= 0) { delta <- -grad; slope <- sum(grad * delta) }
-        base <- objective(phi)
         beta <- 1.0
         accepted <- FALSE
         for (j in 1:30) {
-            trial <- pmax(phi + beta * delta, phi_floor)
-            if (objective(trial) <= base + c1 * beta * slope) {
+            new_phi <- pmax(phi + beta * delta, phi_floor)
+            if (objective(new_phi) <= base_obj + 1e-4 * beta * slope) {
                 accepted <- TRUE; break
             }
             beta <- beta * 0.5
         }
         if (!accepted) beta <- 0.01
         phi <- pmax(phi + beta * delta, phi_floor)
-    }
-    if (grad_norm >= tolerance) {
-        grad <- gradient(phi)
-        grad_norm <- sqrt(sum(grad^2))
     }
     phi <- phi * phi_0_sum
     list(spectrum = as.numeric(phi), iterations = as.integer(iteration),

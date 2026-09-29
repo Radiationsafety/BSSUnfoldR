@@ -4,14 +4,7 @@
 \alias{solve_fruit_like}
 \title{FRUIT-like parametric unfolding}
 \usage{
-solve_fruit_like(
-  A,
-  b,
-  E,
-  log_steps,
-  initial_params = NULL,
-  method = "L-BFGS-B"
-)
+solve_fruit_like(A, b, E, log_steps, initial_params = NULL, method = "leastsq")
 }
 \arguments{
 \item{A}{Numeric response matrix (m x n).}
@@ -25,8 +18,9 @@ solve_fruit_like(
 \item{initial_params}{Optional named list with \code{A_th}, \code{T_th},
 \code{A_epi}, \code{A_f}, \code{T_ev}.}
 
-\item{method}{Character; optimizer method passed to \code{\link[stats]{optim}}.
-Default \code{"L-BFGS-B"}.}
+\item{method}{Character; optimizer method passed to lmfit-equivalent
+solver. Default \code{"leastsq"} (Levenberg-Marquardt via MINPACK,
+matching Python's lmfit default).}
 }
 \value{
 A list \code{list(spectrum, success, nfev, converged)}.

@@ -2,9 +2,18 @@
 % Please edit documentation in R/unfold_ensemble.R
 \name{solve_ensemble}
 \alias{solve_ensemble}
-\title{Solve by ensemble (weighted average of multiple solvers)}
+\title{Solve by ensemble (combination of multiple solvers)}
 \usage{
-solve_ensemble(A, b, x0, solvers, weights = NULL, ...)
+solve_ensemble(
+  A,
+  b,
+  x0,
+  solvers,
+  weights = NULL,
+  combination = "weighted_average",
+  trim_fraction = 0.2,
+  ...
+)
 }
 \arguments{
 \item{A}{Numeric response matrix (m x n).}
@@ -17,16 +26,26 @@ solve_ensemble(A, b, x0, solvers, weights = NULL, ...)
 \code{solver(A, b, x0, ...)}.}
 
 \item{weights}{Optional numeric vector of solver weights. Default
-\code{NULL} = uniform.}
+\code{NULL} = inverse-residual weights (as in Python).}
+
+\item{combination}{Combination strategy: \code{"weighted_average"},
+\code{"median"}, \code{"trimmed_mean"} or \code{"best_residual"}.}
+
+\item{trim_fraction}{Fraction of extreme values to discard per bin for
+\code{"trimmed_mean"}.}
 
 \item{...}{Extra arguments forwarded to each solver.}
 }
 \value{
-A list \code{list(spectrum, iterations = length(solvers),
-  converged = TRUE)}.
+A list \code{list(spectrum, iterations, converged = TRUE)}.
 }
 \description{
-Solve by ensemble (weighted average of multiple solvers)
+R port of \code{solve_ensemble} in
+\code{bssunfold/src/bssunfold/core/unfold_ensemble.py}. Runs each solver
+on \code{(A, b, x0)}, clips every member spectrum at zero, then combines
+them according to \code{combination}. For \code{"weighted_average"}, a
+\code{NULL} \code{weights} argument derives inverse-residual weights
+\code{1 / ||A x_i - b||} (normalised to sum 1), exactly like Python.
 }
 \examples{
 A <- matrix(c(0.9, 0.05, 0.05,

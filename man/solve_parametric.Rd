@@ -10,8 +10,13 @@ solve_parametric(
   E,
   log_steps,
   initial_params = NULL,
+  method = "leastsq",
+  alpha = 0,
+  alpha_auto = FALSE,
+  n_restarts = 5L,
   max_iterations = 200L,
-  tolerance = 1e-06
+  tolerance = 1e-06,
+  x0 = NULL
 )
 }
 \arguments{
@@ -21,31 +26,59 @@ solve_parametric(
 
 \item{E}{Numeric energy grid (length n).}
 
-\item{log_steps}{Numeric log-energy bin widths (length n).}
+\item{log_steps}{Numeric \eqn{d(\ln E)} bin widths (length n).  As in the
+Python original the model spectrum is multiplied by these steps
+\emph{on top of} the already lethargy-weighted response matrix, so the
+caller must pass \code{compute_log_steps(E) * log(10)}.}
 
-\item{initial_params}{Optional named list.}
+\item{initial_params}{Optional named list or vector overriding any of
+\code{b}, \code{beta_prime}, \code{alpha}, \code{beta}, \code{P_th},
+\code{P_epi}.  When \code{NULL} a grid scan supplies the starting points.}
 
-\item{max_iterations}{Integer; max optim iterations. Default 200.}
+\item{method}{Character; backend name kept for parity with the Python
+\code{lmfit} selector.  The pure-R port always runs the ported
+Levenberg-Marquardt least-squares solver (\code{lmfit} \code{leastsq}).}
 
-\item{tolerance}{Numeric; convergence tolerance. Default 1e-6.}
+\item{alpha}{Numeric; Tikhonov weight penalising deviation from the
+starting parameters (\code{sqrt(alpha) * (p - p0)} appended to the
+residual vector, exactly like Python \code{_residuals}). Default 0.}
+
+\item{alpha_auto}{Logical; select \code{alpha} by GCV on the linearised
+model (Python \code{_gcv_select_alpha}). Default \code{FALSE}.}
+
+\item{n_restarts}{Integer; number of multistart runs taken from the best
+grid-scan candidates. Default 5.}
+
+\item{max_iterations, tolerance}{Accepted for API compatibility but not
+used: the ported solver must apply the fixed
+\code{lmfit}/{@scipy} \code{leastsq} tolerances
+(\code{ftol = xtol = 1.5e-8}) and evaluation budget to reproduce the
+original result.}
+
+\item{x0}{Ignored: the parametric model builds its own starting point.
+Accepted so \code{run_unfolding()} can always forward the initial
+spectrum.}
 }
 \value{
-A list \code{list(spectrum, iterations, converged)}.
+A list \code{list(spectrum, iterations, converged, params,
+  success, message)}.
 }
 \description{
-Solves the unfolding problem by fitting a 3-component
-parametric spectral model (thermal, epithermal, fast) to the measured
-detector readings via constrained nonlinear least-squares.
+The internal helpers in this file (\code{.fruit_model},
+\code{.fruit_find_initial_params}, \code{.fruit_compute_jacobian}, ...)
+are the exact port of the Python \code{_fruit.py} layer and are shared
+with \code{\link{solve_hybrid_parametric}} and the QP engine variants.
 }
 \details{
-R port of \code{bssunfold/src/bssunfold/core/unfold_parametric.py}.
+R port of \code{bssunfold/src/bssunfold/core/unfold_parametric.py} and its
+model layer \code{bssunfold/src/bssunfold/core/_fruit.py}.
 The spectrum is a weighted superposition of three components with
 constraint P_th + P_epi + P_f = 1:
 \describe{
 \item{Thermal}{\eqn{(E/T_0^2) \exp(-E/T_0)} for E < 1e-7 MeV}
 \item{Epithermal}{\eqn{[1-\exp(-(E/E_d)^2)] E^{b-1} \exp(-E/\beta')}
-for 1e-7 < E < 0.1 MeV}
-\item{Fast}{\eqn{E^\alpha \exp(-E/\beta)} for E > 0.1 MeV}
+for 1e-7 <= E < 0.1 MeV}
+\item{Fast}{\eqn{E^\alpha \exp(-E/\beta)} for E >= 0.1 MeV}
 }
 }
 \examples{

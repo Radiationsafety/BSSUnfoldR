@@ -8,10 +8,18 @@ solve_parametric2(
   A,
   b,
   E,
-  log_steps,
-  initial_params = NULL,
-  max_iterations = 50L,
-  tolerance = 1e-06
+  ln_steps,
+  b_meas = NULL,
+  optimizer = "grid",
+  b_range = .bon95_B_RANGE,
+  Tf_range = .bon95_TF_RANGE,
+  c_range = .bon95_C_RANGE,
+  alpha = 1e-04,
+  solver_backend = "auto",
+  max_iter_qp = 50L,
+  tol_qp = 1e-06,
+  max_iter = 200L,
+  tol_chi2 = 1
 )
 }
 \arguments{
@@ -21,27 +29,48 @@ solve_parametric2(
 
 \item{E}{Numeric energy grid (length n).}
 
-\item{log_steps}{Numeric log-energy bin widths (length n).}
+\item{ln_steps}{Numeric \eqn{d(\ln E)} bin widths (length n). As in Python
+the model spectrum is weighted by these steps once more, i.e. the caller
+passes \code{compute_log_steps(E) * log(10)}.}
 
-\item{initial_params}{Optional named list.}
+\item{b_meas}{Optional measurement uncertainties used as NLS weights.}
 
-\item{max_iterations}{Integer; max optim iterations. Default 200.}
+\item{optimizer}{Character: \code{"grid"} (default), \code{"cvxpy"},
+\code{"qpsolvers"} or \code{"combined"}.}
 
-\item{tolerance}{Numeric; convergence tolerance. Default 1e-6.}
+\item{b_range, Tf_range, c_range}{Length-3 numeric vectors
+\code{c(min, max, n_points)} for the shape grid search.}
+
+\item{alpha}{Numeric; Tikhonov weight for the SQP optimizers. Default 1e-4.}
+
+\item{solver_backend}{Character; QP backend label (accepted for parity;
+the pure-R engine always uses the internal box-QP active set).}
+
+\item{max_iter_qp}{Integer; maximum SQP iterations. Default 50.}
+
+\item{tol_qp}{Numeric; SQP convergence tolerance. Default 1e-6.}
+
+\item{max_iter}{Integer; maximum directed-divergence iterations. Default 200.}
+
+\item{tol_chi2}{Numeric; chi-square stop threshold for the DD phase.
+Default 1.}
 }
 \value{
-A list \code{list(spectrum, iterations, converged)}.
+A list \code{list(spectrum, iterations, converged, chi2, params,
+  message)}.
 }
 \description{
-R port of \code{bssunfold/src/bssunfold/core/unfold_parametric2.py}.
+R port of \code{bssunfold/src/bssunfold/core/unfold_parametric2.py} plus
+its model layer \code{_bon95.py}.
 The spectrum E*Phi(E) is a linear combination of four components
-(thermal, epithermal, intermediate, fast) with free shape parameters
-found by grid search and linear coefficients by weighted NLS.
+(thermal, epithermal, intermediate, fast) whose shape parameters
+\code{(b, Tf, c)} are found by grid search, the linear coefficients
+\code{a1..a4} by weighted NLS, and the result is refined by
+directed-divergence iterations.
 }
 \examples{
 E <- 10^seq(-9, 1, length.out = 60)
 A <- matrix(runif(5 * 60), nrow = 5)
 b <- as.numeric(A \%*\% rep(0.5, 60))
-r <- solve_parametric2(A, b, E, compute_log_steps(E) * log(10),
-                         max_iterations = 20)
+r <- solve_parametric2(A, b, E, compute_log_steps(E) * log(10))
 }

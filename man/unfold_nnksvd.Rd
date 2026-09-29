@@ -2,7 +2,7 @@
 % Please edit documentation in R/unfold_nnksvd.R
 \name{unfold_nnksvd}
 \alias{unfold_nnksvd}
-\title{Wrapper around \code{\link{solve_nnksvd}} for the unified workflow.}
+\title{Wrapper around \code{\link{solve_nnksvd_unfold}} for the unified workflow.}
 \usage{
 unfold_nnksvd(
   detector_names,
@@ -12,19 +12,27 @@ unfold_nnksvd(
   cc_icrp116,
   save_result_callback,
   readings,
+  ln_steps = NULL,
   initial_spectrum = NULL,
-  n_atoms = NULL,
+  n_atoms = 15L,
   sparsity = 2L,
+  dictionary = NULL,
+  training_signals = NULL,
+  n_dictionary_iterations = 80L,
   lambda_tik = 0.01,
   prior_wt = 0.5,
-  n_dictionary_iterations = 80L,
-  method = "nnls_topk",
-  random_state = NULL,
-  tolerance = 1e-06,
+  sparse_coder = "nnls_topk",
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
   save_result = FALSE,
+  random_state = NULL,
+  tolerance = 1e-06,
+  n_nnls_iter = NULL,
+  reading_uncertainties = NULL,
+  reading_covariance = NULL,
+  noise_model = "gaussian",
+  measurement_time = NULL,
   max_neutron_energy = NULL
 )
 }
@@ -46,25 +54,29 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 
 \item{readings}{Named numeric vector of detector readings.}
 
+\item{ln_steps}{Numeric per-bin \eqn{d(\ln E)} widths. Accepted for API
+parity with the Python original; the R workflow derives the widths from
+\code{E_MeV} inside \code{\link{run_unfolding}}.}
+
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{n_atoms}{Integer; number of dictionary atoms. Default \code{NULL} = n/4.}
+\item{n_atoms}{Integer; number of dictionary atoms. Default \code{15L}.}
 
-\item{sparsity}{Integer; sparsity for sparse coding. Default 2.}
+\item{sparsity}{Integer; target sparsity K. Default \code{2L}.}
 
-\item{lambda_tik}{Numeric; Tikhonov regularization for NNLS. Default 0.01.}
+\item{dictionary}{Optional pre-learned non-negative dictionary \code{(n x p)}.}
 
-\item{prior_wt}{Numeric; training-sample prior weight. Default 0.5.}
+\item{training_signals}{Optional K-SVD training signals \code{(n x m)}.}
 
-\item{n_dictionary_iterations}{Integer; K-SVD iterations. Default 80.}
+\item{n_dictionary_iterations}{Integer; K-SVD iterations. Default \code{80L}.}
 
-\item{method}{Character: \code{"nnls_topk"}, \code{"nn_omp"}, \code{"omp"}.
-Default \code{"nnls_topk"}.}
+\item{lambda_tik}{Numeric; Tikhonov weight. Default \code{0.01}.}
 
-\item{random_state}{Optional integer seed for Monte-Carlo.}
+\item{prior_wt}{Numeric; training-sample prior weight. Default \code{0.5}.}
 
-\item{tolerance}{Numeric; early-stopping tolerance. Default 1e-6.}
+\item{sparse_coder}{Character; \code{"nnls_topk"}, \code{"omp"} or
+\code{"nn_omp"}. Default \code{"nnls_topk"}.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
@@ -77,12 +89,34 @@ Default 0.01.}
 \item{save_result}{Logical; if \code{TRUE}, call
 \code{save_result_callback}. Default \code{FALSE}.}
 
+\item{random_state}{Optional integer seed for Monte-Carlo.}
+
+\item{tolerance}{Numeric; convergence tolerance. Default \code{1e-6}.}
+
+\item{n_nnls_iter}{Integer or \code{NULL}; maximum NNLS iterations.}
+
+\item{reading_uncertainties, reading_covariance, noise_model, measurement_time}{Monte-Carlo options accepted for API parity with the Python original.}
+
 \item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
 above this energy are removed from the response matrix during the
 solve and the returned spectrum is expanded back to the full grid
 with exact zeros above the cutoff (Python \code{max_neutron_energy}
 parameter). Default \code{NULL} = no cutoff.}
 }
+\value{
+A result list as produced by \code{\link{run_unfolding}} with extra
+keys \code{n_atoms}, \code{sparsity}, \code{sparse_coder},
+\code{lambda_tik}, \code{prior_wt}.
+}
 \description{
-Wrapper around \code{\link{solve_nnksvd}} for the unified workflow.
+Wrapper around \code{\link{solve_nnksvd_unfold}} for the unified workflow.
+}
+\examples{
+rf <- RF_PTB()
+det <- Detector$new(response_function = rf,
+                    detector_names = names(rf)[-1])
+\dontrun{
+det$unfold_nnksvd(setNames(rep(1, length(det$detector_names)),
+                           det$detector_names))
+}
 }

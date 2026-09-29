@@ -6,6 +6,18 @@
 #' faster convergence than the deterministic cyclic variant on ill-conditioned
 #' systems.
 #'
+#' Row selection is driven by the numpy-legacy \code{RandomState} emulation
+#' shared with \code{\link{solve_eki}}, not by R's own RNG: Python draws one
+#' \code{random_sample()} per iteration and maps it through
+#' \code{np.searchsorted(cum_dist, u)} (the exact behaviour of
+#' \code{RandomState.choice(m, p = probabilities)}), so
+#' \code{random_state = k} reproduces the Python row sequence for the same
+#' \code{k}. The cumulative distribution is built the same way as numpy builds
+#' it — a left-to-right running sum of \code{row_norms_sq / sum(row_norms_sq)},
+#' the \code{< 1} renormalisation loop and the \code{1e-10} bump on the final
+#' element — and the generator is private, so R's global RNG state is neither
+#' read nor reseeded.
+#'
 #' @param A Numeric response matrix (m x n).
 #' @param b Numeric measurement vector (length m).
 #' @param x0 Numeric initial guess (length n).
@@ -20,36 +32,59 @@
 #'               0.10, 0.8, 0.10,
 #'               0.30, 0.30, 0.40), nrow = 3, byrow = TRUE)
 #' b <- c(1, 0.6, 0.4)
-#' set.seed(7)
-#' r <- solve_randomized_kaczmarz(A, b, rep(0, 3), max_iterations = 30, random_state = 7)
+#' r <- solve_randomized_kaczmarz(A, b, rep(0, 3), max_iterations = 30,
+#'                                random_state = 7)
+#' length(r$spectrum)
+
 solve_randomized_kaczmarz <- function(A, b, x0, max_iterations = 1000L,
-                                       omega = 1.0, tolerance = 1e-6,
-                                       random_state = NULL) {
+                                      omega = 1.0, tolerance = 1e-6,
+                                      random_state = NULL) {
     v <- validate_system(A, b, x0 = x0,
                         max_iterations = max_iterations,
                         tolerance = tolerance)
     A <- v$A; b <- v$b; x0 <- v$x0
-    m <- nrow(A)
-    x <- x0
-    if (!is.null(random_state)) {
-        set.seed(as.integer(random_state))
-    }
+    m <- nrow(A); n <- ncol(A)
+    rng <- .np_random_state(random_state)
+    x <- as.numeric(x0)
     row_norms_sq <- as.numeric(rowSums(A * A))
     total_norm_sq <- sum(row_norms_sq)
     if (total_norm_sq == 0) {
-        return(list(spectrum = as.numeric(x), iterations = 0L,
-                    converged = TRUE))
+        return(list(spectrum = x, iterations = 0L, converged = TRUE))
     }
     probabilities <- row_norms_sq / total_norm_sq
+
+    # ---- RandomState.choice(m, p = probabilities) --------------------------
+    cum_dist <- numeric(m)
+    run <- 0
+    for (i in seq_len(m)) {
+        run <- run + probabilities[i]
+        cum_dist[i] <- run
+    }
+    if (cum_dist[m] < 1) {
+        # numpy pads the upper half of the strata by the (tiny) deficit
+        half <- m %/% 2L
+        if (half > 0L) {
+            missing_value <- 1 - cum_dist[m]
+            to_add <- missing_value / half
+            for (i in seq_len(half)) {
+                idx <- i + half
+                cum_dist[idx] <- min(cum_dist[idx] + to_add, 1)
+            }
+        }
+    }
+    cum_dist[m] <- cum_dist[m] + 1e-10
+
     converged <- FALSE
     iterations <- 0L
     x_old <- x
-    for (k in seq_len(max_iterations)) {
-        i <- sample.int(m, size = 1L, prob = probabilities)
+    for (k in seq_len(as.integer(max_iterations))) {
+        # searchsorted(cum_dist, u, side = "left") -> number of entries < u
+        i <- sum(cum_dist < rng$uniform()) + 1L
         if (row_norms_sq[i] > 0) {
             Ai <- A[i, ]
             update <- (b[i] - sum(Ai * x)) / row_norms_sq[i]
-            x <- pmax(x + omega * update * Ai, 0.0)
+            x <- x + omega * update * Ai
+            x[x < 0] <- 0
         }
         if (k %% m == 0L) {
             if (sqrt(sum((x - x_old)^2)) < tolerance) {
@@ -60,7 +95,7 @@ solve_randomized_kaczmarz <- function(A, b, x0, max_iterations = 1000L,
             x_old <- x
         }
     }
-    if (!converged) iterations <- max_iterations
+    if (!converged) iterations <- as.integer(max_iterations)
     list(spectrum = as.numeric(x), iterations = iterations,
          converged = converged)
 }

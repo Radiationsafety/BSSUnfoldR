@@ -8,7 +8,7 @@ solve_maxed(
   A,
   b,
   x0,
-  sigma_factor = 0.1,
+  sigma_factor = 0.01,
   max_iterations = 5000L,
   tolerance = 1e-06
 )
@@ -20,7 +20,10 @@ solve_maxed(
 
 \item{x0}{Numeric reference (prior) spectrum (length n).}
 
-\item{sigma_factor}{Numeric; relative measurement uncertainty. Default 0.1.}
+\item{sigma_factor}{Numeric; relative measurement uncertainty. Default 0.01,
+which is the value \code{bssunfold}'s \code{Detector.unfold_maxed} uses
+(its module-level function defaults to 0.1, but the Detector wrapper that
+this package's \code{Detector} R6 class mirrors overrides it to 0.01).}
 
 \item{max_iterations}{Positive integer; default 5000.}
 

@@ -16,3 +16,4 @@
 ^extract_constants_to_r\.py$
 ^smoke_test\.R$
 ^quickstart\.R$
+^tools$

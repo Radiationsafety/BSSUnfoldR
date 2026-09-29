@@ -13,10 +13,14 @@ unfold_hybrid_parametric(
   cc_icrp116,
   save_result_callback,
   readings,
+  ln_steps = NULL,
   initial_spectrum = NULL,
-  initial_params = NULL,
-  refinement_iterations = 100L,
+  refinement_method = "landweber",
+  max_iterations = 100L,
   tolerance = 1e-06,
+  step_size = 0.01,
+  initial_params = NULL,
+  refinement_iterations = NULL,
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
@@ -43,35 +47,40 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 
 \item{readings}{Named numeric vector of detector readings.}
 
+\item{ln_steps}{Optional numeric \eqn{d(\ln E)} vector; accepted for API
+parity with Python (only used for the dose calculation of the standard
+output).}
+
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{initial_params}{Optional named list with \code{A_th}, \code{T_th},
-\code{A_epi}, \code{A_f}, \code{T_ev}.}
+\item{refinement_method}{Character; \code{"landweber"} (default) or
+\code{"mlem"}.}
 
-\item{refinement_iterations}{Positive integer; number of MLEM iterations for
-residual refinement. Default 100.}
+\item{max_iterations}{Integer; maximum refinement iterations. Default 100.}
 
 \item{tolerance}{Numeric; convergence tolerance. Default 1e-6.}
 
-\item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
-uncertainty estimation. Default \code{FALSE}.}
+\item{step_size}{Numeric; Landweber relaxation parameter. Default 0.01.}
 
-\item{noise_level}{Numeric; relative Gaussian noise level for Monte-Carlo.
-Default 0.01.}
+\item{initial_params}{Optional named list overriding the FRUIT parameters
+\code{b}, \code{beta_prime}, \code{alpha}, \code{beta}, \code{P_th},
+\code{P_epi}.  When \code{NULL} the Python grid scan is used.}
 
-\item{n_montecarlo}{Integer; number of Monte-Carlo samples. Default 100.}
+\item{refinement_iterations}{Integer; deprecated alias of
+\code{max_iterations}. Default \code{NULL}.}
 
-\item{save_result}{Logical; if \code{TRUE}, call
-\code{save_result_callback}. Default \code{FALSE}.}
+\item{calculate_errors}{Logical; run Monte-Carlo uncertainty estimation.}
 
-\item{random_state}{Optional integer seed for Monte-Carlo.}
+\item{noise_level}{Numeric; relative noise for the Monte-Carlo part.}
 
-\item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
-above this energy are removed from the response matrix during the
-solve and the returned spectrum is expanded back to the full grid
-with exact zeros above the cutoff (Python \code{max_neutron_energy}
-parameter). Default \code{NULL} = no cutoff.}
+\item{n_montecarlo}{Integer; Monte-Carlo sample count.}
+
+\item{save_result}{Logical; hand the result to \code{save_result_callback}.}
+
+\item{random_state}{Optional integer seed for the Monte-Carlo part.}
+
+\item{max_neutron_energy}{Optional energy cutoff in MeV.}
 }
 \value{
 A result list as produced by \code{\link{run_unfolding}}.

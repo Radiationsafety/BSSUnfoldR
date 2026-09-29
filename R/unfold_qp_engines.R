@@ -138,7 +138,7 @@ solve_qp_docplex <- function(A, b, x0 = NULL, regularization = 1e-4,
                               smoothness_order, smoothness_weight,
                               max_iterations, tolerance, calculate_errors,
                               noise_level, n_montecarlo, save_result,
-                              random_state) {
+                              random_state, max_neutron_energy = NULL) {
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,
         E_MeV = E_MeV, sensitivities = sensitivities,
@@ -178,7 +178,8 @@ unfold_scip <- function(detector_names, n_energy_bins, E_MeV, sensitivities,
                       readings, initial_spectrum, regularization, norm,
                       smoothness_order, smoothness_weight, max_iterations,
                       tolerance, calculate_errors, noise_level,
-                      n_montecarlo, save_result, random_state)
+                      n_montecarlo, save_result, random_state,
+                      max_neutron_energy = max_neutron_energy)
 }
 
 #' Unfold with the CPLEX-style engine (pure-R analogue)

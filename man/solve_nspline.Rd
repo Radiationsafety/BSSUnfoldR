@@ -12,7 +12,11 @@ solve_nspline(
   knots = NULL,
   max_iterations = 500L,
   tolerance = 1e-06,
-  dmu_start = 0.1
+  dmu_start = 0.1,
+  continuity = "C0C1",
+  sigma_rel = NULL,
+  smoothing = TRUE,
+  n_segments = NULL
 )
 }
 \arguments{
@@ -20,39 +24,63 @@ solve_nspline(
 
 \item{b}{Numeric measurement vector (length m).}
 
-\item{x0}{Numeric initial spectrum (length n).}
+\item{x0}{Numeric initial spectrum (length n); \code{NULL} means flat.}
 
-\item{E_MeV}{Numeric energy grid (length n).}
+\item{E_MeV}{Numeric energy grid (length n), strictly positive.}
 
-\item{knots}{Optional numeric vector of knot energies (interior, strictly
-increasing). Default \code{NULL} = \code{\link{auto_knots}(E_MeV)}.}
+\item{knots}{Optional knot specification: \code{NULL} (auto log-uniform
+grid), a preset name or a numeric knot sequence (see Sections).}
 
-\item{max_iterations}{Positive integer; default 500.}
+\item{max_iterations}{Positive integer; iteration budget. Default 500.
+When left at its default the reference budget of 200 iterations is used.}
 
-\item{tolerance}{Positive numeric; relative tolerance on H. Default 1e-6.}
+\item{tolerance}{Positive numeric; relative stopping tolerance on the
+directed divergence \eqn{H}. Default 1e-6; when left at its default the
+reference tolerance 1e-3 is used.}
 
-\item{dmu_start}{Numeric; initial step size. Default 0.1.}
+\item{dmu_start}{Numeric; conservative initial step factor,
+\code{dmu = dmu_start / sup|R - Rbar|}. Default 0.1.}
+
+\item{continuity}{Character; \code{"C0C1"} (default), \code{"C0"} or
+\code{"none"}.}
+
+\item{sigma_rel}{Optional numeric relative measurement uncertainties
+(length m) used by the \eqn{H}-target stopping criterion and the
+\code{nev} statistic; \code{NULL} means 0.1 for every detector.}
+
+\item{smoothing}{Logical; re-fit the N-spline after every iteration.
+Default TRUE (the paper's procedure).}
+
+\item{n_segments}{Optional integer; number of spline segments for the auto
+knot grid (\code{NULL} = adaptive).}
 }
 \value{
-A list \code{list(spectrum, iterations, converged)}.
+A list \code{list(spectrum, iterations, converged, stop_reason,
+  H, H_history, H_target, nev, nev_limit, acceptable, Qr,
+  relative_residuals, fluence, mean_energy, knots, knots_source,
+  continuity, params)}.
 }
 \description{
-Simplified R port of \code{bssunfold/src/bssunfold/core/unfold_nspline.py}.
-Parameterises the spectrum as piecewise-exponential
-\eqn{N_k(E) = \exp(a_k + q_k \ln E + r_k E)} with \eqn{C^0/C^1}
-continuity at the interior knots, and minimises the directed divergence
-between measured and calculated activations via a multiplicative
-gradient iteration with backtracking line search.
+R port of \code{bssunfold/src/bssunfold/core/unfold_nspline.py}.
+The spectrum is parameterised as a "neutron spline"
+\eqn{N_k(E) = \exp(a_k + q_k \ln E + r_k E)} on the segment
+\eqn{E_k \le E \le E_{k+1}}, with \eqn{C^0/C^1} continuity imposed at the
+interior knots through the constraint matrix \eqn{D}.  The spectrum is
+recovered by minimising the directed divergence
+\eqn{H = \sum_i p_{N,i}\ln(p_{N,i}/p_i) - p_{N,i} + p_i} between measured
+and calculated normalised activations with the flux-conserving MIRD
+gradient iteration, re-fitting (smoothing) the N-spline after \emph{every}
+iteration.
 }
-\section{Limitations vs. Python bssunfold}{
+\section{Knots}{
 
-The original implementation uses a specialised "neutron spline" basis
-with both \eqn{\ln E} and \eqn{E} terms. This R port uses a piecewise
-exponential basis with continuity constraints (a subset of the N-spline
-family) and a directed-divergence minimisation loop with backtracking.
-Auto-selection of the number of knots, the \eqn{H_target} stopping
-criterion based on measurement errors, and the \code{nev} quality
-metric are not implemented.
+\code{knots = NULL} builds the automatic log-uniform \emph{segment} grid from
+\code{min(E)} to \code{max(E)} with \code{min(12, max(4, n \%/\% 4))}
+segments, exactly like the Python implementation.  A character value
+selects a preset from \code{\link{NSPLINE_KNOT_PRESETS}}, a numeric value
+is read as a full (endpoint inclusive) knot sequence and is clipped to the
+energy range and extended to span the whole grid.  Note that this is
+\emph{not} the interior-knot vector returned by \code{\link{auto_knots}}.
 }
 
 \examples{

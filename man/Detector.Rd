@@ -212,6 +212,12 @@ Unfold with PDHG (L2 + TV). See \code{\link{unfold_pdhg}}.
 
 Unfold with Douglas-Rachford splitting. See \code{\link{unfold_douglas_rachford}}.
 
+Alias of \code{unfold_pdhg}, matching bssunfold's
+\code{unfold_odl_pdhg} name.
+
+Unfold with Douglas-Rachford splitting as formulated by
+bssunfold's ODL backend. See \code{\link{unfold_odl_douglas_rachford}}.
+
 Unfold with Generalized Estimating Equations. See \code{\link{unfold_gee}}.
 
 Unfold with an Uno-style NLP preset. See \code{\link{unfold_uno}}.
@@ -223,6 +229,50 @@ Unfold with the cvxpy-SQP parametric variant. See \code{\link{unfold_parametric_
 Unfold with the qpsolvers-SQP parametric variant. See \code{\link{unfold_parametric_qpsolvers}}.
 
 Unfold with the combined parametric variant. See \code{\link{unfold_parametric_combined}}.
+
+Unfold with ADMM. See \code{\link{unfold_admm}}.
+
+Unfold with coordinate descent. See \code{\link{unfold_coordinate_descent}}.
+
+Unfold with the extragradient method. See \code{\link{unfold_extragradient}}.
+
+Unfold with Frank-Wolfe. See \code{\link{unfold_frank_wolfe}}.
+
+Unfold with projected gradient descent. See \code{\link{unfold_pgd}}.
+
+Unfold with mirror descent. See \code{\link{unfold_mirror_descent}}.
+
+Unfold with a subgradient method. See \code{\link{unfold_subgradient}}.
+
+Unfold with L-BFGS-B. See \code{\link{unfold_lbfgsb}}.
+
+Unfold with GNOWEE. See \code{\link{unfold_gnowee}}.
+
+Unfold with LOUHI. See \code{\link{unfold_louhi}}.
+
+Unfold with OSEM-ANLM. See \code{\link{unfold_osem_anlm}}.
+
+Unfold with a non-negative QP solver. See \code{\link{unfold_nnqp}}.
+
+Unfold with QPMAD. See \code{\link{unfold_qpmad}}.
+
+Unfold with Tikhonov-Sobolev and the discrepancy principle.
+See \code{\link{unfold_tikhonov_sobolev_dp}}.
+
+Unfold with a genetic algorithm on fission/fusion spectra.
+See \code{\link{unfold_fission_ga}}.
+
+Unfold with the Gurobi QP formulation. See \code{\link{unfold_gurobi}}.
+
+Unfold with the MOSEK QP formulation. See \code{\link{unfold_mosek}}.
+
+Unfold with the CPLEX QP formulation. See \code{\link{unfold_cplex}}.
+
+Unfold with the COPT QP formulation. See \code{\link{unfold_copt}}.
+
+Unfold with the XPRESS QP formulation. See \code{\link{unfold_xpress}}.
+
+Unfold with the CUQI Bayesian formulation. See \code{\link{unfold_cuqi}}.
 
 Retrieve a saved result by history index.
 
@@ -284,6 +334,9 @@ response function.}
 \item{\code{n_energy_bins}}{Integer; number of energy bins.}
 
 \item{\code{sensitivities}}{Named list of numeric sensitivity vectors.}
+
+\item{\code{ln_steps}}{Numeric per-bin \eqn{d\ln E} widths (natural log),
+used both to weight the response matrix and for dose integration.}
 
 \item{\code{detector_names}}{Character vector of detector names to use.}
 

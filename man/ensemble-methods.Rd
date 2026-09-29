@@ -10,11 +10,14 @@ one file for brevity).
 }
 \details{
 \describe{
-\item{Ensemble}{Runs multiple underlying solvers and averages their
-spectra (with optional weights).}
-\item{Cascade}{Runs a sequence of solvers, each starting from the
-result of the previous one.}
-\item{Composite}{Runs multiple solvers and picks the result with the
-smallest residual norm.}
+\item{Ensemble}{Runs multiple underlying solvers and combines their
+spectra (weighted average with inverse-residual weights, or median,
+trimmed mean, best-residual selection).}
+\item{Cascade}{Runs a sequence of Detector-level unfolding stages
+(TSVD -> MLEM -> Bayes-Spline by default), each stage potentially
+reusing the previous stage's spectrum as initial guess or prior.}
+\item{Composite}{Runs a pool of Detector-level methods and combines
+their results with confidence-weighted averaging (mean cosine
+similarity to the other members).}
 }
 }

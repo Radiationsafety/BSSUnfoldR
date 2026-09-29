@@ -15,6 +15,39 @@
 #' @rdname cs-methods
 NULL
 
+# Internal: Moore-Penrose pseudoinverse.  Mirrors numpy.linalg.pinv exactly
+# (SVD-based, default rcond = 1e-15 relative to the largest singular value) so
+# the SL0 iterates stay on the same numerical path as the Python port.
+.cs_pinv <- function(M) {
+    M <- as.matrix(M); storage.mode(M) <- "double"
+    sv <- svd(M)
+    smax <- if (length(sv$d)) sv$d[1L] else 0
+    cutoff <- 1e-15 * smax
+    keep <- sv$d > cutoff
+    dinv <- numeric(length(sv$d))
+    dinv[keep] <- 1 / sv$d[keep]
+    tcrossprod(sv$v * rep(dinv, each = nrow(sv$v)), sv$u)
+}
+
+# Internal: minimum-norm least squares.  Mirrors
+# \code{numpy.linalg.lstsq(D, y, rcond = NULL)}, whose default cutoff is
+# \code{max(M, N) * eps * s_max}.  Needed because the CS training signals
+# contain duplicated columns (the constant atom and the zero-initial-guess
+# "base" atom coincide), so OMP supports can be numerically rank deficient
+# where \code{qr.solve} would have to switch to a ridge fallback.
+.cs_lstsq <- function(D, y) {
+    D <- as.matrix(D); storage.mode(D) <- "double"
+    y <- as.numeric(y)
+    sv <- svd(D)
+    smax <- if (length(sv$d)) sv$d[1L] else 0
+    tol <- max(dim(D)) * .Machine$double.eps * smax
+    keep <- sv$d > tol
+    dinv <- numeric(length(sv$d))
+    dinv[keep] <- 1 / sv$d[keep]
+    uty <- as.numeric(crossprod(sv$u, y))
+    as.numeric(sv$v %*% (dinv * uty))
+}
+
 #' Orthogonal Matching Pursuit (OMP)
 #'
 #' Finds a sparse coefficient vector \eqn{\alpha} such that \eqn{y \approx D \alpha}
@@ -47,19 +80,13 @@ solve_omp <- function(D, y, sparsity, tolerance = 1e-6) {
         if (correlations[idx] <= 0) break
         support <- c(support, idx)
         D_s <- D[, support, drop = FALSE]
-        coefs <- tryCatch(qr.solve(D_s, y, tol = 1e-12),
-                          error = function(e)
-                              qr.solve(D_s + 1e-8 * diag(ncol(D_s)), y,
-                                       tol = 1e-12))
+        coefs <- .cs_lstsq(D_s, y)
         residual <- y - as.numeric(D_s %*% coefs)
         if (sqrt(sum(residual^2)) < tolerance) break
     }
     if (length(support) > 0L) {
         D_s <- D[, support, drop = FALSE]
-        coefs <- tryCatch(qr.solve(D_s, y, tol = 1e-12),
-                          error = function(e)
-                              qr.solve(D_s + 1e-8 * diag(ncol(D_s)), y,
-                                       tol = 1e-12))
+        coefs <- .cs_lstsq(D_s, y)
         alpha[support] <- coefs
     }
     alpha
@@ -138,15 +165,9 @@ solve_sl0 <- function(A, b, sigma_min = 0.01, sigma_decrease_factor = 0.5,
                         tolerance = 1e-6) {
     A <- as.matrix(A); storage.mode(A) <- "double"
     b <- as.numeric(b)
-    n <- ncol(A)
-    AAT <- A %*% t(A)
-    pinv_AAT <- tryCatch(solve(AAT), error = function(e) {
-        sv <- svd(AAT, nu = nrow(AAT), nv = 0)
-        s_inv <- ifelse(sv$d > 1e-10 * max(sv$d), 1 / sv$d, 0)
-        sv$u %*% (s_inv * (t(sv$u)))
-    })
-    pinv_AT <- t(A) %*% pinv_AAT
-    x <- as.numeric(pinv_AT %*% b)  # minimum-norm solution
+    pinv_A <- .cs_pinv(A)
+    x <- as.numeric(pinv_A %*% b)  # minimum-norm solution
+    pinv_AT <- crossprod(A, .cs_pinv(A %*% t(A)))  # A' (A A')^+
     sigma <- 2.0 * max(abs(x))
     if (sigma == 0) sigma <- 1.0
     sigma <- max(sigma, sigma_min)
@@ -190,21 +211,63 @@ solve_cs <- function(A, b, x0 = NULL, n_atoms = NULL, sparsity = 5L,
                        random_state = NULL) {
     A <- as.matrix(A); storage.mode(A) <- "double"
     b <- as.numeric(b)
-    n <- ncol(A)
+    m <- nrow(A); n <- ncol(A)
+    if (is.null(n_atoms)) n_atoms <- max(n, 2L * m)
+    n_atoms <- as.integer(n_atoms)
+
+    # Training signals for the K-SVD dictionary: the (normalised) initial
+    # guess plus a smooth cosine basis, exactly as in unfold_cs.py.
+    if (!is.null(x0) && length(x0) && any(as.numeric(x0) != 0)) {
+        base <- pmax(as.numeric(x0), 0)
+        base <- base / (sqrt(sum(base^2)) + 1e-12)
+    } else {
+        base <- rep(1 / sqrt(n), n)
+    }
+    tt <- seq(0.0, pi, length.out = n)
+    n_basis <- min(n, max(2L * m, 8L))
+    signals <- matrix(0.0, nrow = n, ncol = n_basis + 1L)
+    for (i in seq_len(n_basis)) {
+        col <- cos((i - 1L) * tt)
+        nrm <- sqrt(sum(col^2))
+        if (nrm > 0) col <- col / nrm
+        signals[, i] <- col
+    }
+    signals[, n_basis + 1L] <- base
+
     if (is.null(dictionary)) {
-        D <- diag(n)  # identity dictionary
+        D <- solve_ksvd(signals, n_atoms = n_atoms, n_iterations = 20L,
+                        sparsity = sparsity, random_state = random_state)
     } else {
         D <- as.matrix(dictionary)
+        if (nrow(D) != n) {
+            stop("Dictionary first dimension (", nrow(D),
+                 ") must match number of energy bins (", n, ")",
+                 call. = FALSE)
+        }
     }
-    AD <- A %*% D
-    alpha <- solve_sl0(AD, b, sigma_min = sigma_min,
+
+    Phi <- A %*% D
+    alpha <- solve_sl0(Phi, b, sigma_min = sigma_min,
                          sigma_decrease_factor = sigma_decrease_factor,
                          mu_0 = mu_0, L = L, max_iterations = max_iterations,
                          tolerance = tolerance)
-    spectrum <- as.numeric(D %*% alpha)
-    list(spectrum = pmax(spectrum, 0),
+    spectrum <- pmax(as.numeric(D %*% alpha), 0)
+
+    # Rescale so the reconstructed readings match the measurements in total
+    # magnitude (scale-invariant unfolding, unfold_cs.py).
+    computed <- as.numeric(A %*% spectrum)
+    norm_computed <- sqrt(sum(computed^2))
+    norm_b <- sqrt(sum(b^2))
+    if (norm_computed > 0 && norm_b > 0) {
+        scale <- sum(b * computed) / (sum(computed * computed) + 1e-12)
+        spectrum <- spectrum * scale
+    }
+
+    residual <- sqrt(sum((as.numeric(A %*% spectrum) - b)^2))
+    converged <- residual < tolerance * max(1.0, norm_b)
+    list(spectrum = spectrum,
          iterations = as.integer(max_iterations),
-         converged = TRUE,
+         converged = converged,
          alpha = alpha)
 }
 
@@ -224,7 +287,8 @@ unfold_cs <- function(detector_names, n_energy_bins, E_MeV,
                         random_state = NULL,
                         calculate_errors = FALSE,
                         noise_level = 0.01, n_montecarlo = 100L,
-                        save_result = FALSE) {
+                        save_result = FALSE,
+                        max_neutron_energy = NULL) {
     x0_default <- rep(0.0, n_energy_bins)
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,

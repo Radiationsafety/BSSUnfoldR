@@ -5,21 +5,29 @@
 \title{AMG / preconditioned Krylov unfolding}
 \description{
 R port of \code{bssunfold/src/bssunfold/core/unfold_amg.py}.
-Solves the (optionally Tikhonov-regularized) response system with a
-Krylov method (\code{cg} for the SPD case, \code{bicgstab} and
-\code{gmres} for the general case) preconditioned by
+The (Tikhonov-damped) normal equations
+\deqn{(A^\top A + \lambda I) x = A^\top b}
+are solved with a preconditioned Krylov method (\code{cg} for the SPD
+case, \code{bicgstab} and \code{gmres} for the general case) using a
+preconditioner that approximates \eqn{(A^\top A + \lambda I)^{-1}}:
 \itemize{
-\item \code{"amg"} \eqn{\rightarrow} algebraic-multigrid-like
-two-level smoothing (down-Jacobi sweeps + coarse correction);
-\item \code{"jacobi"} \eqn{\rightarrow} point-Jacobi preconditioner;
-\item \code{"gs"} \eqn{\rightarrow} Gauss-Seidel iteration (backward
-application);
-\item \code{"sor"} / \code{"ssor"} \eqn{\rightarrow} symmetric or
-forward SOR relaxation;
-\item \code{"none"} \eqn{\rightarrow} no preconditioner.
+\item \code{"amg"} \eqn{\rightarrow} algebraic multigrid
+(smoothed aggregation).  \code{pyamg} is an optional Python
+dependency and is not installed in the reference environment, so
+\code{bssunfold} emits a \code{RuntimeWarning} and degrades to
+\code{"jacobi"}; the port reproduces that fallback exactly.
+\item \code{"jacobi"} \eqn{\rightarrow} point-Jacobi
+(\eqn{M = D}{M = D}).
+\item \code{"gs"} \eqn{\rightarrow} one forward Gauss-Seidel sweep
+(\eqn{M = D + L}{M = D + L}).
+\item \code{"sor"} \eqn{\rightarrow} one SOR sweep
+(\eqn{M = (D + \omega L)/\omega}{M = (D + omega L)/omega}).
+\item \code{"ssor"} \eqn{\rightarrow} symmetric SOR sweep
+(\eqn{M = (D + \omega L) D^{-1} (D + \omega U) / (\omega (2 - \omega))}).
+\item \code{"none"} \eqn{\rightarrow} identity.
 }
-The pure-R AMG emulation follows Katzengruber et al.: aggregated coarse
-grids with relaxed Jacobi pre/post smoothing, which is a faithful
-classical-memory model for the Python version that uses pyamg
-(optional dependency).
+Non-negativity is enforced by projected outer restarts: after every
+Krylov solve the spectrum is clamped to \code{x >= 0} and the
+iteration is restarted on the residual of the clamped iterate,
+\code{outer_iterations} times.
 }

@@ -10,7 +10,10 @@
 #' @param A Numeric response matrix (m x n).
 #' @param b Numeric measurement vector (length m).
 #' @param x0 Numeric reference (prior) spectrum (length n).
-#' @param sigma_factor Numeric; relative measurement uncertainty. Default 0.1.
+#' @param sigma_factor Numeric; relative measurement uncertainty. Default 0.01,
+#'   which is the value \code{bssunfold}'s \code{Detector.unfold_maxed} uses
+#'   (its module-level function defaults to 0.1, but the Detector wrapper that
+#'   this package's \code{Detector} R6 class mirrors overrides it to 0.01).
 #' @param max_iterations Positive integer; default 5000.
 #' @param tolerance Positive numeric; gradient convergence tolerance. Default 1e-6.
 #' @return A list \code{list(spectrum, iterations, converged)}.
@@ -21,7 +24,7 @@
 #'               0.30, 0.30, 0.40), nrow = 3, byrow = TRUE)
 #' b <- c(1, 0.6, 0.4)
 #' r <- solve_maxed(A, b, rep(1, 3))
-solve_maxed <- function(A, b, x0, sigma_factor = 0.1, max_iterations = 5000L,
+solve_maxed <- function(A, b, x0, sigma_factor = 0.01, max_iterations = 5000L,
                         tolerance = 1e-6) {
     A <- as.matrix(A); storage.mode(A) <- "double"
     b <- as.numeric(b); x0 <- as.numeric(x0)
@@ -43,19 +46,51 @@ solve_maxed <- function(A, b, x0, sigma_factor = 0.1, max_iterations = 5000L,
         list(f = f_ent + f_chi, g = grad)
     }
 
-    f_eval <- function(y) fg(y)$f
+    ## The log-space objective is only finite while exp(y) does not overflow.
+    ## scipy's L-BFGS-B returns the incumbent iterate when a line search steps
+    ## outside that domain (it terminates abnormally and hands back the last
+    ## accepted point), whereas R's wrapper raises "L-BFGS-B needs finite
+    ## values of 'fn'".  Track the incumbent so both ports answer the same
+    ## spectrum in that corner.
+    incumbent <- new.env(parent = emptyenv())
+
+    f_eval <- function(y) {
+        v <- fg(y)
+        if (is.finite(v$f) && (is.null(incumbent$f) || v$f <= incumbent$f)) {
+            incumbent$y <- y
+            incumbent$f <- v$f
+        }
+        v$f
+    }
     g_eval <- function(y) fg(y)$g
 
     y0 <- log(phi_0)
-    result <- stats::optim(
-        par = y0, fn = f_eval, gr = g_eval,
-        method = "L-BFGS-B",
-        control = list(maxit = max_iterations,
-                       ndeps = rep(1e-8, length(y0)),
-                       pgtol = tolerance)
-    )
+    ## Control mirrors scipy.optimize.minimize(method = "L-BFGS-B",
+    ## options = list(maxiter = max_iterations, gtol = tolerance, ftol = 0)):
+    ## factr = 0 disables the relative-function decrease test (ftol = 0),
+    ## pgtol is the projected-gradient tolerance and lmm = 10 reproduces
+    ## scipy's maxcor = 10 history length (R's default is 5, which follows a
+    ## noticeably different iterate path on this problem).
+    result <- tryCatch(
+        stats::optim(
+            par = y0, fn = f_eval, gr = g_eval,
+            method = "L-BFGS-B",
+            control = list(maxit = max_iterations,
+                           factr = 0,
+                           pgtol = tolerance,
+                           lmm = 10L)
+        ),
+        error = function(e) {
+            if (is.null(incumbent$y)) stop(e)
+            list(par = incumbent$y, value = incumbent$f, convergence = 1L,
+                 counts = c(NA_integer_, NA_integer_))
+        })
     x_opt <- exp(result$par)
-    iterations <- if (!is.null(result$counts[1L])) result$counts[1L] else 0L
+    iterations <- if (!is.null(result$counts) && !is.na(result$counts[1L])) {
+        result$counts[1L]
+    } else {
+        0L
+    }
     converged <- (result$convergence == 0L)
     list(spectrum = as.numeric(x_opt), iterations = as.integer(iterations),
          converged = converged)
@@ -70,7 +105,7 @@ solve_maxed <- function(A, b, x0, sigma_factor = 0.1, max_iterations = 5000L,
 unfold_maxed <- function(detector_names, n_energy_bins, E_MeV,
                           sensitivities, cc_icrp116, save_result_callback,
                           readings, initial_spectrum = NULL,
-                          sigma_factor = 0.1, max_iterations = 5000L,
+                          sigma_factor = 0.01, max_iterations = 5000L,
                           tolerance = 1e-6,
                           calculate_errors = FALSE,
                           noise_level = 0.01, n_montecarlo = 100L,

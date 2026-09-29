@@ -10,7 +10,7 @@ second_difference_matrix(n)
 \item{n}{Integer; length of the coefficient vector.}
 }
 \value{
-Numeric matrix of shape \eqn{(n-2, n)}.
+Numeric matrix of shape \code{(n-2, n)}.
 }
 \description{
 Returns the second-difference operator of shape \eqn{(n-2, n)} with

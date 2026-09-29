@@ -9,9 +9,11 @@ solve_hybrid_parametric(
   b,
   E,
   log_steps,
-  initial_params = NULL,
-  refinement_iterations = 100L,
-  tolerance = 1e-06
+  refinement_method = "landweber",
+  max_iterations = 100L,
+  tolerance = 1e-06,
+  step_size = 0.01,
+  initial_params = NULL
 )
 }
 \arguments{
@@ -21,28 +23,48 @@ solve_hybrid_parametric(
 
 \item{E}{Numeric energy grid (length n).}
 
-\item{log_steps}{Numeric log-energy bin widths (length n).}
+\item{log_steps}{Numeric log-energy bin widths (length n).  Kept for API
+compatibility with Python; the guess is recomputed internally from
+\code{E}, exactly like \code{unfold_hybrid_parametric.py}.}
 
-\item{initial_params}{Optional named list with \code{A_th}, \code{T_th},
-\code{A_epi}, \code{A_f}, \code{T_ev}.}
+\item{refinement_method}{Character; \code{"landweber"} (default) or
+\code{"mlem"}.}
 
-\item{refinement_iterations}{Positive integer; number of MLEM iterations for
-residual refinement. Default 100.}
+\item{max_iterations}{Integer; maximum refinement iterations. Default 100.}
 
 \item{tolerance}{Numeric; convergence tolerance. Default 1e-6.}
+
+\item{step_size}{Numeric; Landweber relaxation parameter. Default 0.01.}
+
+\item{initial_params}{Optional named list overriding the FRUIT parameters
+\code{b}, \code{beta_prime}, \code{alpha}, \code{beta}, \code{P_th},
+\code{P_epi}.  When \code{NULL} the Python grid scan is used.}
 }
 \value{
-A list \code{list(spectrum, iterations, converged)}.
+A list \code{list(spectrum, iterations, converged, message,
+  n_iter)}.
 }
 \description{
+The parametric starting point is generated exactly like the
+Python original: a brute-force scan over \eqn{P_{th}}/\eqn{P_{epi}}
+(\code{.fruit_find_initial_params}) with the bin widths \emph{recomputed
+internally} as \code{compute_log_steps(E) * log(10)}, i.e. the passed
+\code{log_steps} is not used for the guess.  The parametric spectrum is
+weighted by those steps once more (lethargy density on top of the already
+lethargy-weighted response matrix), floor-clamped at \code{1e-30} and then
+refined.
+}
+\details{
 R port of \code{bssunfold/src/bssunfold/core/unfold_hybrid_parametric.py}.
-Hybrid approach: first fit a parametric model (Maxwellian + 1/E + evaporation)
-to the readings, then refine the residual with an iterative solver.
+Hybrid approach: the FRUIT parametric model (see
+\code{\link{solve_parametric}}) provides a physically motivated initial
+guess, which is then refined with a nonparametric iterative solver
+(Landweber or MLEM) so that the readings are fitted better.
 }
 \examples{
 E <- 10^seq(-9, 1, length.out = 60)
 A <- matrix(runif(5 * 60), nrow = 5)
 b <- as.numeric(A \%*\% rep(0.5, 60))
 r <- solve_hybrid_parametric(A, b, E, compute_log_steps(E) * log(10),
-                             refinement_iterations = 30)
+                             max_iterations = 30)
 }

@@ -36,10 +36,22 @@ test_that("unfold_combined wrapper returns dose rates and correct method name", 
 })
 
 test_that("solve_pspline_reml produces a non-negative finite spectrum", {
-    r <- solve_pspline_reml(A, b, NULL, n_basis = 5, max_iterations = 5L)
+    Ep <- 10^seq(-9, 1, length.out = 12)
+    set.seed(11)
+    Ap <- matrix(stats::runif(3 * 12, 0.01, 1), nrow = 3)
+    xs <- 0.4 + 0.2 * sin(seq_along(Ep))
+    bp <- as.numeric(Ap %*% xs)
+    r <- solve_pspline_reml(Ap, bp, NULL, E_MeV = Ep, n_basis = 5,
+                            max_iterations = 5L)
     expect_true(is.finite(sum(r$spectrum)) && all(r$spectrum >= 0))
-    expect_equal(length(r$spectrum), 3)
+    expect_equal(length(r$spectrum), 12)
     expect_true(r$lambda > 0)
+    # n_basis is validated the way Python does it, not silently clamped
+    expect_error(solve_pspline_reml(A, b, NULL, E_MeV = E, n_basis = 3),
+                 "diff_order")
+    expect_error(solve_pspline_reml(Ap, bp, NULL, E_MeV = Ep, n_basis = 40),
+                 "cannot exceed")
+    expect_error(solve_pspline_reml(A, b, NULL), "E_MeV is required")
 })
 
 test_that("solve_amg covers all Krylov/preconditioner combinations", {
@@ -238,7 +250,7 @@ test_that("Detector result management and cc switching work", {
                                                        max_iterations = 20L))))
     expect_equal(r2$method, "Combined")
     r3 <- det$unfold_pspline_reml(rds)
-    expect_equal(r3$method, "PSplineREML")
+    expect_equal(r3$method, "P-spline REML")
     r4 <- det$unfold_amg(rds, max_iterations = 100L)
     expect_equal(r4$method, "AMG")
     r5 <- det$unfold_smt(rds)

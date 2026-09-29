@@ -57,7 +57,9 @@ closer to the prior. Default 1.0.}
 
 \item{tolerance}{Positive numeric; gradient convergence tolerance. Default 1e-8.}
 
-\item{line_search_tol}{Numeric; Armijo c1. Default 1e-6.}
+\item{line_search_tol}{Numeric; kept for signature compatibility with the
+Python implementation, which does not use it here (the Armijo constant is
+hard-coded to \code{1e-4}). Default 1e-6.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}

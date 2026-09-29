@@ -2,61 +2,60 @@
 % Please edit documentation in R/unfold_nnksvd.R
 \name{solve_nnksvd}
 \alias{solve_nnksvd}
-\title{Non-negative K-SVD unfolding}
+\title{Non-negative K-SVD dictionary learning}
 \usage{
 solve_nnksvd(
-  A,
-  b,
-  x0 = NULL,
-  n_atoms = NULL,
+  signals,
+  n_atoms,
+  n_iterations = 80L,
   sparsity = 2L,
   lambda_tik = 0.01,
   prior_wt = 0.5,
-  n_dictionary_iterations = 80L,
-  method = "nnls_topk",
-  E_MeV = NULL,
+  sparse_coder = "nnls_topk",
   random_state = NULL,
   tolerance = 1e-06
 )
 }
 \arguments{
-\item{A}{Numeric response matrix (m x n).}
+\item{signals}{Numeric training-signal matrix \code{(n x m)}, one column per
+training sample; the columns are clipped at zero first.}
 
-\item{b}{Numeric measurement vector (length m).}
+\item{n_atoms}{Integer; number of dictionary atoms \code{P}.}
 
-\item{x0}{Optional initial spectrum (used as training-signal prior).}
+\item{n_iterations}{Integer; maximum K-SVD iterations. Default \code{80L}.}
 
-\item{n_atoms}{Integer; number of dictionary atoms. Default \code{NULL} = n/4.}
+\item{sparsity}{Integer; target sparsity \code{K} for the sparse coders.
+Default \code{2L}.}
 
-\item{sparsity}{Integer; sparsity for sparse coding. Default 2.}
+\item{lambda_tik}{Numeric; Tikhonov weight for \code{nnls_topk}. Default \code{0.01}.}
 
-\item{lambda_tik}{Numeric; Tikhonov regularization for NNLS. Default 0.01.}
+\item{prior_wt}{Numeric; prior weight (unused while training, kept for API
+parity with the Python original). Default \code{0.5}.}
 
-\item{prior_wt}{Numeric; training-sample prior weight. Default 0.5.}
+\item{sparse_coder}{Character; \code{"nnls_topk"}, \code{"omp"} or
+\code{"nn_omp"}. Default \code{"nnls_topk"}.}
 
-\item{n_dictionary_iterations}{Integer; K-SVD iterations. Default 80.}
+\item{random_state}{Integer or \code{NULL}; seed for the random atom
+initialisation.}
 
-\item{method}{Character: \code{"nnls_topk"}, \code{"nn_omp"}, \code{"omp"}.
-Default \code{"nnls_topk"}.}
-
-\item{E_MeV}{Optional energy grid for log-spaced training signals.}
-
-\item{random_state}{Optional seed.}
-
-\item{tolerance}{Numeric; early-stopping tolerance. Default 1e-6.}
+\item{tolerance}{Numeric; early-stopping tolerance on the dictionary change.
+Default \code{1e-6}.}
 }
 \value{
-A list \code{list(spectrum, iterations, converged, dictionary, alpha)}.
+A list \code{list(D, alpha_prior)} where \code{D} is the learned
+\code{(n x p)} column-normalised non-negative dictionary and
+\code{alpha_prior} is the mean sparse code of the training signals.
 }
 \description{
-R port of \code{bssunfold/src/bssunfold/core/unfold_nnksvd.py}.
-Two-step pipeline: (1) non-negative K-SVD dictionary learning, (2)
-sparse inversion via NNLS-top-K / NN-OMP / Tikhonov-NNLS.
+K-SVD variant with non-negativity constraints on both the dictionary atoms
+and the sparse coefficients: after the rank-1 SVD update of an atom the
+atom and its coefficients are non-negatively truncated and the atom is
+re-normalised, with the norm folded into the coefficients so that
+\code{D \%*\% alpha} stays invariant.
 }
 \examples{
 set.seed(7)
-A <- matrix(runif(5 * 60), nrow = 5)
-b <- as.numeric(A \%*\% rep(0.5, 60))
-r <- solve_nnksvd(A, b, rep(0.5, 60), n_atoms = 8L,
-                   n_dictionary_iterations = 3)
+S <- matrix(runif(12 * 6), nrow = 12)
+fit <- solve_nnksvd(S, n_atoms = 3L, n_iterations = 2L)
+dim(fit$D)
 }

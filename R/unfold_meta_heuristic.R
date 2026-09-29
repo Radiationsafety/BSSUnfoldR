@@ -96,7 +96,8 @@ unfold_genetic <- function(detector_names, n_energy_bins, E_MeV,
                               random_state = NULL,
                               calculate_errors = FALSE,
                               noise_level = 0.01, n_montecarlo = 100L,
-                              save_result = FALSE) {
+                              save_result = FALSE,
+                              max_neutron_energy = NULL) {
     x0_default <- rep(0.5, n_energy_bins)
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,
@@ -156,7 +157,8 @@ unfold_mystic <- function(detector_names, n_energy_bins, E_MeV,
                               random_state = NULL,
                               calculate_errors = FALSE,
                               noise_level = 0.01, n_montecarlo = 100L,
-                              save_result = FALSE) {
+                              save_result = FALSE,
+                              max_neutron_energy = NULL) {
     x0_default <- rep(0.5, n_energy_bins)
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,
@@ -258,7 +260,8 @@ unfold_qubo <- function(detector_names, n_energy_bins, E_MeV,
                           tolerance = 1e-6, random_state = NULL,
                           calculate_errors = FALSE,
                           noise_level = 0.01, n_montecarlo = 100L,
-                          save_result = FALSE) {
+                          save_result = FALSE,
+                          max_neutron_energy = NULL) {
     x0_default <- rep(0.5, n_energy_bins)
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,

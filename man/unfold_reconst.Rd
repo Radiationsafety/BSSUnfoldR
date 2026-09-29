@@ -13,8 +13,9 @@ unfold_reconst(
   save_result_callback,
   readings,
   initial_spectrum = NULL,
-  alpha = 1,
-  pp = 0,
+  alpha = -1,
+  pp = 0.001,
+  beta = 0,
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
@@ -45,10 +46,14 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
 \item{alpha}{Numeric regularization parameter for the smoothing matrix
-\eqn{\Omega}. Default 1.0.}
+\eqn{\Omega}. \code{> 0} fixes it, \code{< 0} selects \code{|alpha|}
+automatically. Default -1 (auto), as in \code{bssunfold}.}
 
-\item{pp}{Numeric; smoothing parameter (influences the diagonal of
-\eqn{\Omega}). Default 0.0.}
+\item{pp}{Numeric; smoothing parameter added to the diagonal of
+\eqn{\Omega}. Default 1e-3 (Python's value).}
+
+\item{beta}{Numeric data-fidelity weight. \code{> 0} fixes it,
+\code{<= 0} selects it automatically. Default 0 (auto).}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}

@@ -12,6 +12,12 @@
 #'   vector per geometry/quantity. If \code{NULL} (default), the built-in
 #'   ICRP-116 effective-dose dataset is used.
 #' @param dlnE Numeric; uniform log-E step used for integration. Default 0.2.
+#'   Ignored when \code{dlnE_array} is supplied.
+#' @param dlnE_array Optional numeric vector of per-bin \eqn{d\ln E} widths,
+#'   same length as \code{spectrum}. Default \code{NULL} = use the scalar
+#'   \code{dlnE}. Mirrors the \code{dlnE_array} argument of the Python
+#'   \code{bssunfold} dose routine, and is what makes the dose rates correct
+#'   on non-uniform energy grids.
 #' @return Named numeric vector with one dose rate per geometry/quantity, in
 #'   pico-Sievert per second (pSv/s).
 #' @export
@@ -20,7 +26,8 @@
 #' spec <- rep(1.0, length(cc$E_MeV))
 #' doses <- calculate_dose_rates(spec, cc)
 #' head(doses)
-calculate_dose_rates <- function(spectrum, cc_icrp116 = NULL, dlnE = 0.2) {
+calculate_dose_rates <- function(spectrum, cc_icrp116 = NULL, dlnE = 0.2,
+                                 dlnE_array = NULL) {
     if (is.null(cc_icrp116)) {
         cc_icrp116 <- ICRP116_COEFF_EFFECTIVE_DOSE()
     }
@@ -32,7 +39,16 @@ calculate_dose_rates <- function(spectrum, cc_icrp116 = NULL, dlnE = 0.2) {
     n_spec <- length(spectrum)
     if (n_spec == 0L) return(numeric(0L))
 
-    ln10 <- log(10.0) * dlnE
+    if (!is.null(dlnE_array)) {
+        dlnE_array <- as.numeric(dlnE_array)
+        if (length(dlnE_array) != n_spec) {
+            stop("'dlnE_array' must have the same length as 'spectrum' (",
+                 n_spec, "), got ", length(dlnE_array))
+        }
+        weights <- log(10.0) * dlnE_array
+    } else {
+        weights <- rep(log(10.0) * dlnE, n_spec)
+    }
     geoms <- setdiff(names(cc_icrp116), "E_MeV")
     if (length(geoms) == 0L) return(numeric(0L))
 
@@ -45,7 +61,7 @@ calculate_dose_rates <- function(spectrum, cc_icrp116 = NULL, dlnE = 0.2) {
             cc_mat[idx, seq_len(min_len)] <- k_arr[seq_len(min_len)]
         }
     }
-    doses <- as.numeric(cc_mat %*% spectrum) * ln10
+    doses <- as.numeric(cc_mat %*% (weights * spectrum))
     names(doses) <- geoms
     doses
 }

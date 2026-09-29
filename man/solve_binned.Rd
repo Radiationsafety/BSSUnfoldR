@@ -2,7 +2,7 @@
 % Please edit documentation in R/unfold_binned.R
 \name{solve_binned}
 \alias{solve_binned}
-\title{Binned adaptive unfolding}
+\title{Bin-wise adaptive solver (low level)}
 \usage{
 solve_binned(
   A,
@@ -11,7 +11,10 @@ solve_binned(
   E_MeV,
   n_super_bins = NULL,
   max_iterations = 1000L,
-  tolerance = 1e-06
+  tolerance = 1e-06,
+  bin_lookup = NULL,
+  methods = NULL,
+  timeout_per_method = 30
 )
 }
 \arguments{
@@ -19,40 +22,33 @@ solve_binned(
 
 \item{b}{Numeric measurement vector (length m).}
 
-\item{x0}{Numeric initial spectrum (length n).}
+\item{x0}{Numeric initial spectrum (length n) forwarded to every candidate.}
 
-\item{E_MeV}{Numeric energy grid (length n).}
+\item{E_MeV}{Numeric energy grid (length n). Kept for API compatibility;
+the bin-wise assembly does not use it.}
 
-\item{n_super_bins}{Integer; number of super-bins. Default \code{NULL} =
-\code{max(3, n/10)}.}
+\item{n_super_bins, max_iterations, tolerance}{Legacy arguments kept for API
+compatibility; unused by the bin-wise assembly.}
 
-\item{max_iterations}{Positive integer; passed to the underlying MLEM solver.
-Default 1000.}
+\item{bin_lookup}{A lookup table from \code{\link{load_bin_lookup}}, or
+\code{NULL} for the shipped table.}
 
-\item{tolerance}{Positive numeric; default 1e-6.}
+\item{methods}{Named list; \code{methods[[name]]} must be a function
+accepting \code{(A, b, x0 = NULL, ...)} and returning a length-n numeric
+spectrum. \code{NULL} means no candidate is available.}
+
+\item{timeout_per_method}{Wall-clock timeout per candidate, in seconds.}
 }
 \value{
-A list \code{list(spectrum, iterations, converged, super_bins, super_spectrum)}.
+A list \code{spectrum, method_map, candidate_methods,
+  successful_methods, individual_spectra, errors, n_bins}.
 }
 \description{
-R port of \code{bssunfold/src/bssunfold/core/unfold_binned.py}.
-Bin-wise adaptive unfolding: instead of unfolding on the full fine energy
-grid, this method groups adjacent energy bins into super-bins (coarse
-groups), unfolds on the coarse grid using any underlying solver, then
-redistributes the coarse flux back to the fine grid using a smoothness
-prior. This is useful for severely underdetermined problems.
+Run every candidate method and assemble a spectrum bin by bin, mirroring
+\code{bssunfold.core.unfold_binned.solve_binned}.
 }
-\section{Limitations}{
-
-This is a simplified port. The Python original supports pre-computed
-bin-lookup tables (JSON files) for arbitrary bin groupings. This R port
-uses uniform log-energy groupings.
-}
-
 \examples{
-E <- 10^seq(-9, 1, length.out = 60)
-A <- matrix(runif(5 * 60), nrow = 5)
-b <- as.numeric(A \%*\% rep(0.5, 60))
-r <- solve_binned(A, b, rep(1, 60), E, n_super_bins = 6L,
-                   max_iterations = 50)
+\dontrun{
+r <- solve_binned(A, b, rep(1 / 60, 60), E)
+}
 }

@@ -14,15 +14,16 @@ unfold_bayesian_parametric(
   save_result_callback,
   readings,
   initial_spectrum = NULL,
+  sigma = 0.02,
   n_samples = 1000L,
-  n_burn = 200L,
-  proposal_sd = 0.3,
-  sigma = NULL,
-  random_state = NULL,
+  burn_in = 200L,
+  proposal_scale = 0.1,
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
-  save_result = FALSE
+  save_result = FALSE,
+  random_state = NULL,
+  max_neutron_energy = NULL
 )
 }
 \arguments{
@@ -46,15 +47,15 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{n_samples}{Integer; total MCMC samples. Default 1000.}
+\item{sigma}{Numeric; measurement uncertainty on the readings. Default 0.02.}
 
-\item{n_burn}{Integer; burn-in samples. Default 200.}
+\item{n_samples}{Integer; number of post-burn-in samples. Default 1000.}
 
-\item{proposal_sd}{Numeric; proposal step std (in log space). Default 0.3.}
+\item{burn_in}{Integer; samples discarded before the chain is recorded.
+Default 200.  The chain runs \code{n_samples + burn_in} steps in total.}
 
-\item{sigma}{Numeric; measurement noise std. Default 0.05 * mean(b).}
-
-\item{random_state}{Optional integer seed for Monte-Carlo.}
+\item{proposal_scale}{Numeric; the proposal is a relative random walk,
+\code{v + rnorm(0, proposal_scale * |v|)}. Default 0.1.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
@@ -66,6 +67,14 @@ Default 0.01.}
 
 \item{save_result}{Logical; if \code{TRUE}, call
 \code{save_result_callback}. Default \code{FALSE}.}
+
+\item{random_state}{Optional integer seed for Monte-Carlo.}
+
+\item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
+above this energy are removed from the response matrix during the
+solve and the returned spectrum is expanded back to the full grid
+with exact zeros above the cutoff (Python \code{max_neutron_energy}
+parameter). Default \code{NULL} = no cutoff.}
 }
 \value{
 A result list as produced by \code{\link{run_unfolding}}.

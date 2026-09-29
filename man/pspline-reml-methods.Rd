@@ -5,10 +5,14 @@
 \title{P-spline REML unfolding (mixed-model smoothing)}
 \description{
 R port of \code{bssunfold/src/bssunfold/core/unfold_pspline_reml.py}.
-Represents the unfolded spectrum in a B-spline basis and estimates the
-smoothing parameter by restricted maximum likelihood (REML), as in
-mixed-model smoothing (Eilers & Marx 1996; Currie et al. 2004).
-Iterates between (a) fitting the spline coefficients for fixed
-\code{lambda}, and (b) re-estimating \code{lambda} on a REML grid around
-the previous value.
+The unfolded spectrum is represented in a clamped cubic B-spline basis on
+the (energy-dependent) knot grid and the smoothness is selected by
+restricted maximum likelihood (REML) in the linear-mixed-model
+formulation of \code{LMMsolver} (Eilers & Marx 1996; Wand & Ormerod 2008;
+Currie et al. 2004): the P-spline penalty \code{G = D^(d)T D^(d)} is
+diagonalised, its null space becomes the unpenalised fixed effect and its
+range space the penalised random effect, Henderson's mixed-model
+equations are solved for the coefficients and the variance ratio
+\code{lam} is found by maximising the REML profile along
+\code{log10(lam/lam_ref)}.
 }

@@ -2,17 +2,18 @@
 % Please edit documentation in R/unfold_bayesian_parametric.R
 \name{solve_bayesian_parametric}
 \alias{solve_bayesian_parametric}
-\title{Bayesian parametric unfolding (FRUIT-like with Metropolis-Hastings)}
+\title{Bayesian parametric unfolding (FRUIT-like model with Metropolis-Hastings)}
 \usage{
 solve_bayesian_parametric(
   A,
   b,
   E,
   log_steps,
+  sigma = 0.02,
+  initial_params = NULL,
   n_samples = 1000L,
-  n_burn = 200L,
-  proposal_sd = 0.3,
-  sigma = NULL,
+  burn_in = 200L,
+  proposal_scale = 0.1,
   random_state = NULL
 )
 }
@@ -23,31 +24,39 @@ solve_bayesian_parametric(
 
 \item{E}{Numeric energy grid (length n).}
 
-\item{log_steps}{Numeric log-energy bin widths (length n).}
+\item{log_steps}{Numeric base-10 log-energy bin widths (length n).}
 
-\item{n_samples}{Integer; total MCMC samples. Default 1000.}
+\item{sigma}{Numeric; measurement uncertainty on the readings. Default 0.02.}
 
-\item{n_burn}{Integer; burn-in samples. Default 200.}
+\item{initial_params}{Optional named numeric vector of starting values for
+\code{A_th, T_th, A_epi, A_f, T_ev}.}
 
-\item{proposal_sd}{Numeric; proposal step std (in log space). Default 0.3.}
+\item{n_samples}{Integer; number of post-burn-in samples. Default 1000.}
 
-\item{sigma}{Numeric; measurement noise std. Default 0.05 * mean(b).}
+\item{burn_in}{Integer; samples discarded before the chain is recorded.
+Default 200.  The chain runs \code{n_samples + burn_in} steps in total.}
+
+\item{proposal_scale}{Numeric; the proposal is a relative random walk,
+\code{v + rnorm(0, proposal_scale * |v|)}. Default 0.1.}
 
 \item{random_state}{Optional integer seed.}
 }
 \value{
-A list \code{list(spectrum, n_iterations, converged, posterior_samples)}.
+A list \code{list(spectrum, success, message, n_samples, means,
+  samples, acceptance_rate)}.
 }
 \description{
 R port of \code{bssunfold/src/bssunfold/core/unfold_bayesian_parametric.py}.
-Bayesian inference on the 5 parameters of the FRUIT-like parametric model
-(Maxwellian + 1/E + evaporation) using random-walk Metropolis-Hastings.
+Random-walk Metropolis-Hastings over the five parameters of the FRUIT-like
+spectral model (Maxwellian thermal + \code{1/E} epithermal + evaporation
+fast).  Note that this method, unlike \code{\link{unfold_fruit_like}}, is fed
+the base-10 lethargy widths \code{compute_log_steps(E_MeV)}, not their
+natural-log equivalents.
 }
 \examples{
 E <- 10^seq(-9, 1, length.out = 60)
-A <- matrix(runif(5 * 60), nrow = 5)
+A <- matrix(runif(5 * 60), nrow = 5) * 0.2
 b <- as.numeric(A \%*\% rep(0.5, 60))
-set.seed(7)
-r <- solve_bayesian_parametric(A, b, E, compute_log_steps(E) * log(10),
-                                n_samples = 50, n_burn = 10)
+r <- solve_bayesian_parametric(A, b, E, compute_log_steps(E),
+                                n_samples = 60, burn_in = 20)
 }

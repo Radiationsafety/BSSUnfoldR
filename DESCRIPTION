@@ -44,3 +44,4 @@ VignetteBuilder: knitr
 URL: https://github.com/Radiationsafety/BSSUnfoldR, https://radiationsafety.github.io/BSSUnfoldR/
 BugReports: https://github.com/Radiationsafety/BSSUnfoldR/issues
 Config/roxygen2/version: 8.1.0
+RoxygenNote: 7.3.1

@@ -43,8 +43,12 @@ solve_fista <- function(A, b, x0 = NULL, max_iterations = 500L,
     if (nonnegativity) x <- pmax(x, 0)
     y <- x
     t <- 1.0
-    L <- tryCatch(norm(A, type = "2")^2, error = function(e) {
-        # Power iteration fallback
+    # Lipschitz constant L = ||A||_2^2 of the gradient A' (A y - b).
+    # Python uses the exact spectral norm (SVD) for n < 100 and only falls
+    # back to a power iteration for large problems.
+    L <- if (n < 100L) {
+        svd(A, nu = 0L, nv = 0L)$d[1L]^2
+    } else {
         v <- rnorm(n); v <- v / sqrt(sum(v^2))
         for (i in 1:20) {
             u <- as.numeric(A %*% v)
@@ -52,7 +56,7 @@ solve_fista <- function(A, b, x0 = NULL, max_iterations = 500L,
             v <- v_new / sqrt(sum(v_new^2))
         }
         sum((as.numeric(A %*% v))^2) / sum(v^2)
-    })
+    }
     L <- max(L, 1e-10)
     step_size <- 1.0 / L
     D <- NULL
@@ -78,8 +82,8 @@ solve_fista <- function(A, b, x0 = NULL, max_iterations = 500L,
             # Soft thresholding
             x_temp <- sign(x_temp) * pmax(abs(x_temp) - step_size * l1_penalty, 0)
         }
-        if (nonnegativity) x_temp <- pmax(x_temp, x_min)
-        if (is.finite(x_max)) x_temp <- pmin(x_temp, x_max)
+        if (nonnegativity) x_temp <- pmax(x_temp, 0)
+        if (is.finite(x_max)) x_temp <- pmin(pmax(x_temp, x_min), x_max)
         x <- x_temp
         t_new <- (1.0 + sqrt(1.0 + 4.0 * t * t)) / 2.0
         y <- x + ((t - 1.0) / t_new) * (x - x_old)
@@ -116,13 +120,23 @@ unfold_fista <- function(detector_names, n_energy_bins, E_MeV,
                            save_result = FALSE, random_state = NULL,
                               max_neutron_energy = NULL) {
     x0_default <- rep(1.0, n_energy_bins)
+    # Python builds its own system here (it does not normalise the prior):
+    # with no user start the iterate begins at ones * mean(b) / mean(A),
+    # evaluated on the response matrix actually used for the solve.  Passing
+    # x0 = NULL to solve_fista reproduces that behaviour, including the
+    # column trimming implied by max_neutron_energy.
+    default_start <- is.null(initial_spectrum)
+    fista_solver <- function(A, b, x0 = NULL, ...) {
+        if (default_start) x0 <- NULL
+        solve_fista(A = A, b = b, x0 = x0, ...)
+    }
     run_unfolding(
         detector_names = detector_names, n_energy_bins = n_energy_bins,
         E_MeV = E_MeV, sensitivities = sensitivities,
         cc_icrp116 = cc_icrp116, save_result_callback = save_result_callback,
         readings = readings, initial_spectrum = initial_spectrum,
         default_initial = x0_default,
-        solve_func = make_solve_wrapper(solve_fista,
+        solve_func = make_solve_wrapper(fista_solver,
                                          max_iterations = max_iterations,
                                          tolerance = tolerance,
                                          regularization = regularization,

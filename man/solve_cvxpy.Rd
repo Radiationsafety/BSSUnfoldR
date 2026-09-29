@@ -4,30 +4,84 @@
 \alias{solve_cvxpy}
 \title{CVXPY-equivalent convex optimization unfolding}
 \usage{
-solve_cvxpy(A, b, x0 = NULL, alpha = 0.01, norm = 2L)
+solve_cvxpy(
+  A,
+  b,
+  x0 = NULL,
+  alpha = 1e-04,
+  norm = 2L,
+  solver = "ECOS",
+  ub = NULL
+)
 }
 \arguments{
 \item{A}{Numeric response matrix (m x n).}
 
 \item{b}{Numeric measurement vector (length m).}
 
-\item{x0}{Unused.}
+\item{x0}{Unused (accepted for the unified solver API and Python parity).}
 
-\item{alpha}{Numeric; regularization. Default 0.01.}
+\item{alpha}{Numeric; regularization parameter multiplying the norm of the
+spectrum.  Default 1e-4, the reference default.}
 
 \item{norm}{Integer; 1 (L1) or 2 (L2). Default 2.}
+
+\item{solver}{Character; CVXPY solver name.  Accepted for API parity: the
+port uses its own internal conic engine, so the name only selects which
+label is reported and any recognised CVXPY solver name is accepted.
+Default \code{"ECOS"} (the reference default).}
+
+\item{ub}{Optional numeric per-bin upper bound of length \code{n}.
+Bins with \code{ub == 0} are forced to zero (the
+\code{max_neutron_energy} cutoff), finite positive entries are honoured as
+upper bounds and the returned spectrum is clipped to them, exactly like
+\code{_solve_cvxpy_problem}.  Default \code{NULL} = unbounded.}
 }
 \value{
-A list \code{list(spectrum, iterations = 1, converged = TRUE)}.
+A list \code{list(spectrum, iterations, converged)}.
 }
 \description{
 R port of \code{bssunfold/src/bssunfold/core/unfold_cvxpy.py}.
-Solves \eqn{\min \|A x - b\|_2 + \alpha \|x\|_p} with \eqn{x \geq 0}
-using NNLS (for L2 norm) or iterative reweighting (for L1 norm).
+The Python code hands the conic program
+\deqn{\min_x \; \|A x - b\|_2 + \alpha \, \|x\|_p \quad \text{s.t. } x \ge 0}
+with \eqn{p} (\code{norm}) equal to 1 or 2, plus per-bin upper bounds that
+encode the \code{max_neutron_energy} cutoff, to CVXPY, which solves it with
+its first installed conic solver.  Note that the data term is the
+\emph{unsquared} 2-norm, so this is a second-order cone program, not a QP:
+\code{regularization} multiplies a norm, never a squared norm, and there is
+no smoothness operator (\eqn{L} is the identity) and no sum or dose
+normalisation constraint.
+}
+\details{
+The program is reproduced here with the package's own active-set engine,
+solved to (near) exact optimality.  For \code{norm = 2} the KKT conditions
+of the cone program are exactly the KKT conditions of the Tikhonov problem
+\eqn{\min_{x \ge 0} \|A x - b\|^2 + \lambda \|x\|^2}{min ||Ax-b||^2 + lambda ||x||^2}
+with \eqn{\lambda = \alpha \|A x - b\|_2 / \|x\|_2}{lambda = alpha*||Ax-b||/||x||};
+that scalar equation has a single root (\eqn{\lambda \mapsto \alpha g/s}
+crosses the diagonal once), so it is solved by bracketing plus bisection
+followed by a Newton polish on the fixed support.  When an exact
+non-negative fit exists the multiplier vanishes and the cone optimum is the
+minimum-norm exact fit, which the engine selects from a multiplier ladder
+scored by the true cone objective.  For \code{norm = 1} the non-negativity
+makes \eqn{\|x\|_1}{||x||_1} the linear form \eqn{\mathbf{1}'x}{1'x}, and the
+analogous stationarity identity reads
+\eqn{\mu = 2 \alpha \|A x(\mu) - b\|_2}{mu = 2*alpha*||Ax(mu)-b||} with
+\eqn{x(\mu)}{x(mu)} solving \eqn{\min_{x \ge 0} \|A x - b\|^2 - \mu \mathbf{1}'x}{%
+min ||Ax-b||^2 - mu 1'x}; \eqn{\mu \mapsto 2 \alpha g(\mu)} is non-decreasing
+and bounded by \eqn{2 \alpha \|b\|}{2*alpha*||b||}, so the monotone iteration
+from \eqn{\mu = 0}{mu = 0} converges to the same point.
+
+Because the reference environment has no ECOS and CVXPY therefore falls back
+to SCS (a first-order splitting solver) at its default tolerances, the
+reference spectra can be measurably short of optimality on badly scaled
+grids; this engine returns the exact minimiser of the same program, so on
+those grids it differs from the reference by the reference's own solver
+error rather than by a different formulation.
 }
 \examples{
 A <- matrix(c(0.9, 0.05, 0.05, 0.10, 0.8, 0.10, 0.30, 0.30, 0.40),
             nrow = 3, byrow = TRUE)
 b <- c(1, 0.6, 0.4)
-r <- solve_cvxpy(A, b, NULL, alpha = 0.01, norm = 2)
+r <- solve_cvxpy(A, b, NULL, alpha = 1e-4, norm = 2)
 }

@@ -82,11 +82,11 @@ solve_amaxed <- function(A, b, x0, sigma_factor = 0.1, target_chi2 = NULL,
         grad_norm <- sqrt(sum(state_grad^2))
         if (grad_norm < tolerance) break
         Hess <- hessian(phi_sol, mu)
-        delta_state <- tryCatch(as.numeric(qr.solve(Hess, -state_grad)),
+        delta_state <- tryCatch(as.numeric(solve(Hess, -state_grad)),
                                 error = function(e) {
             reg <- 1e-6 * max(abs(diag(Hess)))
-            if (reg <= 0) reg <- 1e-12
-            as.numeric(qr.solve(Hess + reg * diag(n + 1L), -state_grad))
+            if (!is.finite(reg) || reg <= 0) reg <- 1e-12
+            as.numeric(solve(Hess + reg * diag(n + 1L), -state_grad))
         })
         delta_phi <- delta_state[1:n]
         delta_mu <- delta_state[n + 1L]

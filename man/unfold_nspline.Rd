@@ -22,7 +22,11 @@ unfold_nspline(
   n_montecarlo = 100L,
   save_result = FALSE,
   random_state = NULL,
-  max_neutron_energy = NULL
+  max_neutron_energy = NULL,
+  continuity = .nspline_CONTINUITY,
+  relative_uncertainty = .nspline_REL_UNCERTAINTY,
+  smoothing = TRUE,
+  n_segments = NULL
 )
 }
 \arguments{
@@ -46,14 +50,18 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{knots}{Optional numeric vector of knot energies (interior, strictly
-increasing). Default \code{NULL} = \code{\link{auto_knots}(E_MeV)}.}
+\item{knots}{Optional knot specification: \code{NULL} (auto log-uniform
+grid), a preset name or a numeric knot sequence (see Sections).}
 
-\item{max_iterations}{Positive integer; default 500.}
+\item{max_iterations}{Positive integer; iteration budget. Default 500.
+When left at its default the reference budget of 200 iterations is used.}
 
-\item{tolerance}{Positive numeric; relative tolerance on H. Default 1e-6.}
+\item{tolerance}{Positive numeric; relative stopping tolerance on the
+directed divergence \eqn{H}. Default 1e-6; when left at its default the
+reference tolerance 1e-3 is used.}
 
-\item{dmu_start}{Numeric; initial step size. Default 0.1.}
+\item{dmu_start}{Numeric; conservative initial step factor,
+\code{dmu = dmu_start / sup|R - Rbar|}. Default 0.1.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
@@ -73,6 +81,19 @@ above this energy are removed from the response matrix during the
 solve and the returned spectrum is expanded back to the full grid
 with exact zeros above the cutoff (Python \code{max_neutron_energy}
 parameter). Default \code{NULL} = no cutoff.}
+
+\item{continuity}{Character; \code{"C0C1"} (default), \code{"C0"} or
+\code{"none"}.}
+
+\item{relative_uncertainty}{Numeric; relative measurement uncertainty
+\code{dQ/Q} used by the stopping criteria and the \code{nev} statistic.
+Default 0.1.}
+
+\item{smoothing}{Logical; re-fit the N-spline after every iteration.
+Default TRUE (the paper's procedure).}
+
+\item{n_segments}{Optional integer; number of spline segments for the auto
+knot grid (\code{NULL} = adaptive).}
 }
 \value{
 A result list as produced by \code{\link{run_unfolding}}.

@@ -13,13 +13,15 @@ unfold_pspline_reml(
   save_result_callback,
   readings,
   initial_spectrum = NULL,
-  n_basis = 15L,
-  lambda_init = 1,
+  n_basis = NULL,
+  spline_order = 4L,
+  diff_order = 2L,
+  knot_spacing = "auto",
+  weights = "uniform",
+  lam_relative = NULL,
+  lam_bounds = .pspline_LAMBDA_REL_BOUNDS,
   max_iterations = 50L,
   tolerance = 0.001,
-  n_grid = 7L,
-  nonneg = TRUE,
-  method_name = "PSplineREML",
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
@@ -49,23 +51,33 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{n_basis}{Integer; number of B-spline basis functions. Default 15.}
+\item{n_basis}{Integer; dimension of the B-spline space. Default
+\code{NULL} = \code{max(diff_order + 2, min(n \%/\% 2, 30))}, the same
+rule Python uses.}
 
-\item{lambda_init}{Numeric; starting smoothness parameter. Default 1.0.}
+\item{spline_order}{Integer; B-spline order. Default 4 (cubic).}
 
-\item{max_iterations}{Integer; outer REML iterations. Default 50.}
+\item{diff_order}{Integer; difference order of the penalty. Default 2.}
 
-\item{tolerance}{Numeric; convergence on \code{log10(lambda)}. Default
-1e-3.}
+\item{knot_spacing}{One of \code{"auto"}, \code{"uniform"} or
+\code{"log"}. Default \code{"auto"}.}
 
-\item{n_grid}{Integer; number of \code{lambda} values tried per iteration.
-Default 7.}
+\item{weights}{\code{"uniform"}, \code{"poisson"} or a numeric vector of
+length \code{m}. Default \code{"uniform"}.}
 
-\item{nonneg}{Logical; clip final spectrum to be non-negative. Default
-TRUE.}
+\item{lam_relative}{Optional fixed relative smoothing parameter; when set,
+REML selection is skipped. Default \code{NULL}.}
 
-\item{method_name}{Character string used as the \code{method} field of the
-result.}
+\item{lam_bounds}{Length-2 search interval for the relative smoothing
+parameter.}
+
+\item{max_iterations}{Integer; maximum number of REML profile evaluations
+(function evaluations of the bounded Brent search). Default 50.}
+
+\item{tolerance}{Numeric; absolute tolerance of the bounded Brent search on
+\code{log10(lam/lam_ref)}. Default 1e-3; when left at its default the
+search instead uses the reference tolerance 1e-5, which matches the
+Python implementation.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}

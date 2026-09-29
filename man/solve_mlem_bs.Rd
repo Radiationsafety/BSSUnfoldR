@@ -7,14 +7,17 @@
 solve_mlem_bs(
   A,
   b,
-  x0,
-  E_MeV,
+  x0 = NULL,
+  E_MeV = NULL,
   n_basis = NULL,
   beta = 0,
   beta_relative = 0,
-  max_iterations = 200L,
+  max_iterations = 1000L,
   tolerance = 1e-06,
-  knot_spacing = "auto"
+  knot_spacing = "auto",
+  spline_order = 4L,
+  auto_params = FALSE,
+  ks_patience = 50L
 )
 }
 \arguments{
@@ -22,12 +25,14 @@ solve_mlem_bs(
 
 \item{b}{Numeric measurement vector (length m).}
 
-\item{x0}{Numeric initial spectrum (length n).}
+\item{x0}{Numeric initial spectrum (length n), projected onto the
+non-negative B-spline sieve to obtain the starting coefficients.
+\code{NULL} uses a flat 0.5 spectrum.}
 
 \item{E_MeV}{Numeric energy grid (length n).}
 
-\item{n_basis}{Integer; number of B-spline basis functions. Default
-\code{NULL} = \code{max(5, n/4)}.}
+\item{n_basis}{Integer; number of B-spline basis functions \eqn{N_s}.
+Default \code{NULL} = \code{max(spline_order + 1, min(n \%/\% 2, 40))}.}
 
 \item{beta}{Numeric; absolute penalty strength. Exactly one of
 \code{beta} / \code{beta_relative} may be non-zero. Default 0.}
@@ -35,18 +40,30 @@ solve_mlem_bs(
 \item{beta_relative}{Numeric; penalty strength relative to the mean
 column sum of \eqn{RB}. Default 0.}
 
-\item{max_iterations}{Positive integer; default 200.}
+\item{max_iterations}{Positive integer; default 1000.}
 
 \item{tolerance}{Positive numeric; default 1e-6.}
 
 \item{knot_spacing}{Character; \code{"auto"}, \code{"uniform"}, or
-\code{"log"}. Default \code{"auto"} = log when span > 2 decades.}
+\code{"log"}. Default \code{"auto"} = log when the grid spans more
+than two decades.}
+
+\item{spline_order}{Integer B-spline order \eqn{p} (degree \eqn{p-1});
+the paper uses \code{4L} (cubic). Allowed range 2..8.}
+
+\item{auto_params}{Logical; select \eqn{N_s}, the penalty strength and
+the iteration count by minimising the \eqn{K_S} statistic (Eq. 6).}
+
+\item{ks_patience}{Patience (iterations without \eqn{K_S} improvement)
+used in the \eqn{K_S}-minimising mode.}
 }
 \value{
-A list \code{list(spectrum, iterations, converged)}.
+A list \code{list(spectrum, iterations, converged, coefficients,
+  ks_history, ks_final, chi2_pearson, n_basis, spline_order, knot_spacing,
+  interior_knots, beta_effective, beta_relative)}.
 }
 \description{
-R port (simplified) of \code{bssunfold/src/bssunfold/core/unfold_mlem_bs.py}.
+R port of \code{bssunfold/src/bssunfold/core/unfold_mlem_bs.py}.
 Implements the regularized MLEM iteration on B-spline coefficients of
 Mazankova et al., CNDGS'2026, \url{https://doi.org/10.47459/cndcgs.2026.61}.
 }
@@ -55,14 +72,18 @@ The spectrum is represented as \eqn{x(E) = \sum_s b_s B_s(E)} so the
 effective system matrix is \eqn{RB = R B}. The B-spline coefficients
 are updated by the multiplicative MLEM iteration with a second-derivative
 penalty \eqn{P(b) = \|D^{(2)} b\|^2_2} and a sieve restriction to
-non-negative coefficients.
-}
-\section{Limitations vs. Python bssunfold}{
+non-negative coefficients:
 
-This is a simplified port that does not include the Poisson-bootstrap
-confidence intervals nor the auto-selection of \eqn{N_s} / \eqn{\beta}
-by minimisation of the \eqn{K_S} statistic. Users must specify
-\code{n_basis} and \code{beta} (or \code{beta_relative}) manually.
+\deqn{b_s^{(k+1)} = \frac{b_s^{(k)}}{\sum_i (RB)_{is} + \beta\, dP/db_s}
+       \sum_i (RB)_{is} \frac{n_i}{\sum_{s'} (RB)_{is'} b_{s'}^{(k)}}.}
+}
+\section{Scaling note}{
+
+The absolute penalty \code{beta} of Eq. 4 is problem-scale dependent (the
+paper uses \code{beta = 1e-17}). \code{beta_relative} defines the effective
+penalty as \code{beta = beta_relative * mean(colSums(RB))}; exactly one of
+the two may be non-zero, and with neither the penalty is zero (pure sieve
+MLEM on the B-spline parameterization).
 }
 
 \examples{

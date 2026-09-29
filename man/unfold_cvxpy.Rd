@@ -12,15 +12,23 @@ unfold_cvxpy(
   cc_icrp116,
   save_result_callback,
   readings,
+  ln_steps = NULL,
   initial_spectrum = NULL,
-  alpha = 0.01,
+  regularization = 1e-04,
   norm = 2L,
+  solver = "default",
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
   save_result = FALSE,
+  regularization_method = "manual",
+  noise_var = NULL,
   random_state = NULL,
-  max_neutron_energy = NULL
+  max_neutron_energy = NULL,
+  reading_uncertainties = NULL,
+  reading_covariance = NULL,
+  noise_model = "gaussian",
+  measurement_time = NULL
 )
 }
 \arguments{
@@ -41,12 +49,21 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 
 \item{readings}{Named numeric vector of detector readings.}
 
+\item{ln_steps}{Optional numeric \eqn{d(\ln E)} bin widths.  Accepted for
+Python API parity; the sensitivities held by \code{Detector} are already
+lethargy-weighted, so this method does not consume it.}
+
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{alpha}{Numeric; regularization. Default 0.01.}
+\item{regularization}{Numeric; the CVXPY regularization parameter passed to
+\code{\link{solve_cvxpy}} as \code{alpha}.  Default 1e-4.}
 
 \item{norm}{Integer; 1 (L1) or 2 (L2). Default 2.}
+
+\item{solver}{Character; CVXPY solver name, \code{"default"} resolves to the
+reference preference order.  The port always uses its own internal conic
+engine, so this only labels the reported field.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
@@ -59,6 +76,14 @@ Default 0.01.}
 \item{save_result}{Logical; if \code{TRUE}, call
 \code{save_result_callback}. Default \code{FALSE}.}
 
+\item{regularization_method}{Character; \code{"manual"} (default) uses
+\code{regularization}, \code{"cosine"} needs \code{initial_spectrum}, and
+\code{"lcurve"}, \code{"gcv"} or \code{"dp"} select the parameter from the
+response system.}
+
+\item{noise_var}{Optional noise variance for \code{regularization_method =
+"dp"}; estimated from the least-squares residual when \code{NULL}.}
+
 \item{random_state}{Optional integer seed for Monte-Carlo.}
 
 \item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
@@ -66,6 +91,18 @@ above this energy are removed from the response matrix during the
 solve and the returned spectrum is expanded back to the full grid
 with exact zeros above the cutoff (Python \code{max_neutron_energy}
 parameter). Default \code{NULL} = no cutoff.}
+
+\item{reading_uncertainties}{Optional per-detector reading uncertainties.
+Accepted for Python API parity.}
+
+\item{reading_covariance}{Optional reading covariance matrix.  Accepted for
+Python API parity.}
+
+\item{noise_model}{Character noise model name.  Accepted for Python API
+parity.  Default \code{"gaussian"}.}
+
+\item{measurement_time}{Optional measurement time in seconds.  Accepted for
+Python API parity.}
 }
 \description{
 Wrapper around \code{\link{solve_cvxpy}} for the unified workflow.

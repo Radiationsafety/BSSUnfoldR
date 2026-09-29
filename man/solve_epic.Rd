@@ -19,25 +19,41 @@ solve_epic(
 
 \item{b}{Numeric measurement vector (length m).}
 
-\item{x0}{Unused.}
+\item{x0}{Unused (kept for API compatibility with the other solvers).}
 
 \item{sigma_frac}{Numeric; fraction of max LS solution as target sigma. Default 0.1.}
 
-\item{max_iterations}{Integer; max EPIC iterations. Default 30.}
+\item{max_iterations}{Integer; max EPIC iterations. Each unit allows 100
+function evaluations of the EPIC weight search. Default 30.}
 
-\item{tolerance}{Numeric; convergence on beta weights. Default 1e-4.}
+\item{tolerance}{Numeric; convergence threshold on the EPIC betas. Default 1e-4.}
 
 \item{nonneg}{Logical; enforce non-negativity via NNLS. Default TRUE.}
 }
 \value{
-A list \code{list(spectrum, iterations, converged)}.
+A list \code{list(spectrum, iterations, converged, betas,
+  posterior_vars)}. \code{betas} holds the EPIC log-weights and
+\code{posterior_vars} the a posteriori variances they produce.
 }
 \description{
-R port of \code{bssunfold/src/bssunfold/core/unfold_epic.py}.
-Implements the Equal Posterior Information Condition (EPIC) Tikhonov
-regularization (Ortega-Culaciati et al., JGR Solid Earth, 2021).
-Regularization weights are chosen so that posterior variances of model
-parameters match user-supplied target variances.
+R port of \code{bssunfold/core/unfold_epic.py} (the EPIC_LS package of
+Ortega-Culaciati et al., JGR Solid Earth, 2021).
+The Equal Posterior Information Condition (EPIC) selects the prior
+variances of a regularization operator \eqn{H} such that the a posteriori
+variances of the model parameters match the user supplied target
+sigmas. The betas (natural logarithms of the reciprocal prior variances)
+are obtained by solving the nonlinear system
+\deqn{(\mathrm{diag}((P + H' \exp(\beta) H)^{-1}) - s^2)/s^2 = 0}{(diag((P +
+H' exp(beta) H)^{-1}) - s^2)/s^2 = 0}
+in the least-squares sense, with \eqn{P = A'A} the precision matrix and
+\eqn{s} the target sigmas. Once the weights are known the (optionally
+non-negative) regularized least squares problem is solved by stacking the
+misfit and regularization blocks.
+}
+\details{
+The returned spectrum is a lethargy density (fluence per \eqn{d \ln E}),
+like every other solver in this package: \code{A} and \code{b} arrive
+already weighted by the per-bin log steps.
 }
 \examples{
 A <- matrix(c(0.9, 0.05, 0.05, 0.10, 0.8, 0.10, 0.30, 0.30, 0.40),

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git diff --stat && ls tools/ && ls tests/testthat/ | tail -20)"
+    ]
+  }
+}

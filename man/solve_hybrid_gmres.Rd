@@ -12,7 +12,8 @@ solve_hybrid_gmres(
   regularization_method = "gcv",
   regularization = 0,
   noise_level = NULL,
-  eta = 1.01
+  eta = 1.01,
+  reorthogonalization = TRUE
 )
 }
 \arguments{
@@ -20,35 +21,51 @@ solve_hybrid_gmres(
 
 \item{b}{Numeric measurement vector (length m).}
 
-\item{x0}{Unused; accepted for API compatibility.}
+\item{x0}{Optional numeric initial guess (length n). Default \code{NULL}
+= zero spectrum, as in the Python original.}
 
 \item{max_iterations}{Positive integer; max Krylov dimension. Default 100.}
 
-\item{regularization_method}{Character; \code{"gcv"} (default), \code{"dp"},
-\code{"manual"}.}
+\item{regularization_method}{Character; \code{"gcv"} (default) or
+\code{"modgcv"} (identical search grid, as in Python), \code{"discrep"}
+(discrepancy principle, requires \code{noise_level}), or any other
+string to use the fixed \code{regularization}.}
 
-\item{regularization}{Numeric; manual regularization. Default 0.0.}
+\item{regularization}{Numeric; fixed regularization parameter, also used
+as the starting value of the discrepancy search. Default 0.0.}
 
-\item{noise_level}{Optional numeric; relative noise for DP. Default \code{NULL}.}
+\item{noise_level}{Optional numeric; relative noise for the discrepancy
+principle. Default \code{NULL}.}
 
-\item{eta}{Numeric; safety factor for DP. Default 1.01.}
+\item{eta}{Numeric; safety factor for the discrepancy principle.
+Default 1.01.}
+
+\item{reorthogonalization}{Logical; re-orthogonalize each new basis vector
+against the previous ones. Default \code{TRUE}.}
 }
 \value{
 A list \code{list(spectrum, iterations, converged)}.
 }
 \description{
 R port of \code{bssunfold/src/bssunfold/core/unfold_hybrid_gmres.py}.
-Combines the GMRES iterative solver with Tikhonov regularization applied
-to the projected problem at each iteration. The regularization parameter
-is selected automatically using GCV or discrepancy principle.
+The method is a \emph{hybrid} GMRES: a Golub-Kahan bidiagonalization
+builds two orthonormal bases, \code{V} in detector space (length
+\code{m}) and \code{U} in solution space (length \code{n}), together with
+the lower bidiagonal projection \code{B_k}.  At every Krylov dimension
+the projected problem
+\code{min || B_k y - beta_0 e_1 ||^2 + lambda^2 ||y||^2} is solved and the
+regularization parameter is chosen by the generalized cross validation
+(GCV) curve.  The iterate with the smallest GCV value over all Krylov
+dimensions is returned (this is the classic IRtools
+\code{IRhybrid_gmres} strategy), and the recovered spectrum is
+\code{x0 + U_k y}.
 }
 \section{Limitations}{
 
-This is a simplified port. The Python original uses GMRES with
-reorthogonalization. The R port uses a similar approach via Lanczos /
-Arnoldi-style iteration with optional Tikhonov regularization on the
-projected problem (similar to Lanczos-hybrid but with a different
-projection basis).
+The GCV denominator uses \code{trace(B_k B_k^+)} exactly as the Python
+original does, and the pseudo-inverse cut-off mirrors NumPy's default
+(\code{rcond = 1e-15}).  The least-squares solves mirror
+\code{numpy.linalg.lstsq} (SVD with the machine-precision cut-off).
 }
 
 \examples{

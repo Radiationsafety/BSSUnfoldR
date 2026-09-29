@@ -1,212 +1,270 @@
 #' AMG / preconditioned Krylov unfolding
 #'
 #' R port of \code{bssunfold/src/bssunfold/core/unfold_amg.py}.
-#' Solves the (optionally Tikhonov-regularized) response system with a
-#' Krylov method (\code{cg} for the SPD case, \code{bicgstab} and
-#' \code{gmres} for the general case) preconditioned by
+#' The (Tikhonov-damped) normal equations
+#' \deqn{(A^\top A + \lambda I) x = A^\top b}
+#' are solved with a preconditioned Krylov method (\code{cg} for the SPD
+#' case, \code{bicgstab} and \code{gmres} for the general case) using a
+#' preconditioner that approximates \eqn{(A^\top A + \lambda I)^{-1}}:
 #' \itemize{
-#'   \item \code{"amg"} \eqn{\rightarrow} algebraic-multigrid-like
-#'     two-level smoothing (down-Jacobi sweeps + coarse correction);
-#'   \item \code{"jacobi"} \eqn{\rightarrow} point-Jacobi preconditioner;
-#'   \item \code{"gs"} \eqn{\rightarrow} Gauss-Seidel iteration (backward
-#'     application);
-#'   \item \code{"sor"} / \code{"ssor"} \eqn{\rightarrow} symmetric or
-#'     forward SOR relaxation;
-#'   \item \code{"none"} \eqn{\rightarrow} no preconditioner.
+#'   \item \code{"amg"} \eqn{\rightarrow} algebraic multigrid
+#'     (smoothed aggregation).  \code{pyamg} is an optional Python
+#'     dependency and is not installed in the reference environment, so
+#'     \code{bssunfold} emits a \code{RuntimeWarning} and degrades to
+#'     \code{"jacobi"}; the port reproduces that fallback exactly.
+#'   \item \code{"jacobi"} \eqn{\rightarrow} point-Jacobi
+#'     (\eqn{M = D}{M = D}).
+#'   \item \code{"gs"} \eqn{\rightarrow} one forward Gauss-Seidel sweep
+#'     (\eqn{M = D + L}{M = D + L}).
+#'   \item \code{"sor"} \eqn{\rightarrow} one SOR sweep
+#'     (\eqn{M = (D + \omega L)/\omega}{M = (D + omega L)/omega}).
+#'   \item \code{"ssor"} \eqn{\rightarrow} symmetric SOR sweep
+#'     (\eqn{M = (D + \omega L) D^{-1} (D + \omega U) / (\omega (2 - \omega))}).
+#'   \item \code{"none"} \eqn{\rightarrow} identity.
 #' }
-#' The pure-R AMG emulation follows Katzengruber et al.: aggregated coarse
-#' grids with relaxed Jacobi pre/post smoothing, which is a faithful
-#' classical-memory model for the Python version that uses pyamg
-#' (optional dependency).
+#' Non-negativity is enforced by projected outer restarts: after every
+#' Krylov solve the spectrum is clamped to \code{x >= 0} and the
+#' iteration is restarted on the residual of the clamped iterate,
+#' \code{outer_iterations} times.
 #'
 #' @name amg-methods
 NULL
 
-# ---- Krylov ----------------------------------------------------------------
+# Valid argument values, mirroring _VALID_METHODS / _VALID_PRECONDITIONERS
+# and _CG_COMPATIBLE of the Python module.
+.amg_valid_methods <- c("cg", "bicgstab", "gmres")
+.amg_valid_preconditioners <- c("amg", "jacobi", "gs", "sor", "ssor", "none")
+## Preconditioners whose application is symmetric positive definite, i.e.
+## usable with CG. "gs" and "sor" are non-symmetric.
+.amg_cg_compatible <- c("amg", "jacobi", "ssor", "none")
+## Auto Tikhonov damping factor (_AUTO_REG_FACTOR): damping is
+## 1e-4 * mean(diag(A'A)) when regularization is NULL.
+.amg_auto_reg_factor <- 1e-4
 
-.amg_cg <- function(A, b, apply_pre, max_iterations, tolerance) {
-    x <- rep(0, ncol(A))
-    r <- as.numeric(b)
-    z <- apply_pre(r)
-    p <- z
-    rz <- sum(r * z)
-    iterations <- 0L
-    bnorm <- max(sqrt(sum(r^2)), 1e-30)
-    converged <- FALSE
-    for (it in seq_len(max_iterations)) {
-        iterations <- it
-        Ap <- as.numeric(A %*% p)
-        denom <- sum(p * Ap)
-        if (abs(denom) < 1e-30) break
-        alpha <- rz / denom
+# ---- Preconditioner application (Python _stationary_apply) -----------------
+
+.amg_stationary_apply <- function(N, kind, omega, r) {
+    D <- diag(N)
+    D_safe <- ifelse(abs(D) > 0, D, 1)
+    if (identical(kind, "jacobi")) {
+        return(r / D_safe)
+    }
+    lower <- matrix(0, nrow = nrow(N), ncol = ncol(N))
+    lower[lower.tri(N)] <- N[lower.tri(N)]
+    upper <- matrix(0, nrow = nrow(N), ncol = ncol(N))
+    upper[upper.tri(N)] <- N[upper.tri(N)]
+    if (identical(kind, "gs")) {
+        Mf <- lower + diag(D_safe, nrow = nrow(N))
+        return(as.numeric(backsolve(t(Mf), r, transpose = TRUE)))
+    }
+    if (identical(kind, "sor")) {
+        Mf <- omega * lower + diag(D_safe, nrow = nrow(N))
+        return(omega * as.numeric(backsolve(t(Mf), r, transpose = TRUE)))
+    }
+    if (identical(kind, "ssor")) {
+        Mf <- omega * lower + diag(D_safe, nrow = nrow(N))
+        Mb <- omega * upper + diag(D_safe, nrow = nrow(N))
+        t <- as.numeric(backsolve(t(Mf), r, transpose = TRUE))
+        t <- D_safe * t
+        t <- as.numeric(backsolve(Mb, t))
+        return(omega * (2 - omega) * t)
+    }
+    stop("Unknown stationary kind: ", kind)
+}
+
+## build_preconditioner(): a function approximating (A'A + damping I)^{-1} r.
+## "amg" degrades to "jacobi", like the Python module without pyamg.
+## The returned function counts its applications, mirroring
+## _counting_operator(); the counter lives in a shared environment.
+.amg_build_preconditioner <- function(Nmat, kind, omega, counter) {
+    n <- nrow(Nmat)
+    if (identical(kind, "none")) {
+        return(function(r) {
+            counter$n <- counter$n + 1L
+            as.numeric(r)
+        })
+    }
+    if (identical(kind, "amg")) {
+        warning("pyamg is not installed -- AMG preconditioner falls back ",
+                "to Jacobi.", call. = FALSE)
+        kind <- "jacobi"
+    }
+    function(r) {
+        counter$n <- counter$n + 1L
+        .amg_stationary_apply(Nmat, kind, omega, as.numeric(r))
+    }
+}
+
+# ---- Krylov solvers --------------------------------------------------------
+
+## scipy.sparse.linalg.cg mirror.  Stopping test is
+## norm(r) < max(atol, rtol * norm(b)) evaluated at the TOP of the loop,
+## x0 is always the zero vector here, and info is 0 on success or
+## maxiter when the loop is exhausted.
+.amg_cg <- function(matvec, psolve, b, rtol, maxiter, atol = 0) {
+    x <- numeric(length(b))
+    r <- as.numeric(b)                       # x is all zero -> r = b
+    bnrm2 <- sqrt(sum(r^2))
+    if (bnrm2 == 0) return(list(x = r, info = 0L))
+    atol <- max(atol, rtol * bnrm2)
+    rho_prev <- NA_real_
+    p <- NULL
+    for (iteration in seq_len(maxiter)) {
+        if (sqrt(sum(r^2)) < atol) return(list(x = x, info = 0L))
+        z <- psolve(r)
+        rho_cur <- sum(r * z)
+        if (iteration > 1L) {
+            p <- p * (rho_cur / rho_prev)
+            p <- p + z
+        } else {
+            p <- as.numeric(z)
+        }
+        q <- matvec(p)
+        alpha <- rho_cur / sum(p * q)
         x <- x + alpha * p
-        r <- r - alpha * Ap
-        if (sqrt(sum(r^2)) / bnorm < tolerance) { converged <- TRUE; break }
-        z <- apply_pre(r)
-        rz_new <- sum(r * z)
-        if (abs(rz) < 1e-30) break
-        p <- z + (rz_new / rz) * p
-        rz <- rz_new
+        r <- r - alpha * q
+        rho_prev <- rho_cur
     }
-    list(x = x, iterations = iterations, converged = converged)
+    list(x = x, info = as.integer(maxiter))
 }
 
-.amg_gmres <- function(A, b, apply_pre, max_iterations, tolerance) {
-    n <- ncol(A)
-    x <- rep(0, n)
+## scipy.sparse.linalg.bicgstab mirror (real case, x0 = 0).
+.amg_bicgstab <- function(matvec, psolve, b, rtol, maxiter, atol = 0) {
+    x <- numeric(length(b))
     r <- as.numeric(b)
-    bnorm <- max(sqrt(sum(r^2)), 1e-30)
-    # Restarted preconditioned GMRES (projection on Krylov space)
-    beta <- bnorm
-    V <- matrix(0, nrow = n, ncol = max_iterations)
-    H <- matrix(0, nrow = max_iterations + 1L, ncol = max_iterations)
-    V[, 1] <- r / beta
-    krylov_k <- max_iterations
-    converged <- FALSE
-    iterations <- 0L
-    for (it in seq_len(max_iterations)) {
-        iterations <- it
-        w <- apply_pre(as.numeric(A %*% V[, it]))
-        hnorm_w <- max(sqrt(sum(w^2)), 1e-30)
-        # simple orthogonalization (modified Gram-Schmidt)
-        for (j in seq_len(it)) {
-            H[j, it] <- sum(w * V[, j])
-            w <- w - H[j, it] * V[, j]
-        }
-        H[it + 1L, it] <- sqrt(sum(w^2))
-        if (H[it + 1L, it] > 1e-30) V[, it + 1L] <- w / H[it + 1L, it]
-        # Residual estimate from last column (Givens-free estimate)
-        resid_est <- H[it + 1L, it] / bnorm
-        if (resid_est < tolerance) { krylov_k <- it; converged <- TRUE; break }
-    }
-    # Least-squares solve on the small system for y
-    k <- krylov_k
-    Hs <- H[seq_len(k + 1L), seq_len(k), drop = FALSE]
-    rhs0 <- as.numeric(t(Hs) %*% c(beta, rep(0, k)))
-    omega <- tryCatch(
-        as.numeric(solve(t(Hs) %*% Hs + 1e-10 * diag(k), rhs0, tol = 1e-10)),
-        error = function(e)
-            as.numeric(qr.solve(t(Hs) %*% Hs + 1e-6 * diag(k), rhs0,
-                                 tol = 1e-8)))
-    x <- V[, seq_len(k), drop = FALSE] %*% omega
-    list(x = as.numeric(x), iterations = iterations, converged = converged)
-}
-
-.amg_bicgstab <- function(A, b, apply_pre, max_iterations, tolerance) {
-    n <- ncol(A)
-    x <- rep(0, n)
-    r <- as.numeric(b)
+    bnrm2 <- sqrt(sum(r^2))
+    if (bnrm2 == 0) return(list(x = r, info = 0L))
+    atol <- max(atol, rtol * bnrm2)
+    if (sqrt(sum(r^2)) < atol) return(list(x = x, info = 0L))
     rhat <- r
-    bnorm <- max(sqrt(sum(r^2)), 1e-30)
-    z <- apply_pre(r)
-    p <- z
-    rz <- sum(rhat * r)
-    rho <- 1.0
-    alpha <- 1.0
-    omega <- 1.0
-    iterations <- 0L
-    converged <- FALSE
-    for (it in seq_len(max_iterations)) {
-        iterations <- it
-        u <- apply_pre(as.numeric(A %*% p))
-        denom <- as.numeric(sum(rhat * u))
-        if (abs(denom) < 1e-30) break
-        alpha <- rho / denom
-        s <- r - alpha * u
-        if (sqrt(sum(s^2)) / bnorm < tolerance) {
-            x <- x + alpha * p
-            r <- s
-            converged <- TRUE
-            break
+    rho <- 1; alpha <- 1; omega_b <- 1
+    v <- numeric(length(b))
+    for (iteration in seq_len(maxiter)) {
+        rho_cur <- sum(rhat * r)
+        if (!is.finite(rho_cur) || rho_cur == 0) {
+            return(list(x = x, info = as.integer(iteration)))
         }
-        t <- apply_pre(as.numeric(A %*% s))
-        omega <- sum(t * s) / max(sum(t * t), 1e-30)
-        x <- x + alpha * p + omega * s
-        r <- s - omega * t
-        if (sqrt(sum(r^2)) / bnorm < tolerance) { converged <- TRUE; break }
-        rho_new <- sum(t * rhat) / max(sum(rhat * rhat), 1e-30)
-        beta_r <- (rho_new / rho) * (alpha / omega)
-        p <- r + beta_r * (p - omega * u)
-        rho <- rho_new
+        if (iteration == 1L) {
+            z <- psolve(r)
+            v <- as.numeric(matvec(z))
+            p <- as.numeric(z)
+        } else {
+            beta <- (rho_cur / rho) * (alpha / omega_b)
+            z_hat <- psolve(r)
+            v_hat <- as.numeric(matvec(z_hat))
+            p <- z_hat + beta * (p - omega_b * v)
+            v <- v_hat + beta * (v - omega_b * v_hat)
+        }
+        denom <- sum(rhat * v)
+        if (!is.finite(denom) || denom == 0) {
+            return(list(x = x, info = as.integer(iteration)))
+        }
+        alpha <- rho_cur / denom
+        if (!is.finite(alpha)) return(list(x = x, info = as.integer(iteration)))
+        x <- x + alpha * p
+        s <- r - alpha * v
+        tvec <- as.numeric(matvec(s))
+        tt <- sum(tvec * tvec)
+        omega_b <- if (is.finite(tt) && tt > 0) sum(tvec * s) / tt else 0
+        if (!is.finite(omega_b)) {
+            rho <- rho_cur
+            next
+        }
+        x <- x + omega_b * s
+        r <- as.numeric(psolve(s - omega_b * tvec))
+        if (!all(is.finite(r))) return(list(x = x, info = as.integer(iteration)))
+        rho <- rho_cur
+        if (sqrt(sum(r^2)) < atol) return(list(x = x, info = 0L))
     }
-    list(x = x, iterations = iterations, converged = converged)
+    list(x = x, info = as.integer(maxiter))
 }
 
-# ---- Preconditioners on M = A'A (SPD normal-equation preconditioning) ------
-
-.amg_preconditioner <- function(A, preconditioner, omega, smooth_sweeps) {
-    At <- t(A)
-    n <- nrow(At)
-    M <- crossprod(A)
-    switch(tolower(preconditioner),
-        none = function(r) r,
-        jacobi = {
-            dinv <- 1 / pmax(diag(M), 1e-30)
-            function(r) dinv * r
-        },
-        gs = {
-            function(r)
-                tryCatch(as.numeric(solve(M, r)), error = function(e) r)
-        },
-        sor = ,
-        ssor = {
-            function(r) {
-                y <- rep(0, n)
-                for (s in seq_len(smooth_sweeps)) {
-                    y <- y + omega * (r - as.numeric(M %*% y))
-                }
-                y
+## Restarted preconditioned GMRES following scipy's defaults (restart = 20):
+## Arnoldi basis, Givens-rotated least squares on the Hessenberg system,
+## restarted until maxiter Krylov steps are used.
+.amg_gmres <- function(matvec, psolve, b, rtol, maxiter, restart = 20L) {
+    n <- length(b)
+    x <- numeric(n)
+    r <- as.numeric(b)
+    bnrm2 <- sqrt(sum(r^2))
+    if (bnrm2 == 0) return(list(x = r, info = 0L))
+    atol <- rtol * bnrm2
+    iteration <- 0L
+    while (iteration < maxiter) {
+        if (sqrt(sum(r^2)) <= atol) return(list(x = x, info = 0L))
+        k <- as.integer(min(restart, maxiter - iteration))
+        m <- sqrt(sum(r^2))
+        V <- matrix(0, nrow = n, ncol = k + 1L)
+        H <- matrix(0, nrow = k + 1L, ncol = k)
+        V[, 1L] <- r / m
+        jj <- 1L
+        while (jj <= k) {
+            w <- psolve(as.numeric(matvec(V[, jj])))
+            for (i in seq_len(jj)) {
+                H[i, jj] <- sum(w * V[, i])
+                w <- w - H[i, jj] * V[, i]
             }
-        },
-        amg = {
-            # Two-level AMG-like: smooth, restrict (binomial weights),
-            # coarse average, prolongate, smooth again.
-            n_coarse <- max(floor(n / 2), 2L)
-            idx_c <- seq(1L, n, length.out = n_coarse)
-            function(r) {
-                y <- rep(0, n)
-                for (s in seq_len(smooth_sweeps)) {
-                    y <- y + 0.9 * omega * (r - as.numeric(M %*% y))
-                }
-                # restrict + coarse correction with much stronger damping
-                rc <- r[idx_c] - as.numeric(t(A) %*% y)[idx_c]
-                Mcc <- M[idx_c, idx_c, drop = FALSE]
-                yc <- tryCatch(as.numeric(solve(Mcc, rc)),
-                               error = function(e)
-                                   as.numeric(qr.solve(Mcc, rc, tol = 1e-8)))
-                e <- rep(0, n); e[idx_c] <- yc
-                y <- y + e
-                for (s in seq_len(smooth_sweeps)) {
-                    y <- y + 0.9 * omega * (r - as.numeric(M %*% y))
-                }
-                pmax(y, -1e30)
+            H[jj + 1L, jj] <- sqrt(sum(w^2))
+            if (H[jj + 1L, jj] <= 0) break
+            V[, jj + 1L] <- w / H[jj + 1L, jj]
+            jj <- jj + 1L
+        }
+        k <- jj - 1L
+        if (k < 1L) return(list(x = x, info = as.integer(iteration)))
+        Hloc <- H[seq_len(k + 1L), seq_len(k), drop = FALSE]
+        g <- numeric(k + 1L)
+        g[1L] <- m
+        for (i in seq_len(k)) {
+            denom <- sqrt(Hloc[i, i]^2 + Hloc[i + 1L, i]^2)
+            cs <- if (denom == 0) 1 else Hloc[i, i] / denom
+            sn <- if (denom == 0) 0 else Hloc[i + 1L, i] / denom
+            for (j in seq_len(k)) {
+                temp <- cs * Hloc[i, j] + sn * Hloc[i + 1L, j]
+                Hloc[i + 1L, j] <- -sn * Hloc[i, j] + cs * Hloc[i + 1L, j]
+                Hloc[i, j] <- temp
             }
-        },
-        stop("Unknown preconditioner: ", preconditioner)
-    )
+            temp <- cs * g[i] + sn * g[i + 1L]
+            g[i + 1L] <- -sn * g[i] + cs * g[i + 1L]
+            g[i] <- temp
+        }
+        y <- tryCatch(as.numeric(backsolve(Hloc[seq_len(k), , drop = FALSE],
+                                          g[seq_len(k)])),
+                      error = function(e) numeric(k))
+        x <- x + as.numeric(V[, seq_len(k), drop = FALSE] %*% y)
+        r <- as.numeric(b - matvec(x))
+        iteration <- iteration + k
+    }
+    list(x = x, info = as.integer(iteration))
 }
+
+# ---- Core solver -----------------------------------------------------------
 
 #' Solve by AMG / preconditioned Krylov method
 #'
 #' @param A Numeric response matrix (m x n).
 #' @param b Numeric measurement vector (length m).
-#' @param x0 Not used (Krylov starts from zero), kept for API compatibility.
-#' @param method Character; \code{"cg"}, \code{"bicgstab"}, or
-#'   \code{"gmres"}.
-#' @param preconditioner Character; \code{"amg"}, \code{"jacobi"},
+#' @param x0 Numeric initial guess (length n) or \code{NULL} for zeros,
+#'   matching \code{default_initial = np.zeros(n)} of the Python workflow.
+#' @param method Character; \code{"cg"} (default), \code{"bicgstab"}, or
+#'   \code{"gmres"}.  With \code{"cg"} the non-symmetric preconditioners
+#'   \code{"gs"} and \code{"sor"} are replaced by \code{"ssor"}.
+#' @param preconditioner Character; \code{"amg"} (default), \code{"jacobi"},
 #'   \code{"gs"}, \code{"sor"}, \code{"ssor"}, or \code{"none"}.
-#' @param omega Numeric; SOR relaxation factor (for sor/ssor/amg). Default
-#'   1.2.
-#' @param max_iterations Integer; max outer iterations. Default 500.
-#' @param tolerance Numeric; relative residual tolerance. Default 1e-6.
-#' @param outer_iterations Integer; number of GMRES restart cycles. Default
-#'   10.
-#' @param nonnegativity Logical; clamp negative entries to zero at the end.
-#'   Default TRUE.
-#' @param regularization Numeric; Tikhonov regularization added to the
-#'   normal matrix. Default 0.
-#' @param smooth_sweeps Integer; smoothing sweeps per AMG application.
+#'   \code{"amg"} falls back to \code{"jacobi"} (warning), as \code{bssunfold}
+#'   does when \code{pyamg} is unavailable.
+#' @param omega Numeric; SOR/SSOR relaxation factor. Default 1.0,
+#'   recommended range \eqn{(0, 2]}{(0, 2]}.
+#' @param max_iterations Integer; Krylov iterations per outer restart.
+#'   Default 200.
+#' @param tolerance Numeric; relative residual tolerance of the normal
+#'   equations. Default 1e-10.
+#' @param outer_iterations Integer; projected non-negativity restarts.
 #'   Default 3.
+#' @param nonnegativity Logical; clamp the spectrum to \code{x >= 0}
+#'   between restarts. Default TRUE.
+#' @param regularization Numeric Tikhonov damping added to the diagonal of
+#'   \eqn{A^\top A}{A'A}, or \code{NULL} (default) for the automatic
+#'   \code{1e-4 * mean(diag(A'A))}.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
 #' @examples
@@ -214,68 +272,129 @@ NULL
 #'             nrow = 3, byrow = TRUE)
 #' b <- c(1, 0.6, 0.4)
 #' r <- solve_amg(A, b, NULL)
-solve_amg <- function(A, b, x0 = NULL, method = "cg",
-                      preconditioner = "jacobi", omega = 1.2,
-                      max_iterations = 500L, tolerance = 1e-6,
-                      outer_iterations = 10L, nonnegativity = TRUE,
-                      regularization = 0.0, smooth_sweeps = 3L) {
+solve_amg <- function(A, b, x0 = NULL, method = "cg", preconditioner = "amg",
+                      omega = 1.0, max_iterations = 200L, tolerance = 1e-10,
+                      outer_iterations = 3L, nonnegativity = TRUE,
+                      regularization = NULL) {
+    method <- tolower(as.character(method)[1L])
+    if (!method %in% .amg_valid_methods) {
+        stop("method must be one of ",
+             paste(.amg_valid_methods, collapse = ", "),
+             ", got '", method, "'")
+    }
+    preconditioner <- tolower(as.character(preconditioner)[1L])
+    if (!preconditioner %in% .amg_valid_preconditioners) {
+        stop("preconditioner must be one of ",
+             paste(.amg_valid_preconditioners, collapse = ", "),
+             ", got '", preconditioner, "'")
+    }
+    if (identical(method, "cg") && !preconditioner %in% .amg_cg_compatible) {
+        warning("preconditioner='", preconditioner,
+                "' is nonsymmetric and incompatible with method='cg'; ",
+                "switching to 'ssor'", call. = FALSE)
+        preconditioner <- "ssor"
+    }
+    max_iterations <- as.integer(max_iterations)
+    if (is.na(max_iterations) || max_iterations < 1L) {
+        stop("max_iterations must be a positive integer")
+    }
+    tolerance <- as.numeric(tolerance)
+    if (is.na(tolerance) || tolerance <= 0) {
+        stop("tolerance must be a positive number")
+    }
+    outer_iterations <- as.integer(outer_iterations)
+    if (is.na(outer_iterations) || outer_iterations < 1L) {
+        stop("outer_iterations must be >= 1, got ", outer_iterations)
+    }
+    omega <- as.numeric(omega)
+    if (!(omega > 0 && omega <= 2)) {
+        warning("omega=", omega, " outside the recommended range (0, 2]",
+                call. = FALSE)
+    }
+
     A <- as.matrix(A); storage.mode(A) <- "double"
     b <- as.numeric(b)
     n <- ncol(A)
-    n_outer <- max(as.integer(outer_iterations), 1L)
-    # We solve the SPD normal equation (Aeff' Aeff) x = Aeff' b.
-    if (regularization > 0) {
-        Aeff <- rbind(A, sqrt(regularization) * diag(n))
-        beff <- c(b, rep(0, n))
+
+    AT_A <- as.matrix(crossprod(A))
+    AT_b <- as.numeric(crossprod(A, b))
+    if (is.null(regularization)) {
+        damping <- .amg_auto_reg_factor * mean(diag(AT_A))
     } else {
-        Aeff <- A
-        beff <- b
-    }
-    M <- crossprod(Aeff) + 1e-12 * diag(n)   # numerical SPD safeguard
-    rhs <- as.numeric(t(Aeff) %*% beff)
-    pre <- .amg_preconditioner(Aeff, preconditioner, omega, smooth_sweeps)
-    meth <- tolower(method)
-    if (meth == "cg") {
-        res <- .amg_cg(M, rhs, pre, as.integer(max_iterations), tolerance)
-    } else if (meth == "bicgstab") {
-        res <- .amg_bicgstab(M, rhs, pre, as.integer(max_iterations),
-                             tolerance)
-    } else if (meth == "gmres") {
-        x_acc <- rep(0, n); it_tot <- 0L
-        converged <- FALSE
-        r_cur <- rhs
-        # GMRES on normal equations with restarts
-        for (rc in seq_len(n_outer)) {
-            g <- .amg_gmres(M, r_cur, pre, as.integer(max_iterations),
-                            tolerance)
-            x_acc <- x_acc + g$x
-            it_tot <- it_tot + g$iterations
-            r_cur <- rhs - as.numeric(M %*% x_acc)
-            if (sqrt(sum(r_cur^2)) / max(sqrt(sum(rhs^2)), 1e-30) <
-                tolerance) { converged <- TRUE; break }
+        damping <- as.numeric(regularization)
+        if (length(damping) != 1L || is.na(damping)) {
+            stop("regularization must be a single non-negative number")
         }
-        res <- list(x = x_acc, iterations = it_tot, converged = converged)
-    } else {
-        stop("Unknown Krylov method '", method,
-             "'. Available: cg, bicgstab, gmres.")
+        if (damping < 0) {
+            stop("regularization must be non-negative, got ", damping)
+        }
     }
-    spectrum <- if (isTRUE(nonnegativity)) pmax(res$x, 0) else res$x
-    list(spectrum = spectrum, iterations = as.integer(res$iterations),
-         converged = res$converged)
+    Nmat <- AT_A + damping * diag(n)
+    matvec <- function(v) as.numeric(Nmat %*% v)
+
+    counter <- new.env(parent = emptyenv())
+    counter$n <- 0L
+    psolve <- .amg_build_preconditioner(Nmat, preconditioner, omega, counter)
+
+    x <- if (is.null(x0)) numeric(n) else as.numeric(x0)
+    if (length(x) != n) x <- numeric(n)
+    converged <- FALSE
+    inner_converged <- FALSE
+    ## cg/gmres apply the preconditioner once per iteration, bicgstab twice.
+    apps_per_iteration <- if (identical(method, "bicgstab")) 2L else 1L
+    b_norm <- max(sqrt(sum(AT_b^2)), 1e-300)
+
+    for (.outer in seq_len(outer_iterations)) {
+        residual <- AT_b - matvec(x)
+        if (sqrt(sum(residual^2)) <= tolerance * b_norm) {
+            converged <- TRUE
+            break
+        }
+        run <- if (identical(method, "cg")) {
+            .amg_cg(matvec, psolve, residual, tolerance, max_iterations)
+        } else if (identical(method, "bicgstab")) {
+            .amg_bicgstab(matvec, psolve, residual, tolerance, max_iterations)
+        } else {
+            .amg_gmres(matvec, psolve, residual, tolerance, max_iterations)
+        }
+        dx <- run$x
+        if (any(!is.finite(dx))) dx <- numeric(n)
+        x <- x + dx
+        if (isTRUE(nonnegativity)) x <- pmax(x, 0)
+        if (run$info == 0L) {
+            inner_converged <- TRUE
+            if (sqrt(sum((AT_b - matvec(x))^2)) <= tolerance * b_norm) {
+                converged <- TRUE
+                break
+            }
+        } else if (run$info < 0L) {
+            break
+        }
+    }
+
+    converged <- converged || inner_converged
+    total_iterations <- min(counter$n %/% apps_per_iteration,
+                            outer_iterations * max_iterations)
+    if (isTRUE(nonnegativity)) x <- pmax(x, 0)
+    list(spectrum = as.numeric(x), iterations = as.integer(total_iterations),
+         converged = converged)
 }
 
 #' Wrapper around \code{\link{solve_amg}} for the unified workflow.
 #'
 #' @inheritParams run_unfolding
 #' @inheritParams solve_amg
+#' @param method_name Character; label stored in the result. Default
+#'   \code{"AMG"}.
+#' @return A result list as produced by \code{\link{run_unfolding}}.
 #' @export
 unfold_amg <- function(detector_names, n_energy_bins, E_MeV, sensitivities,
                        cc_icrp116, save_result_callback, readings,
                        initial_spectrum = NULL, method = "cg",
-                       preconditioner = "jacobi", omega = 1.2,
-                       max_iterations = 500L, tolerance = 1e-6,
-                       outer_iterations = 10L, nonnegativity = TRUE,
-                       regularization = 0.0, method_name = "AMG",
+                       preconditioner = "amg", omega = 1.0,
+                       max_iterations = 200L, tolerance = 1e-10,
+                       outer_iterations = 3L, nonnegativity = TRUE,
+                       regularization = NULL, method_name = "AMG",
                        calculate_errors = FALSE, noise_level = 0.01,
                        n_montecarlo = 100L, save_result = FALSE,
                        random_state = NULL,
@@ -286,16 +405,23 @@ unfold_amg <- function(detector_names, n_energy_bins, E_MeV, sensitivities,
         cc_icrp116 = cc_icrp116,
         save_result_callback = save_result_callback,
         readings = readings, initial_spectrum = initial_spectrum,
-        default_initial = rep(1, n_energy_bins),
-        solve_func = solve_amg,
-        solve_kwargs = list(method = method,
-                            preconditioner = preconditioner, omega = omega,
-                            max_iterations = max_iterations,
-                            tolerance = tolerance,
-                            outer_iterations = outer_iterations,
-                            nonnegativity = nonnegativity,
-                            regularization = regularization),
+        default_initial = numeric(n_energy_bins),
+        solve_func = make_solve_wrapper(solve_amg,
+                                        method = method,
+                                        preconditioner = preconditioner,
+                                        omega = omega,
+                                        max_iterations = max_iterations,
+                                        tolerance = tolerance,
+                                        outer_iterations = outer_iterations,
+                                        nonnegativity = nonnegativity,
+                                        regularization = regularization),
+        solve_kwargs = list(),
         method_name = method_name,
+        extra_output = list(krylov_method = method,
+                            preconditioner = preconditioner,
+                            omega = omega,
+                            outer_iterations = outer_iterations,
+                            regularization = regularization),
         calculate_errors = calculate_errors, noise_level = noise_level,
         n_montecarlo = n_montecarlo, random_state = random_state,
         save_result = save_result,

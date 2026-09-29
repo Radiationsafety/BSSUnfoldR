@@ -2,22 +2,26 @@
 % Please edit documentation in R/unfold_mlem_bs.R
 \name{build_bspline_basis}
 \alias{build_bspline_basis}
-\title{Build B-spline basis matrix (clamped cubic)}
+\title{Build B-spline basis matrix (clamped)}
 \usage{
-build_bspline_basis(E_MeV, n_basis, knot_spacing = "auto")
+build_bspline_basis(E_MeV, n_basis, knot_spacing = "auto", spline_order = 4L)
 }
 \arguments{
 \item{E_MeV}{Numeric energy grid.}
 
-\item{n_basis}{Integer; number of basis functions.}
+\item{n_basis}{Integer; number of basis functions \eqn{N_s}.}
 
-\item{knot_spacing}{Character; \code{"uniform"} or \code{"log"}.}
+\item{knot_spacing}{Character; \code{"auto"}, \code{"uniform"} or
+\code{"log"}.}
+
+\item{spline_order}{Integer B-spline order \eqn{p} (degree \eqn{p-1});
+default \code{4L} (cubic, as in the paper).}
 }
 \value{
 Numeric matrix of shape \code{(length(E_MeV), n_basis)}.
 }
 \description{
-Build B-spline basis matrix (clamped cubic)
+Build B-spline basis matrix (clamped)
 }
 \examples{
 E <- 10^seq(-9, 1, length.out = 60)

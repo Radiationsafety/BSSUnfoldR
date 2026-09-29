@@ -14,6 +14,13 @@ unfold_parametric(
   readings,
   initial_spectrum = NULL,
   initial_params = NULL,
+  method = "leastsq",
+  optimizer = "lmfit",
+  alpha = 1e-04,
+  alpha_auto = FALSE,
+  solver_backend = "auto",
+  max_iter = 50L,
+  tol = 1e-06,
   max_iterations = 200L,
   tolerance = 1e-06,
   calculate_errors = FALSE,
@@ -45,30 +52,53 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
-\item{initial_params}{Optional named list.}
+\item{initial_params}{Optional named list or vector overriding any of
+\code{b}, \code{beta_prime}, \code{alpha}, \code{beta}, \code{P_th},
+\code{P_epi}.  When \code{NULL} a grid scan supplies the starting points.}
 
-\item{max_iterations}{Integer; max optim iterations. Default 200.}
+\item{method}{Character; backend name kept for parity with the Python
+\code{lmfit} selector.  The pure-R port always runs the ported
+Levenberg-Marquardt least-squares solver (\code{lmfit} \code{leastsq}).}
 
-\item{tolerance}{Numeric; convergence tolerance. Default 1e-6.}
+\item{optimizer}{Character; backend selector, as in Python:
+\code{"lmfit"} (default, bounded least squares in R), \code{"cvxpy"},
+\code{"qpsolvers"} or \code{"combined"} (SQP variants implemented in
+\code{R/unfold_parametric_engine.R}).}
 
-\item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
-uncertainty estimation. Default \code{FALSE}.}
+\item{alpha}{Numeric; Tikhonov weight penalising deviation from the
+starting parameters (\code{sqrt(alpha) * (p - p0)} appended to the
+residual vector, exactly like Python \code{_residuals}). Default 0.}
 
-\item{noise_level}{Numeric; relative Gaussian noise level for Monte-Carlo.
-Default 0.01.}
+\item{alpha_auto}{Logical; select \code{alpha} by GCV on the linearised
+model (Python \code{_gcv_select_alpha}). Default \code{FALSE}.}
 
-\item{n_montecarlo}{Integer; number of Monte-Carlo samples. Default 100.}
+\item{solver_backend}{Character; QP backend string, kept for parity with
+Python (\code{"auto"}).}
 
-\item{save_result}{Logical; if \code{TRUE}, call
-\code{save_result_callback}. Default \code{FALSE}.}
+\item{max_iter}{Integer; maximum SQP iterations for the QP optimizers.}
 
-\item{random_state}{Optional integer seed for Monte-Carlo.}
+\item{tol}{Numeric; SQP convergence tolerance.}
 
-\item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
-above this energy are removed from the response matrix during the
-solve and the returned spectrum is expanded back to the full grid
-with exact zeros above the cutoff (Python \code{max_neutron_energy}
-parameter). Default \code{NULL} = no cutoff.}
+\item{max_iterations, tolerance}{Accepted for API compatibility but not
+used: the ported solver must apply the fixed
+\code{lmfit}/{@scipy} \code{leastsq} tolerances
+(\code{ftol = xtol = 1.5e-8}) and evaluation budget to reproduce the
+original result.}
+
+\item{calculate_errors}{Logical; run Monte-Carlo uncertainty estimation.}
+
+\item{noise_level}{Numeric; relative noise for Monte-Carlo.}
+
+\item{n_montecarlo}{Integer; Monte-Carlo sample count.}
+
+\item{save_result}{Logical; hand the result to \code{save_result_callback}.}
+
+\item{random_state}{Optional integer seed for the Monte-Carlo part.}
+
+\item{max_neutron_energy}{Optional energy cutoff in MeV.}
+}
+\value{
+A result list as produced by \code{\link{run_unfolding}}.
 }
 \description{
 Wrapper around \code{\link{solve_parametric}} for the unified workflow.

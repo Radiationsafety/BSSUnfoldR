@@ -48,9 +48,10 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 
 \item{sigma_frac}{Numeric; fraction of max LS solution as target sigma. Default 0.1.}
 
-\item{max_iterations}{Integer; max EPIC iterations. Default 30.}
+\item{max_iterations}{Integer; max EPIC iterations. Each unit allows 100
+function evaluations of the EPIC weight search. Default 30.}
 
-\item{tolerance}{Numeric; convergence on beta weights. Default 1e-4.}
+\item{tolerance}{Numeric; convergence threshold on the EPIC betas. Default 1e-4.}
 
 \item{nonneg}{Logical; enforce non-negativity via NNLS. Default TRUE.}
 

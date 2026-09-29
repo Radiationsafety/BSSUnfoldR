@@ -2,7 +2,8 @@
 % Please edit documentation in R/unfold_ensemble.R
 \name{unfold_composite}
 \alias{unfold_composite}
-\title{Wrapper around \code{\link{solve_composite}} for the unified workflow.}
+\title{Wrapper around the confidence-weighted method pool for the unified
+workflow.}
 \usage{
 unfold_composite(
   detector_names,
@@ -72,5 +73,10 @@ parameter). Default \code{NULL} = no cutoff.}
 A result list as produced by \code{\link{run_unfolding}}.
 }
 \description{
-Wrapper around \code{\link{solve_composite}} for the unified workflow.
+Mirrors \code{unfold_composite} from
+\code{bssunfold/core/unfold_composite.py}: by default it runs the general
+method pool (TSVD, MLEM, CVXPY, QPsolvers, Bayes-Spline with detector
+defaults), skips members that fail or return invalid spectra, and
+combines the rest with confidence-weighted averaging. Passing an
+explicit \code{solvers} list keeps the legacy best-residual behaviour.
 }

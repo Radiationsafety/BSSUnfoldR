@@ -39,11 +39,25 @@ proportional to their squared norms (Strohmer & Vershynin, 2009), achieving
 faster convergence than the deterministic cyclic variant on ill-conditioned
 systems.
 }
+\details{
+Row selection is driven by the numpy-legacy \code{RandomState} emulation
+shared with \code{\link{solve_eki}}, not by R's own RNG: Python draws one
+\code{random_sample()} per iteration and maps it through
+\code{np.searchsorted(cum_dist, u)} (the exact behaviour of
+\code{RandomState.choice(m, p = probabilities)}), so
+\code{random_state = k} reproduces the Python row sequence for the same
+\code{k}. The cumulative distribution is built the same way as numpy builds
+it — a left-to-right running sum of \code{row_norms_sq / sum(row_norms_sq)},
+the \code{< 1} renormalisation loop and the \code{1e-10} bump on the final
+element — and the generator is private, so R's global RNG state is neither
+read nor reseeded.
+}
 \examples{
 A <- matrix(c(0.9, 0.05, 0.05,
               0.10, 0.8, 0.10,
               0.30, 0.30, 0.40), nrow = 3, byrow = TRUE)
 b <- c(1, 0.6, 0.4)
-set.seed(7)
-r <- solve_randomized_kaczmarz(A, b, rep(0, 3), max_iterations = 30, random_state = 7)
+r <- solve_randomized_kaczmarz(A, b, rep(0, 3), max_iterations = 30,
+                               random_state = 7)
+length(r$spectrum)
 }

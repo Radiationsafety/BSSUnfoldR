@@ -4,7 +4,12 @@
 \alias{calculate_dose_rates}
 \title{Dose-rate calculation}
 \usage{
-calculate_dose_rates(spectrum, cc_icrp116 = NULL, dlnE = 0.2)
+calculate_dose_rates(
+  spectrum,
+  cc_icrp116 = NULL,
+  dlnE = 0.2,
+  dlnE_array = NULL
+)
 }
 \arguments{
 \item{spectrum}{Numeric vector with the unfolded neutron spectrum (length
@@ -15,7 +20,14 @@ missing tail is zero-padded).}
 vector per geometry/quantity. If \code{NULL} (default), the built-in
 ICRP-116 effective-dose dataset is used.}
 
-\item{dlnE}{Numeric; uniform log-E step used for integration. Default 0.2.}
+\item{dlnE}{Numeric; uniform log-E step used for integration. Default 0.2.
+Ignored when \code{dlnE_array} is supplied.}
+
+\item{dlnE_array}{Optional numeric vector of per-bin \eqn{d\ln E} widths,
+same length as \code{spectrum}. Default \code{NULL} = use the scalar
+\code{dlnE}. Mirrors the \code{dlnE_array} argument of the Python
+\code{bssunfold} dose routine, and is what makes the dose rates correct
+on non-uniform energy grids.}
 }
 \value{
 Named numeric vector with one dose rate per geometry/quantity, in

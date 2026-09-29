@@ -96,6 +96,7 @@ solve_combined <- function(A, b, x0 = NULL, pipeline = NULL, ...) {
         stop("'pipeline' must be a non-empty list of stages.")
     }
     registry <- .combined_solver_registry()
+    shared <- list(...)
     x_cur <- pmax(x0, 1e-30)
     stage_spectra <- vector("list", length(pipeline))
     converged <- TRUE
@@ -112,7 +113,14 @@ solve_combined <- function(A, b, x0 = NULL, pipeline = NULL, ...) {
         }
         solver <- get(registry[[mname]], mode = "function")
         params <- if (is.null(stage$params)) list() else stage$params
-        args <- c(list(A = A, b = b, x0 = x_cur), params, list(...))
+        # E_MeV is selective: only solvers that declare it may receive it,
+        # and only when it still matches the (possibly trimmed) response grid
+        if (!is.null(shared$E_MeV) && length(shared$E_MeV) == ncol(A) &&
+            "E_MeV" %in% names(formals(solver)) && is.null(params$E_MeV)) {
+            params <- c(params, list(E_MeV = shared$E_MeV))
+        }
+        rest <- shared[setdiff(names(shared), "E_MeV")]
+        args <- c(list(A = A, b = b, x0 = x_cur), params, rest)
         res <- do.call(solver, args)
         if (is.list(res) && !is.null(res$spectrum)) {
             spec <- as.numeric(res$spectrum)
@@ -158,7 +166,8 @@ unfold_combined <- function(detector_names, n_energy_bins, E_MeV,
         save_result_callback = save_result_callback,
         readings = readings, initial_spectrum = initial_spectrum,
         default_initial = rep(1, n_energy_bins),
-        solve_func = solve_combined, solve_kwargs = list(pipeline = pipeline),
+        solve_func = solve_combined,
+        solve_kwargs = c(list(pipeline = pipeline, E_MeV = E_MeV), list(...)),
         method_name = method_name,
         calculate_errors = calculate_errors, noise_level = noise_level,
         n_montecarlo = n_montecarlo, random_state = random_state,

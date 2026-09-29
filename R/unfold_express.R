@@ -30,7 +30,9 @@ solve_express <- function(A, b, E, x0 = NULL, n_groups = 6L,
                             relative_uncertainty = 0.05) {
     A <- as.matrix(A); storage.mode(A) <- "double"
     b <- as.numeric(b); E <- as.numeric(E)
-    if (any(b < 0)) stop("Express requires non-negative readings")
+    if (any(b < 0) || !all(is.finite(b))) {
+        stop("Express requires non-negative finite readings")
+    }
     if (any(diff(E) <= 0)) stop("Express requires strictly increasing E")
     if (is.null(interval_boundaries)) {
         if (n_groups < 2L) stop("n_groups must be at least 2")
@@ -39,6 +41,9 @@ solve_express <- function(A, b, E, x0 = NULL, n_groups = 6L,
         boundaries <- as.numeric(interval_boundaries)
         if (length(boundaries) < 2L || any(diff(boundaries) <= 0)) {
             stop("interval_boundaries must be strictly increasing")
+        }
+        if (boundaries[1L] < E[1L] || boundaries[length(boundaries)] > E[length(E)]) {
+            stop("interval_boundaries must lie within E")
         }
     }
     centers <- boundaries
@@ -60,34 +65,50 @@ solve_express <- function(A, b, E, x0 = NULL, n_groups = 6L,
     lambda <- 1e-3
     nfev <- 0L
     converged <- FALSE
+    cost <- function(r) {
+        if (!all(is.finite(r))) return(Inf)
+        sum(r^2)
+    }
     for (iter in seq_len(max(1L, max_iterations) * 100L)) {
         nfev <- iter
         r0 <- .express_resid(p)
-        # Numerical Jacobian: finite differences
+        c0 <- cost(r0)
+        if (!is.finite(c0)) break
         J <- matrix(0.0, nrow = length(r0), ncol = length(p))
         eps <- 1e-8
         for (j in seq_along(p)) {
-            dp <- rep(0.0, length(p)); dp[j] <- eps * max(1.0, abs(p[j]))
-            r1 <- .express_resid(p + dp)
-            J[, j] <- (r1 - r0) / dp[j]
+            step <- eps * max(1.0, abs(p[j]))
+            r1 <- .express_resid(p + replace(numeric(length(p)), j, step))
+            J[, j] <- if (all(is.finite(r1))) (r1 - r0) / step else 0
         }
-        # Levenberg-Marquardt update: (J'J + lambda*diag(J'J)) dp = -J'r0
         JtJ <- crossprod(J)
         Jtr <- as.numeric(t(J) %*% r0)
         diag_JtJ <- diag(JtJ)
-        diag_JtJ[diag_JtJ == 0] <- 1e-12
+        diag_JtJ[!is.finite(diag_JtJ) | diag_JtJ == 0] <- 1e-12
         A_lm <- JtJ + lambda * diag(diag_JtJ)
         dp <- tryCatch(as.numeric(qr.solve(A_lm, -Jtr)),
                        error = function(e) rep(0.0, length(p)))
-        p_new <- p + dp
-        r_new <- .express_resid(p_new)
-        if (sum(r_new^2) < sum(r0^2)) {
-            p <- p_new
+        if (!all(is.finite(dp))) dp <- rep(0.0, length(p))
+        r_new <- .express_resid(p + dp)
+        if (cost(r_new) < c0) {
+            p <- p + dp
             lambda <- max(lambda * 0.5, 1e-12)
+            if (max(abs(dp)) < 1e-8) { converged <- TRUE; break }
         } else {
             lambda <- min(lambda * 2.0, 1e8)
         }
-        if (max(abs(dp)) < 1e-8) { converged <- TRUE; break }
+    }
+    # The model has n_groups + 1 knots while a Bonner set exposes 5-7 spheres,
+    # so the least-squares valley is flat and LM routinely stalls; polish with
+    # a quasi-Newton sweep and keep it only when it strictly improves the fit.
+    if (all(is.finite(p))) {
+        polish <- stats::optim(p, function(q) cost(.express_resid(q)),
+                               method = "BFGS",
+                               control = list(maxit = 2000L, reltol = 1e-12))
+        if (is.finite(polish$value) && polish$value < cost(.express_resid(p))) {
+            p <- as.numeric(polish$par)
+            nfev <- nfev + as.integer(polish$counts[1L])
+        }
     }
     spectrum <- exp(approx(x = boundaries, y = p, xout = E, rule = 2)$y)
     rel_change <- sqrt(sum((as.numeric(A %*% spectrum) - b)^2)) /

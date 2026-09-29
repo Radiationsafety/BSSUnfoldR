@@ -2,7 +2,7 @@
 % Please edit documentation in R/unfold_ensemble.R
 \name{unfold_cascade}
 \alias{unfold_cascade}
-\title{Wrapper around \code{\link{solve_cascade}} for the unified workflow.}
+\title{Wrapper around the stage-based cascade for the unified workflow.}
 \usage{
 unfold_cascade(
   detector_names,
@@ -76,5 +76,10 @@ parameter). Default \code{NULL} = no cutoff.}
 A result list as produced by \code{\link{run_unfolding}}.
 }
 \description{
-Wrapper around \code{\link{solve_cascade}} for the unified workflow.
+Mirrors \code{unfold_cascade} from
+\code{bssunfold/core/unfold_cascade.py}: by default it runs the
+"general" cascade (TSVD with k = 15 discrepancy, early stop at quality
+0.3 -> MLEM with 150 iterations seeded by TSVD -> Bayes-Spline with
+spline_smooth = 0.3 seeded by MLEM as initial guess and prior). Passing
+an explicit \code{solvers} list keeps the legacy solver-level cascade.
 }

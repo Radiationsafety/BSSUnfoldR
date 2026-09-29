@@ -14,7 +14,7 @@ unfold_fruit_like(
   readings,
   initial_spectrum = NULL,
   initial_params = NULL,
-  method = "L-BFGS-B",
+  method = "leastsq",
   calculate_errors = FALSE,
   noise_level = 0.01,
   n_montecarlo = 100L,
@@ -47,8 +47,9 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_params}{Optional named list with \code{A_th}, \code{T_th},
 \code{A_epi}, \code{A_f}, \code{T_ev}.}
 
-\item{method}{Character; optimizer method passed to \code{\link[stats]{optim}}.
-Default \code{"L-BFGS-B"}.}
+\item{method}{Character; optimizer method passed to lmfit-equivalent
+solver. Default \code{"leastsq"} (Levenberg-Marquardt via MINPACK,
+matching Python's lmfit default).}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
