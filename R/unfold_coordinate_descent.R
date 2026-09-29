@@ -20,7 +20,6 @@
 #' @param random_state Optional integer seed for the random coordinate order.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
-#' @keywords internal
 solve_coordinate_descent <- function(A, b, x0, max_iterations = 2000L,
                                      tolerance = 1e-8, l1_penalty = 0.0,
                                      l2_penalty = 0.0, selection = "cyclic",

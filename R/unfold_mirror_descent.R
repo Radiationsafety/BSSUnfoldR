@@ -26,7 +26,6 @@
 #' @param p Numeric order of the p-norm mirror map (\code{p > 1}); default 3.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
-#' @keywords internal
 solve_mirror_descent <- function(A, b, x0, max_iterations = 1000L,
                                  tolerance = 1e-8, mirror_map = "entropy",
                                  step_size = NULL, total_fluence = NULL,

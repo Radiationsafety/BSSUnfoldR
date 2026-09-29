@@ -164,7 +164,6 @@ louhi_smoothing_matrix <- function(n, smooth_order = 1L) {
 #'   expected value of the chi-square).
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
-#' @keywords internal
 #' @examples
 #' A <- matrix(c(0.9, 0.05, 0.05,
 #'               0.10, 0.8, 0.10,

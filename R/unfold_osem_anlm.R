@@ -256,7 +256,6 @@ anlm_filter_1d <- function(x, h = NULL, search_window = 11L,
 #'   spectrum.  Default \code{TRUE}.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
-#' @keywords internal
 #' @examples
 #' A <- matrix(c(0.9, 0.05, 0.05,
 #'               0.10, 0.8, 0.10,

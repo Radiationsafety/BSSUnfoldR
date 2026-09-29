@@ -23,7 +23,6 @@
 #' @param reltol Numeric relative residual tolerance; default 1e-6.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
-#' @keywords internal
 solve_admm <- function(A, b, x0, max_iterations = 500L, tolerance = 1e-6,
                        l1_penalty = 0.0, tv_penalty = 0.0, rho = NULL,
                        adaptive_rho = TRUE, abstol = 1e-10, reltol = 1e-6) {

@@ -37,7 +37,6 @@
 #'   (second difference, \eqn{W_2^2}{W_2^2}) or \code{"identity"}
 #'   (zeroth-order Tikhonov, standard ridge).
 #' @return The discrete penalty operator \code{L} (shape \code{(k, n)}).
-#' @keywords internal
 #' @examples
 #' .tikhonov_penalty_matrix(4L, "sobolev")
 .tikhonov_penalty_matrix <- function(n, penalty = "sobolev") {
