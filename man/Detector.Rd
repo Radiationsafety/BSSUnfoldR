@@ -146,6 +146,9 @@ Unfold using Cascade. See \code{\link{unfold_cascade}}.
 
 Unfold using Composite. See \code{\link{unfold_composite}}.
 
+Unfold using an Adaptive Cascade with dynamic method
+selection. See \code{\link{unfold_adaptive_cascade}}.
+
 Unfold using Scipy direct method. See \code{\link{unfold_scipy_direct_method}}.
 
 Unfold using EKI. See \code{\link{unfold_eki}}.
@@ -205,6 +208,8 @@ Unfold with the CPLEX-style QP engine. See \code{\link{unfold_docplex}}.
 Unfold with Poisson-likelihood inference. See \code{\link{unfold_zfit}}.
 
 Unfold with MAEO (multi-algorithm evolution). See \code{\link{unfold_maeo}}.
+
+Unfold with the MAEO ensemble. See \code{\link{unfold_maeo_ensemble}}.
 
 Unfold with operator-based MLEM. See \code{\link{unfold_mlem_odl}}.
 

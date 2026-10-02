@@ -58,7 +58,7 @@ covariance diagonal for numerical stability. Default 1e-4.}
 collapse. Default 1.02.}
 
 \item{noise_std}{Optional numeric; standard deviation of measurement noise.
-If \code{NULL}, estimated as 5\\% of \code{||b|| / sqrt(m)}.}
+If \code{NULL}, estimated as five percent of \code{||b|| / sqrt(m)}.}
 
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}

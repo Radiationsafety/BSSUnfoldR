@@ -37,13 +37,33 @@ def py_spectrum(method, case, kwargs, seed):
     det, fx = load_det()
     readings = dict(zip(fx["detector_names"], fx["cases"][case]["readings"]))
     fn = getattr(det, method, None)
+    standalone_module = None
     if fn is None:
-        raise RuntimeError(f"{method} not present in bssunfold Detector")
+        # bssunfold exposes some high-level functions only at module level,
+        # taking the detector as a first positional argument (no Detector
+        # method). Fall back to calling them in that form.
+        _standalone = {
+            "unfold_adaptive_cascade": "bssunfold.core.unfold_cascade",
+            "unfold_maeo_ensemble": "bssunfold.core.unfold_maeo",
+        }
+        standalone_module = _standalone.get(method)
+        if standalone_module is None:
+            raise RuntimeError(f"{method} not present in bssunfold Detector")
+        import importlib
+
+        fn = getattr(importlib.import_module(standalone_module), method)
     import inspect
 
     if "random_state" in inspect.signature(fn).parameters:
         kwargs.setdefault("random_state", seed)
-    res = fn(readings, **kwargs)
+    if standalone_module is not None:
+        # The R side always receives random_state; the standalone Python
+        # ensemble entry points forward a *seed kwarg to their solver.
+        if seed is not None and method == "unfold_maeo_ensemble":
+            kwargs["seed"] = seed
+        res = fn(det, readings, **kwargs)
+    else:
+        res = fn(readings, **kwargs)
     return np.asarray(res["spectrum"], dtype=float), res
 
 

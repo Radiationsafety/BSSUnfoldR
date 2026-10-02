@@ -1725,6 +1725,8 @@ solve_parametric2 <- function(A, b, E, ln_steps, b_meas = NULL,
 #' @param save_result Logical; hand the result to \code{save_result_callback}.
 #' @param random_state Optional integer seed for the Monte-Carlo part.
 #' @param max_neutron_energy Optional energy cutoff in MeV.
+#' @param initial_params,max_iterations,tolerance Legacy arguments kept for API
+#'   parity with the Python original; ignored by this wrapper.
 #' @return A result list as produced by \code{\link{run_unfolding}}.
 #' @export
 unfold_parametric2 <- function(detector_names, n_energy_bins, E_MeV,

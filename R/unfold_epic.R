@@ -174,7 +174,11 @@ solve_epic <- function(A, b, x0 = NULL, sigma_frac = 0.1,
     eb[!is.finite(eb)] <- 0
     M <- P + crossprod(H, eb * H)
     invA <- tryCatch(solve(M), error = function(e) {
-        as.matrix(Matrix::ginv(as.matrix(M)))
+        Mm <- as.matrix(M)
+        sv <- svd(Mm)
+        tol <- .Machine$double.eps * max(dim(Mm)) * sv$d[1]
+        di <- ifelse(sv$d > tol, 1 / pmax(sv$d, tol), 0)
+        sv$v %*% (di * t(sv$u))
     })
     if (any(!is.finite(invA))) {
         return(matrix(0, nrow = length(target_var), ncol = length(beta)))

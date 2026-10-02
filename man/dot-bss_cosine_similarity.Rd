@@ -11,3 +11,4 @@ Returns 0 when either vector has zero norm.}
 Cosine similarity, mirroring bssunfold.utils.comparison.cosine_similarity.
 Returns 0 when either vector has zero norm.
 }
+\keyword{internal}

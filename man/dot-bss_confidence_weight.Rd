@@ -11,3 +11,4 @@ mirroring _confidence_weight() in unfold_composite.py.}
 Confidence weight of one solution against the rest of the ensemble,
 mirroring _confidence_weight() in unfold_composite.py.
 }
+\keyword{internal}

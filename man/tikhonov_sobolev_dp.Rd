@@ -106,7 +106,9 @@ discrepancy and diagnostic status codes when no admissible \code{alpha*}
 exists (data inconsistent with the supplied \code{delta}).
 }
 \examples{
+\dontrun{
 .tikhonov_penalty_matrix(4L, "sobolev")
+}
 A <- matrix(c(0.9, 0.05, 0.05,
               0.10, 0.8, 0.10,
               0.30, 0.30, 0.40), nrow = 3, byrow = TRUE)

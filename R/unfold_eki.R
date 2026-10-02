@@ -173,7 +173,7 @@
 #' @param inflation Numeric; covariance inflation factor to prevent ensemble
 #'   collapse. Default 1.02.
 #' @param noise_std Optional numeric; standard deviation of measurement noise.
-#'   If \code{NULL}, estimated as 5\% of \code{||b|| / sqrt(m)}.
+#'   If \code{NULL}, estimated as five percent of \code{||b|| / sqrt(m)}.
 #' @param random_state Optional integer seed.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export

@@ -159,3 +159,43 @@ test_that("PTB unfolding runs end-to-end for every batch-4 method", {
                      c("AP", "PA", "LLAT", "RLAT", "ROT", "ISO"))
     }
 })
+
+test_that("PTB unfolding runs end-to-end for every batch-9 method", {
+    det <- make_ptb_detector()
+    rds <- make_ptb_readings(det, target_0in = 1000)
+    method_calls <- list(
+        unfold_adaptive_cascade = list(max_stages = 2L,
+                                       initial_method = "tsvd"),
+        unfold_maeo_ensemble    = list(n_cycles = 2L, n_gen_per_cycle = 3L,
+                                       pop_size = 12L,
+                                       random_state = 42L),
+        unfold_fission_ga       = list(ga_maxiter = 25L, random_state = 7L),
+        unfold_cuqi             = list(sampler = "pcn", n_samples = 100L,
+                                       n_burnin = 60L, chains = 1L,
+                                       random_state = 11L)
+    )
+    for (fn_name in names(method_calls)) {
+        fn <- get(fn_name)
+        r <- suppressWarnings(do.call(fn, c(list(
+            detector_names = det$detector_names,
+            n_energy_bins = det$n_energy_bins, E_MeV = det$E_MeV,
+            sensitivities = det$sensitivities, cc_icrp116 = det$cc_icrp116,
+            save_result_callback = function(o) det$save_result(o),
+            readings = rds
+        ), method_calls[[fn_name]])))
+        expect_length(r$spectrum, 60L)
+        expect_true(all(r$spectrum >= 0))
+        expect_named(r$doserates,
+                     c("AP", "PA", "LLAT", "RLAT", "ROT", "ISO"))
+    }
+    # CUQI-specific credible band fields
+    r <- suppressWarnings(unfold_cuqi(det$detector_names, det$n_energy_bins,
+        det$E_MeV, det$sensitivities, det$cc_icrp116,
+        function(o) invisible(o), rds, sampler = "gibbs",
+        n_samples = 80L, n_burnin = 40L, chains = 1L, random_state = 3L))
+    expect_length(r$spectrum_uncertainty, 60L)
+    expect_length(r$spectrum_lower, 60L)
+    expect_true(all(r$spectrum_lower >= 0))
+    expect_true(all(r$spectrum_upper >= r$spectrum_lower))
+    expect_gt(length(r$cuqi_stats$delta_samples), 0L)
+})

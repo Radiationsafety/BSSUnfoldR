@@ -61,6 +61,8 @@ fluence, the filter by default operates on the logarithm of the spectrum
 raw-unit filtering of the original CT formulation.
 }
 \examples{
+\dontrun{
 estimate_noise_1d(c(1, 1.2, 0.9, 1.1, 1.0))
+}
 }
 \keyword{internal}

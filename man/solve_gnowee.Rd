@@ -2,7 +2,7 @@
 % Please edit documentation in R/unfold_gnowee.R
 \name{solve_gnowee}
 \alias{solve_gnowee}
-\title{Solve the BSS unfolding problem with the Gnowee metaheuristic}
+\title{Gnowee-based unfolding method for neutron spectrum reconstruction}
 \usage{
 solve_gnowee(
   A,
@@ -32,13 +32,92 @@ solve_gnowee(
   verbose = FALSE
 )
 }
+\arguments{
+\item{A}{Numeric response matrix (m x n).}
+
+\item{b}{Numeric measurement vector (length m).}
+
+\item{x0}{Optional initial spectrum (length n).  If \code{NULL} or all-zero
+a Landweber warm start is used to seed the population.  Default
+\code{NULL}.}
+
+\item{population}{Positive integer; population size.  Default 25.}
+
+\item{max_gens}{Positive integer; generation cap.  Default 200.}
+
+\item{max_fevals}{Positive integer; fitness-evaluation cap.  Default 5000.}
+
+\item{stall_limit}{Positive integer; evaluations without a timeline
+improvement before termination.  Default 200.}
+
+\item{conv_tol}{Positive numeric; relative improvement required to extend
+the timeline.  Default 1e-6.}
+
+\item{opt_conv_tol}{Positive numeric; absolute fitness-convergence
+tolerance.  Default 1e-2.}
+
+\item{frac_elite}{Numeric in 0-to-1 range; elite fraction.  Default 0.2.}
+
+\item{frac_levy}{Numeric in 0-to-1 range; Levy-flight fraction.  Default 1.0.}
+
+\item{frac_mutation}{Numeric in 0-to-1 range; mutation discovery probability.
+Default 0.2.}
+
+\item{alpha_levy}{Numeric; Levy exponent in (0.3, 1.99).  Default 1.5.}
+
+\item{gamma_levy}{Numeric; Levy scale.  Default 1.0.}
+
+\item{n_levy}{Positive integer; independent Levy samples.  Default 1.}
+
+\item{scaling_factor}{Numeric; Levy step-length divisor.  Default 10.}
+
+\item{init_sampling}{Character; \code{"lhc"} (default) or \code{"random"}.}
+
+\item{regularization}{Numeric; Tikhonov weight.  Default 1e-2.}
+
+\item{norm}{Integer 1 or 2; regularisation norm.  Default 2.}
+
+\item{smoothness_order}{Integer 0, 1 or 2; derivative penalty order.
+Default 2.}
+
+\item{smoothness_weight}{Numeric; smoothness-term weight.  Default 1.0.}
+
+\item{entropy_weight}{Numeric; negative-entropy weight (0 disables).
+Default 0.}
+
+\item{half_range}{Numeric; half-width of the log-space box in decades.
+Default 2.}
+
+\item{random_state}{Optional integer RNG seed.}
+
+\item{verbose}{Logical; print progress.  Default \code{FALSE}.}
+}
 \value{
 A list \code{list(spectrum, iterations, converged, diagnostics)}.
 }
 \description{
-Core solver mirroring \code{solve_gnowee} in
-\code{bssunfold/src/bssunfold/core/unfold_gnowee.py}.  The population is
-seeded with a Landweber warm start (or the supplied \code{x0}) and bounded
-to \code{log(seed) +/- half_range} decades; the best point found by the
-optimiser is returned in linear space.
+R port of \code{bssunfold/src/bssunfold/core/unfold_gnowee.py} (and its
+engine \code{core/_gnowee.py}).  Gnowee is a hybrid metaheuristic
+optimiser (Bevins & Parsons, UC Berkeley / Slaybaugh Lab) that combines
+Levy flights (Cuckoo Search), golden-ratio crossover, scatter search and
+DE-style mutation in an elitist population with Metropolis-Hastings
+acceptance and stall-driven restarts.
+}
+\details{
+The unfolding problem is posed in log space \eqn{y = \log(x)}{y = log(x)}
+so positivity is automatic.  The population is seeded with a Landweber
+warm start (or the user \code{initial_spectrum}) and the search is bounded
+to \code{log(seed) +/- half_range} decades.  The objective is the
+scale-consistent sum of a relative L2 residual, a Tikhonov term, a
+second-difference smoothness term and (optionally) a negative Shannon
+entropy.  The port is faithful to \code{_gnowee.py}: it runs the same
+heuristics and population update and returns the best point found.
+}
+\examples{
+A <- matrix(c(0.9, 0.05, 0.05,
+              0.10, 0.8, 0.10,
+              0.30, 0.30, 0.40), nrow = 3, byrow = TRUE)
+b <- c(1, 0.6, 0.4)
+r <- solve_gnowee(A, b, rep(0, 3), max_gens = 5L, max_fevals = 200L)
+length(r$spectrum)
 }

@@ -44,3 +44,4 @@ means, every bootstrap replicate \eqn{n^{*}} is unfolded with the same
 solver configuration and the interval is formed from the
 \eqn{\alpha/2}/\eqn{1-\alpha/2} quantiles.
 }
+\keyword{internal}

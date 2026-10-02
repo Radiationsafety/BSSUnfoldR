@@ -51,8 +51,8 @@ Default 3.}
 between restarts. Default TRUE.}
 
 \item{regularization}{Numeric Tikhonov damping added to the diagonal of
-\eqn{A^\top A}{A'A}, or \code{NULL} (default) for the automatic
-\code{1e-4 * mean(diag(A'A))}.}
+\eqn{A^\top A}, or \code{NULL} (default) for the automatic
+\code{1e-4 * mean(diag(A^T A))}.}
 }
 \value{
 A list \code{list(spectrum, iterations, converged)}.

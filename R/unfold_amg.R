@@ -263,8 +263,8 @@ NULL
 #' @param nonnegativity Logical; clamp the spectrum to \code{x >= 0}
 #'   between restarts. Default TRUE.
 #' @param regularization Numeric Tikhonov damping added to the diagonal of
-#'   \eqn{A^\top A}{A'A}, or \code{NULL} (default) for the automatic
-#'   \code{1e-4 * mean(diag(A'A))}.
+#'   \eqn{A^\top A}, or \code{NULL} (default) for the automatic
+#'   \code{1e-4 * mean(diag(A^T A))}.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
 #' @examples

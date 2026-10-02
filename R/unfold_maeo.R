@@ -124,6 +124,60 @@ solve_maeo <- function(A, b, x0 = NULL, n_cycles = 4L,
 # colMins helper (base R has no colMins)
 colMins <- function(m) apply(m, 2, min)
 
+#' Solve by MAEO with explicit ensemble control
+#'
+#' R port of \code{solve_maeo_ensemble} from
+#' \code{bssunfold/src/bssunfold/core/unfold_maeo.py:686}: in Python this is
+#' a thin delegation to \code{solve_maeo} that additionally echoes the
+#' migration strategy and the parallel flag into the result (the explicit
+#' parallel-migration path is a Python-side future enhancement). The
+#' \code{algorithms} list is therefore kept as a metadata label only, in the
+#' same spirit as the solver aliases in \code{\link{unfold_docplex}}.
+#'
+#' @inheritParams solve_maeo
+#' @param x0 Optional numeric initial spectrum (length n), forwarded to
+#'   \code{\link{solve_maeo}}.
+#' @param algorithms Character vector of island algorithm labels; default
+#'   \code{c("nsga3", "ctea", "agemoea2", "spea2")} (Python defaults).
+#' @param migration_method Migration strategy label, \code{"hypervolume"}
+#'   (default) or \code{"uniform"}.
+#' @param seed Optional integer random seed.
+#' @param parallel Logical; accepted and echoed as
+#'   \code{parallel_enabled}, islands run sequentially in R.
+#' @param ... Extra arguments ignored (API parity with Python).
+#' @return As \code{\link{solve_maeo}}, plus \code{migration_method} and
+#'   \code{parallel_enabled}.
+#' @export
+#' @examples
+#' A <- matrix(c(0.9, 0.05, 0.05, 0.10, 0.8, 0.10, 0.30, 0.30, 0.40),
+#'             nrow = 3, byrow = TRUE)
+#' b <- c(1, 0.6, 0.4)
+#' r <- solve_maeo_ensemble(A, b, n_cycles = 2L,
+#'                          n_gen_per_cycle = 3L, pop_size = 8L, seed = 1L)
+solve_maeo_ensemble <- function(A, b, x0 = NULL, n_cycles = 25L,
+                                n_gen_per_cycle = 8L, pop_size = 100L,
+                                algorithms = NULL, lambda_smooth = 0.01,
+                                prior_spectrum = NULL,
+                                convergence_assist_ratio = 0.2,
+                                migration_method = "hypervolume",
+                                seed = NULL, parallel = FALSE, ...) {
+    if (!is.null(seed)) set.seed(as.integer(seed))
+    if (is.null(algorithms)) {
+        algorithms <- c("nsga3", "ctea", "agemoea2", "spea2")
+    }
+    result <- solve_maeo(A, b, x0 = x0, n_cycles = n_cycles,
+                         n_gen_per_cycle = n_gen_per_cycle,
+                         pop_size = pop_size,
+                         lambda_smooth = lambda_smooth,
+                         prior_spectrum = prior_spectrum,
+                         convergence_assist_ratio =
+                             convergence_assist_ratio)
+    result$migration_method <- migration_method
+    result$parallel_enabled <- isTRUE(parallel)
+    result$algorithms <- as.character(algorithms)
+    result
+}
+
 #' Wrapper around \code{\link{solve_maeo}} for the unified workflow.
 #' @inheritParams run_unfolding
 #' @inheritParams solve_maeo
@@ -153,6 +207,58 @@ unfold_maeo <- function(detector_names, n_energy_bins, E_MeV, sensitivities,
                             prior_spectrum = prior_spectrum,
                             convergence_assist_ratio =
                                 convergence_assist_ratio),
+        method_name = method_name,
+        calculate_errors = calculate_errors, noise_level = noise_level,
+        n_montecarlo = n_montecarlo, random_state = random_state,
+        save_result = save_result,
+        max_neutron_energy = max_neutron_energy)
+}
+
+#' Wrapper around \code{\link{solve_maeo_ensemble}} for the unified workflow.
+#'
+#' Mirrors \code{unfold_maeo_ensemble} from
+#' \code{bssunfold/src/bssunfold/core/unfold_maeo.py:774}: same standardized
+#' output as \code{\link{unfold_maeo}} but reported as \code{"MAEO-Ensemble"}
+#' with the ensemble defaults (25 cycles x 8 generations, pop_size 100).
+#'
+#' @inheritParams run_unfolding
+#' @inheritParams solve_maeo_ensemble
+#' @param method_name Reported method label.
+#' @export
+unfold_maeo_ensemble <- function(detector_names, n_energy_bins, E_MeV,
+                                 sensitivities, cc_icrp116,
+                                 save_result_callback, readings,
+                                 initial_spectrum = NULL, n_cycles = 25L,
+                                 n_gen_per_cycle = 8L, pop_size = 100L,
+                                 algorithms = NULL, lambda_smooth = 0.01,
+                                 prior_spectrum = NULL,
+                                 convergence_assist_ratio = 0.2,
+                                 migration_method = "hypervolume",
+                                 parallel = FALSE,
+                                 method_name = "MAEO-Ensemble",
+                                 calculate_errors = FALSE,
+                                 noise_level = 0.01, n_montecarlo = 100L,
+                                 save_result = FALSE, random_state = NULL,
+                                 max_neutron_energy = NULL) {
+    run_unfolding(
+        detector_names = detector_names, n_energy_bins = n_energy_bins,
+        E_MeV = E_MeV, sensitivities = sensitivities,
+        cc_icrp116 = cc_icrp116,
+        save_result_callback = save_result_callback,
+        readings = readings, initial_spectrum = initial_spectrum,
+        default_initial = rep(1, n_energy_bins),
+        solve_func = solve_maeo_ensemble,
+        solve_kwargs = list(n_cycles = n_cycles,
+                            n_gen_per_cycle = n_gen_per_cycle,
+                            pop_size = pop_size,
+                            algorithms = algorithms,
+                            lambda_smooth = lambda_smooth,
+                            prior_spectrum = prior_spectrum,
+                            convergence_assist_ratio =
+                                convergence_assist_ratio,
+                            migration_method = migration_method,
+                            parallel = parallel,
+                            seed = random_state),
         method_name = method_name,
         calculate_errors = calculate_errors, noise_level = noise_level,
         n_montecarlo = n_montecarlo, random_state = random_state,

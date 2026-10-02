@@ -559,6 +559,15 @@ Detector <- R6::R6Class(
                               readings, ...)
         },
 
+        #' @description Unfold using an Adaptive Cascade with dynamic method
+        #'   selection. See \code{\link{unfold_adaptive_cascade}}.
+        unfold_adaptive_cascade = function(readings, ...) {
+            unfold_adaptive_cascade(self$detector_names, self$n_energy_bins,
+                              self$E_MeV, self$sensitivities, self$cc_icrp116,
+                              function(out) self$save_result(out),
+                              readings, ...)
+        },
+
         # ------------------------------------------------------------------
         # Fifth batch of algorithms (added in v0.1.4)
         # ------------------------------------------------------------------
@@ -819,6 +828,14 @@ Detector <- R6::R6Class(
                         self$E_MeV, self$sensitivities, self$cc_icrp116,
                         function(out) self$save_result(out),
                         readings, ...)
+        },
+
+        #' @description Unfold with the MAEO ensemble. See \code{\link{unfold_maeo_ensemble}}.
+        unfold_maeo_ensemble = function(readings, ...) {
+            unfold_maeo_ensemble(self$detector_names, self$n_energy_bins,
+                                 self$E_MeV, self$sensitivities, self$cc_icrp116,
+                                 function(out) self$save_result(out),
+                                 readings, ...)
         },
 
         #' @description Unfold with operator-based MLEM. See \code{\link{unfold_mlem_odl}}.

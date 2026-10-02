@@ -64,8 +64,10 @@ Gauss-Seidel sweep executed as an explicit loop because BSS problems
 typically have many energy bins.
 }
 \examples{
+\dontrun{
 Q <- matrix(c(4, 1, 1, 3), nrow = 2)
 f <- c(-2, -1)
 .nnqp(Q, f, x0 = c(0.5, 0.5))
+}
 }
 \keyword{internal}

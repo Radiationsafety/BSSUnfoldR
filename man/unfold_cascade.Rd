@@ -21,7 +21,10 @@ unfold_cascade(
   n_montecarlo = 100L,
   save_result = FALSE,
   random_state = NULL,
-  max_neutron_energy = NULL
+  max_neutron_energy = NULL,
+  multi_resolution = FALSE,
+  coarse_bins = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -71,6 +74,15 @@ above this energy are removed from the response matrix during the
 solve and the returned spectrum is expanded back to the full grid
 with exact zeros above the cutoff (Python \code{max_neutron_energy}
 parameter). Default \code{NULL} = no cutoff.}
+
+\item{multi_resolution}{If TRUE, the first cascade stage runs on a coarse
+energy grid and its prolongated solution seeds the fine-grid stages
+(mirrors \code{_multires.py}).}
+
+\item{coarse_bins}{Coarse-grid resolution for \code{multi_resolution};
+default \code{max(8, n_energy_bins \%/\% 8)}.}
+
+\item{verbose}{Log each cascade stage via \code{\link[base]{message}}.}
 }
 \value{
 A result list as produced by \code{\link{run_unfolding}}.

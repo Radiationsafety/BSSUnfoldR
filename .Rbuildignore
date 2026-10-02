@@ -17,3 +17,5 @@
 ^smoke_test\.R$
 ^quickstart\.R$
 ^tools$
+^\.mypy_cache$
+^\.qoder$

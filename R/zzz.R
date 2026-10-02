@@ -7,6 +7,7 @@
 #' @keywords internal
 #' @name package-imports
 #' @importFrom stats optim approx median quantile setNames rnorm predict
+#' @importFrom stats runif
 #' @importFrom Matrix sparseMatrix
 #' @importFrom lsei nnls
 #' @importFrom R6 R6Class

@@ -1,0 +1,145 @@
+---
+title: "BSSUnfoldR Quick Start"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BSSUnfoldR Quick Start}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4)
+```
+
+# Introduction
+
+BSSUnfoldR is an R port of the Python package
+[bssunfold](https://github.com/Radiationsafety/bssunfold), which unfolds
+neutron spectra from Bonner sphere spectrometer measurements. This vignette
+shows a complete end-to-end workflow: building a `Detector` from the built-in
+PTB response function, synthesising readings from a known ground-truth
+spectrum, unfolding with several algorithms, and comparing the results.
+
+# Constructing a Detector
+
+A `Detector` bundles together an energy grid, per-sphere sensitivities,
+ICRP-116 conversion coefficients, and a result-history list. The fastest
+way to build one is to pass a built-in response function name:
+
+```r
+library(BSSUnfoldR)
+det <- Detector$new(
+  response_function = "PTB",
+  detector_names    = c("0in", "3in", "5in", "8in", "12in")
+)
+det$n_energy_bins
+#> [1] 60
+det$E_MeV[1:3]
+#> [1] 1.000000e-09 1.584893e-09 2.511886e-09
+```
+
+Other built-in response functions are `"GSF"`, `"LANL"`, `"JINR"`,
+`"FERMILAB"`, `"EURADOS"`, `"IHEP"`. Each ships with its own energy grid
+and a numeric vector of sensitivity values per sphere diameter.
+
+# Synthesising measurements from a known spectrum
+
+Let's build a synthetic 1/E + thermal-peak + fission-bump spectrum on the
+detector's energy grid, then convolve it with the chosen sensitivities to
+get the readings that each sphere would report:
+
+```r
+E  <- det$E_MeV
+phi_true <- 0.5 / E +
+  exp(-((log10(E) + 7)^2) / 2) +   # thermal peak around 1e-7 MeV
+  exp(-((log10(E))^2) / 0.4)        # fission bump around 1 MeV
+phi_true <- phi_true / sum(phi_true)
+
+# Scale so the bare "0in" sphere reports 1000 counts/s
+scale <- 1000 / sum(det$sensitivities[["0in"]] * phi_true)
+phi_true <- phi_true * scale
+
+readings <- sapply(det$detector_names, function(n)
+  sum(det$sensitivities[[n]] * phi_true))
+readings
+#>      0in      3in      5in      8in     12in
+#> 1000.000  128.221   60.356   15.812    2.236
+```
+
+# Unfolding with different algorithms
+
+Each method on the `Detector` class returns a standardised list with
+`energy`, `spectrum`, `effective_readings`, `residual`, `residual_norm`,
+`method`, `doserates`, plus algorithm-specific metadata (`iterations`,
+`converged`, etc.). Every call also appends to `det$history` if
+`save_result = TRUE`.
+
+```r
+r_mlem   <- det$unfold_mlem(readings,   max_iterations = 200)
+r_gravel <- det$unfold_gravel(readings, max_iterations = 200)
+r_maxed  <- det$unfold_maxed(readings,  max_iterations = 200)
+r_ferdor <- det$unfold_ferdor(readings, max_iterations = 50)
+r_tsvd   <- det$unfold_tsvd(readings,   method = "gcv")
+
+r_gravel$method
+#> [1] "GRAVEL"
+r_gravel$residual_norm
+#> [1] 1.587
+r_gravel$doserates[1:2]
+#>        AP        PA
+#> 1045.0113  903.2345
+```
+
+# Comparing spectra
+
+A simple way to compare unfolded spectra against the ground truth is the
+cosine similarity:
+
+```r
+phi_norm <- phi_true / sqrt(sum(phi_true^2))
+compare <- function(name) {
+  est <- get0(name)$spectrum
+  cos_sim <- sum(phi_norm * est / sqrt(sum(est^2)))
+  ratio   <- sum(est) / sum(phi_true)
+  data.frame(method = name, cosine_sim = cos_sim,
+             integral_ratio = ratio)
+}
+results <- do.call(rbind, lapply(
+  c("r_mlem", "r_gravel", "r_maxed", "r_ferdor", "r_tsvd"),
+  compare))
+results
+```
+
+# Monte-Carlo uncertainty
+
+Every `unfold_*` method accepts `calculate_errors = TRUE` to estimate
+per-bin uncertainty by perturbing the readings with Gaussian noise and
+re-running the unfolding `n_montecarlo` times:
+
+```r
+r_mc <- det$unfold_mlem(
+  readings, max_iterations = 200,
+  calculate_errors = TRUE,
+  n_montecarlo = 50,
+  noise_level = 0.05,
+  random_state = 42L
+)
+head(r_mc$spectrum_uncert_std)
+```
+
+# Dose-rate calculation
+
+To compute dose rates from any spectrum (whether unfolded or theoretical)
+against any built-in conversion-coefficient dataset, use
+`calculate_dose_rates()`:
+
+```r
+cc_nrb <- get_coefficients("NRB99_2009_effective")
+calculate_dose_rates(phi_true, cc_nrb)
+#>        AP       ISO
+#>  1452.134  1638.782
+```
+
+The available datasets are `"ICRP116"`, `"ICRP74_effective"`,
+`"NRB99_2009_effective"`, and `"ICRP74_operational"` (ambient and personal
+dose equivalents).

@@ -48,6 +48,9 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
+\item{n_super_bins, max_iterations, tolerance}{Legacy arguments kept for API
+parity with the Python original; ignored by the binned solver.}
+
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
 

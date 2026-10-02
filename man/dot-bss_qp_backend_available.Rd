@@ -13,3 +13,4 @@ The QP backends that Python's unfold_qpsolvers delegates to are not
 available in this environment (Python raises ImportError; the bssunfold
 qpsolvers method is then skipped by the composite/cascade dispatchers).
 }
+\keyword{internal}

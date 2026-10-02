@@ -176,7 +176,7 @@ NULL
     qpsolvers = "unfold_qpsolvers", hybrid_parametric = "unfold_hybrid_parametric",
     parametric2 = "unfold_parametric2",
     genetic = "unfold_genetic", interpret = "unfold_interpret",
-    maeo_ensemble = "unfold_maeo",
+    maeo_ensemble = "unfold_maeo_ensemble",
     mystic = "unfold_mystic", mystic_hybrid = "unfold_mystic_hybrid", cs = "unfold_cs",
     scip = "unfold_scip", docplex = "unfold_docplex", epic = "unfold_epic",
     kaczmarz = "unfold_kaczmarz", sart = "unfold_sart", osem = "unfold_osem",
@@ -483,6 +483,8 @@ solve_binned <- function(A, b, x0, E_MeV, n_super_bins = NULL,
 #' @param lookup_path Path to a JSON lookup file; ignored when \code{bin_lookup}
 #'   is supplied.
 #' @param timeout_per_method Wall-clock timeout per candidate method, seconds.
+#' @param n_super_bins,max_iterations,tolerance Legacy arguments kept for API
+#'   parity with the Python original; ignored by the binned solver.
 #' @return A result list as produced by \code{\link{run_unfolding}}.
 #' @export
 unfold_binned <- function(detector_names, n_energy_bins, E_MeV,

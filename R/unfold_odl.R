@@ -200,7 +200,8 @@ solve_odl_douglas_rachford <- function(A, b, x0 = NULL, max_iterations = 100L,
         }
         as.numeric(backsolve(R_chol,
                              forwardsolve(t(R_chol), rhs,
-                                          upper = FALSE, transpose = FALSE),
+                                          upper.tri = FALSE,
+                                          transpose = FALSE),
                              transpose = FALSE))
     }
     prox_psi2 <- function(v) {

@@ -78,6 +78,9 @@ BON95 weights (\code{b_meas = |b| * noise_level + 1e-30}). Default 0.05.}
 \item{tol_chi2}{Numeric; chi-square stop threshold for the DD phase.
 Default 1.}
 
+\item{initial_params, max_iterations, tolerance}{Legacy arguments kept for API
+parity with the Python original; ignored by this wrapper.}
+
 \item{calculate_errors}{Logical; run Monte-Carlo uncertainty estimation.}
 
 \item{n_montecarlo}{Integer; Monte-Carlo sample count.}

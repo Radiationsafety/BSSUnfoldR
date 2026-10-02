@@ -6,7 +6,7 @@
 [![DOI](https://zenodo.org/badge/1372098194.svg)](https://doi.org/10.5281/zenodo.22790648)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![R >= 4.0](https://img.shields.io/badge/R-%3E%3D%204.0-blue.svg)](https://www.r-project.org/)
-[![Version](https://img.shields.io/badge/version-0.2.1-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
+[![Version](https://img.shields.io/badge/version-0.2.2-blue.svg)](https://github.com/Radiationsafety/BSSUnfoldR/releases)
 [![Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 Neutron spectrum unfolding for Bonner Sphere Spectrometers — an R port of the
@@ -58,6 +58,19 @@ Python package [bssunfold](https://github.com/Radiationsafety/bssunfold).
     Douglas-Rachford Detector-facing wrapper, and a complete rewrite of
     `solve_nnksvd` matching the Python reference (proper dictionary
     orientation, equivalent-dictionary normalization, scale-fix step).
+  - **Batch 9 (v0.2.2)**: Adaptive Cascade (self-selecting cascade that
+    grows its method sequence from quality metrics, with optional
+    multi-resolution coarse-grid staging), MAEO-Ensemble (multi-island
+    ensemble front-end for MAEO), Fission-GA (BonnerFinder: 3-fraction
+    Fission model, differential-evolution global search + Levenberg-Marquardt
+    refinement with fit validation) and CUQI-Bayesian (pure-R port of the
+    CUQIpy MCMC suite: pCN / CWMH / MALA / ULA and hierarchical Gamma-GMRF
+    Gibbs samplers on the log-scale posterior with HPD credible band,
+    R-hat and ESS diagnostics; NUTS maps onto CWMH). This completes the
+    port of every top-level method of `bssunfold` 0.28.0. Like the other
+    randomized pipelines in this port, these four are validated on
+    solution quality (fit residual, chi-square, reproducible spectra for
+    a fixed `random_state`) rather than against Python's RNG streams.
 - **Monte-Carlo uncertainty estimation** — add Gaussian noise to readings,
   run the unfolding N times, return per-bin mean / std / median / 5-95
   percentiles / all-samples matrix.
@@ -78,7 +91,7 @@ Each algorithm has two entry points:
 
 ```r
 # Install the source tarball
-install.packages("BSSUnfoldR_0.2.1.tar.gz", repos = NULL, type = "source")
+install.packages("BSSUnfoldR_0.2.2.tar.gz", repos = NULL, type = "source")
 
 # Or, if the package directory is on disk:
 install.packages("path/to/bssunfoldr", repos = NULL, type = "source")
@@ -154,7 +167,7 @@ If you use BSSUnfoldR in your research, please cite:
                   Spectrometers. {R} port of the Python package 'bssunfold'
                   ({Radiationsafety}/bssunfold)},
   year         = {2026},
-  version      = {0.2.1},
+  version      = {0.2.2},
   url          = {https://github.com/Radiationsafety/BSSUnfoldR},
   orcid        = {0000-0003-1591-4289},
   affiliation = {Joint Institute for Nuclear Research}

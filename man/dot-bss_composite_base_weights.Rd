@@ -14,3 +14,4 @@ An object of class \code{numeric} of length 22.
 DEFAULT_ENSEMBLE_WEIGHTS from unfold_composite.py.
 }
 \keyword{datasets}
+\keyword{internal}

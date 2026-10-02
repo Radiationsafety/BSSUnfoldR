@@ -30,7 +30,9 @@
 #'   \code{(n-2, n)} (order 2) smoothing matrix \code{L}.
 #' @keywords internal
 #' @examples
+#' \dontrun{
 #' louhi_smoothing_matrix(4L, 1L)
+#' }
 louhi_smoothing_matrix <- function(n, smooth_order = 1L) {
     n <- as.integer(n)
     smooth_order <- as.integer(smooth_order)

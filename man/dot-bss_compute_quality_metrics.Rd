@@ -14,3 +14,4 @@
 \description{
 Quality metrics, mirroring compute_quality_metrics() in unfold_cascade.py.
 }
+\keyword{internal}

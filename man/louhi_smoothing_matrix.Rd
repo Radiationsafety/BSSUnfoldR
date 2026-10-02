@@ -42,6 +42,8 @@ regression on the total chi-square so that the data misfit reaches its
 expected value (nonlinear mode, LOUHI's smoothing-parameter search).
 }
 \examples{
+\dontrun{
 louhi_smoothing_matrix(4L, 1L)
+}
 }
 \keyword{internal}

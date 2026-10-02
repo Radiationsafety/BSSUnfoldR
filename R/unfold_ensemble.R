@@ -23,6 +23,7 @@ NULL
 
 #' Cosine similarity, mirroring bssunfold.utils.comparison.cosine_similarity.
 #' Returns 0 when either vector has zero norm.
+#' @keywords internal
 .bss_cosine_similarity <- function(p, q) {
     p <- as.numeric(p); q <- as.numeric(q)
     nrm_p <- sqrt(sum(p^2))
@@ -33,6 +34,7 @@ NULL
 
 #' Confidence weight of one solution against the rest of the ensemble,
 #' mirroring _confidence_weight() in unfold_composite.py.
+#' @keywords internal
 .bss_confidence_weight <- function(spectrum, others) {
     if (length(others) == 0L) return(1)
     sims <- vapply(others, function(o) .bss_cosine_similarity(spectrum, o),
@@ -100,6 +102,7 @@ NULL
 #' Build a default-ensemble member: solver wrapper that injects Python's
 #' conservative default kwargs (max_iterations = 200, tolerance = 1e-4),
 #' letting caller-supplied dots override them (keep-last deduplication).
+#' @keywords internal
 .bss_default_member <- function(solver, kwargs) {
     force(solver)
     function(A, b, x0, ...) {
@@ -167,7 +170,7 @@ NULL
     parametric2 = "unfold_parametric2",
     genetic = "unfold_genetic",
     interpret = "unfold_interpret",
-    maeo_ensemble = "unfold_maeo",
+    maeo_ensemble = "unfold_maeo_ensemble",
     mystic = "unfold_mystic",
     mystic_hybrid = "unfold_mystic_hybrid",
     cs = "unfold_cs",
@@ -228,15 +231,99 @@ NULL
     )
 }
 
+#' Coarse-bin edges, mirroring ``np.linspace(0, n, n_coarse + 1, dtype=int)``
+#' in _multires.py.
+.bss_coarse_edges <- function(n, n_coarse) {
+    n <- as.integer(n)
+    n_coarse <- as.integer(n_coarse)
+    if (n_coarse <= 0L || n_coarse > n) {
+        stop("n_coarse must satisfy 0 < n_coarse <= ", n)
+    }
+    as.integer(trunc(seq(0L, n, length.out = n_coarse + 1L)))
+}
+
+#' build_coarse_detector() from _multires.py, reduced to the grid itself:
+#' column-sum coarsening of the response matrix plus the geometric-mean
+#' (arithmetic fallback) energy per coarse bin.
+.bss_coarse_grid <- function(A_stack, E_MeV, edges) {
+    n_coarse <- length(edges) - 1L
+    A_coarse <- matrix(0, nrow = nrow(A_stack), ncol = n_coarse)
+    E_coarse <- numeric(n_coarse)
+    for (k in seq_len(n_coarse)) {
+        cols <- seq.int(edges[k] + 1L, edges[k + 1L])
+        if (length(cols) == 1L) {
+            A_coarse[, k] <- as.numeric(A_stack[, cols])
+        } else if (length(cols) > 1L) {
+            A_coarse[, k] <- rowSums(A_stack[, cols, drop = FALSE], dims = 1L)
+        }
+        grp <- as.numeric(E_MeV)[cols]
+        E_coarse[k] <- if (length(grp) && all(grp > 0)) {
+            exp(mean(log(grp)))
+        } else if (length(grp)) {
+            mean(grp)
+        } else if (length(grp) == 0L && edges[k] + 1L <= length(E_MeV)) {
+            as.numeric(E_MeV)[edges[k] + 1L]
+        } else 0
+    }
+    list(A = A_coarse, E = E_coarse, bins = n_coarse)
+}
+
+#' prolongate_spectrum() / _split_coarse() from _multires.py: spread each
+#' coarse bin total uniformly over the fine bins it covers.
+.bss_prolongate_spectrum <- function(x_coarse, n) {
+    x_coarse <- as.numeric(x_coarse)
+    edges <- .bss_coarse_edges(n, length(x_coarse))
+    x <- numeric(n)
+    for (k in seq_along(x_coarse)) {
+        lo <- edges[k] + 1L
+        hi <- edges[k + 1L]
+        width <- hi - lo
+        if (width > 0L) x[seq.int(lo, hi)] <- x_coarse[k] / width
+    }
+    x
+}
+
+#' select_next_method() from unfold_cascade.py:245.
+.bss_select_next_method <- function(current_metrics, available_methods,
+                                     stage_number) {
+    smoothness <- current_metrics$smoothness
+    if (is.null(smoothness) || !is.finite(smoothness)) smoothness <- 0.5
+    chi_square <- current_metrics$chi_square
+    if (is.null(chi_square) || !is.finite(chi_square)) chi_square <- 10
+    flux_error <- current_metrics$flux_error
+    if (is.null(flux_error) || !is.finite(flux_error)) flux_error <- 1
+
+    preferred <- if (smoothness < 0.3) {
+        c("tsvd", "statreg", "bayes", "tikhonov_tv")
+    } else if (chi_square > 5) {
+        c("mlem", "landweber", "cgls", "hybrid_gmres")
+    } else if (flux_error > 0.2) {
+        c("cvxpy", "qpsolvers", "gravel")
+    } else {
+        c("bayes_spline", "parametric2", "hybrid_parametric")
+    }
+    hit <- preferred[preferred %in% available_methods]
+    if (length(hit) > 0L) return(hit[1L])
+
+    defaults <- c("landweber", "mlem", "cvxpy", "bayes")
+    defaults[(as.integer(stage_number) %% length(defaults)) + 1L]
+}
+
 #' Stage-level cascade driver mirroring the module-level unfold_cascade()
 #' in bssunfold/core/unfold_cascade.py (default "general" stage sequence,
-#' quality-threshold early stop, Detector-level member calls).
+#' quality-threshold early stop, Detector-level member calls). Stages with
+#' \code{coarse = TRUE} run on a coarsened grid (build_coarse_detector /
+#' prolongate_spectrum from _multires.py) whose bin totals are prolongated
+#' back onto the fine grid.
 .bss_run_cascade_stages <- function(detector_names, n_energy_bins, E_MeV,
                                      sensitivities, cc_icrp116,
                                      save_result_callback, readings,
                                      calculate_errors = FALSE,
-                                     save_result = FALSE) {
-    stages <- .bss_default_cascade_stages()
+                                     save_result = FALSE,
+                                     stages = NULL,
+                                     coarse_bins = NULL,
+                                     verbose = FALSE) {
+    if (is.null(stages)) stages <- .bss_default_cascade_stages()
 
     # _build_response_matrix(): stack every detector sensitivity.
     A_stack <- do.call(rbind, lapply(detector_names,
@@ -249,24 +336,63 @@ NULL
     stage_spectra <- list()
     stages_run <- 0L
     method_sequence <- character(0L)
+    coarse_cache <- list()
+    n_stages <- length(stages)
 
     for (stage_idx in seq_along(stages)) {
         stage <- stages[[stage_idx]]
         method_name <- stage$method
+        is_coarse <- isTRUE(stage$coarse)
+
+        target_bins <- as.integer(n_energy_bins)
+        target_E <- E_MeV
+        target_sens <- sensitivities
+        if (is_coarse) {
+            n_coarse <- if (!is.null(stage$coarse_bins)) {
+                as.integer(stage$coarse_bins)
+            } else if (!is.null(coarse_bins)) {
+                as.integer(coarse_bins)
+            } else {
+                max(8L, as.integer(n_energy_bins) %/% 8L)
+            }
+            cache_key <- as.character(n_coarse)
+            grid <- coarse_cache[[cache_key]]
+            if (is.null(grid)) {
+                edges <- .bss_coarse_edges(n_energy_bins, n_coarse)
+                grid <- .bss_coarse_grid(A_stack, E_MeV, edges)
+                coarse_cache[[cache_key]] <- grid
+            }
+            target_bins <- grid$bins
+            target_E <- grid$E
+            target_sens <- stats::setNames(
+                lapply(seq_along(detector_names),
+                       function(i) as.numeric(grid$A[i, ])),
+                detector_names)
+        }
+
         unfold_func <- .bss_resolve_method(.bss_cascade_dispatch, method_name)
-        if (is.null(unfold_func)) next   # method not found, skipping
+        if (is.null(unfold_func)) {
+            if (verbose) message(sprintf("Method %s not found, skipping",
+                                         method_name))
+            next   # method not found, skipping
+        }
+
+        if (verbose) {
+            message(sprintf("Cascade Stage %d/%d: %s",
+                            stage_idx, n_stages, method_name))
+        }
 
         params <- stage$params
         params$save_result <- save_result
 
         if (!is.null(current_spectrum) && isTRUE(stage$use_as_initial)) {
-            if (length(current_spectrum) == n_energy_bins) {
+            if (length(current_spectrum) == target_bins) {
                 params$initial_spectrum <- current_spectrum
             }
         }
 
         if (!is.null(current_spectrum) && isTRUE(stage$use_as_prior)) {
-            if (length(current_spectrum) == n_energy_bins) {
+            if (length(current_spectrum) == target_bins) {
                 if (method_name %in% c("bayes", "bayes_spline")) {
                     params$initial_spectrum <- current_spectrum
                 } else if ("reference_spectrum" %in%
@@ -283,12 +409,12 @@ NULL
             } else stage$max_iterations
         }
 
-        params$calculate_errors <- (stage_idx == length(stages)) &&
+        params$calculate_errors <- (stage_idx == n_stages) &&
             isTRUE(calculate_errors)
 
         args <- c(list(detector_names = detector_names,
-                        n_energy_bins = n_energy_bins, E_MeV = E_MeV,
-                        sensitivities = sensitivities,
+                        n_energy_bins = target_bins, E_MeV = target_E,
+                        sensitivities = target_sens,
                         cc_icrp116 = cc_icrp116,
                         save_result_callback = save_result_callback,
                         readings = readings), params)
@@ -300,10 +426,20 @@ NULL
 
         spec <- result$spectrum
         if (!is.null(spec)) {
-            current_spectrum <- as.numeric(spec)
+            raw <- as.numeric(spec)
+            current_spectrum <- if (is_coarse) {
+                .bss_prolongate_spectrum(raw, n_energy_bins)
+            } else raw
+
             reconstructed <- as.numeric(A_stack %*% current_spectrum)
             metrics <- .bss_compute_quality_metrics(
                 current_spectrum, reconstructed, measured, E_MeV)
+            if (verbose) {
+                message(sprintf(
+                    "  Chi2=%.3f, Smooth=%.3f, Flux err=%.3f",
+                    metrics$chi_square, metrics$smoothness,
+                    metrics$flux_error))
+            }
             convergence_history[[length(convergence_history) + 1L]] <-
                 c(list(stage = stage_idx - 1L, method = method_name), metrics)
             stage_spectra[[length(stage_spectra) + 1L]] <- current_spectrum
@@ -350,6 +486,7 @@ NULL
 #' in bssunfold/core/unfold_composite.py: run the general method pool with
 #' detector defaults, drop invalid outputs, combine with confidence-weighted
 #' averaging (base weight * mean cosine similarity to the other members).
+#' @keywords internal
 .bss_run_composite_pool <- function(detector_names, n_energy_bins, E_MeV,
                                      sensitivities, cc_icrp116,
                                      save_result_callback, readings,
@@ -755,6 +892,12 @@ unfold_ensemble <- function(detector_names, n_energy_bins, E_MeV,
 #'
 #' @inheritParams run_unfolding
 #' @inheritParams solve_cascade
+#' @param multi_resolution If TRUE, the first cascade stage runs on a coarse
+#'   energy grid and its prolongated solution seeds the fine-grid stages
+#'   (mirrors \code{_multires.py}).
+#' @param coarse_bins Coarse-grid resolution for \code{multi_resolution};
+#'   default \code{max(8, n_energy_bins \%/\% 8)}.
+#' @param verbose Log each cascade stage via \code{\link[base]{message}}.
 #' @return A result list as produced by \code{\link{run_unfolding}}.
 #' @export
 unfold_cascade <- function(detector_names, n_energy_bins, E_MeV,
@@ -765,18 +908,29 @@ unfold_cascade <- function(detector_names, n_energy_bins, E_MeV,
                               calculate_errors = FALSE,
                               noise_level = 0.01, n_montecarlo = 100L,
                               save_result = FALSE, random_state = NULL,
-                              max_neutron_energy = NULL) {
+                              max_neutron_energy = NULL,
+                              multi_resolution = FALSE,
+                              coarse_bins = NULL,
+                              verbose = FALSE) {
     sys <- .build_system(readings, detector_names, sensitivities)
     A <- sys$A; b <- sys$b; selected <- sys$selected
     x0 <- if (is.null(initial_spectrum)) rep(0.5, n_energy_bins)
            else as.numeric(initial_spectrum)
 
     if (missing(solvers)) {
+        stages <- NULL
+        if (isTRUE(multi_resolution)) {
+            stages <- .bss_default_cascade_stages()
+            stages[[1L]]$coarse <- TRUE
+            stages[[1L]]$coarse_bins <- coarse_bins
+        }
         res <- .bss_run_cascade_stages(detector_names, n_energy_bins, E_MeV,
                                         sensitivities, cc_icrp116,
                                         save_result_callback, readings,
                                         calculate_errors = calculate_errors,
-                                        save_result = save_result)
+                                        save_result = save_result,
+                                        stages = stages,
+                                        verbose = verbose)
     } else {
         stage_res <- solve_cascade(A, b, x0, solvers,
                                     solver_kwargs_list = solver_kwargs_list,
@@ -791,13 +945,24 @@ unfold_cascade <- function(detector_names, n_energy_bins, E_MeV,
                     status = "OK", message = "legacy solver cascade")
     }
 
+    .bss_cascade_finalize(res, A, b, selected, E_MeV, cc_icrp116,
+                           save_result, save_result_callback,
+                           method_label = "Cascade")
+}
+
+#' Shared result assembly for the cascade-style wrappers, mirroring the
+#' final dict built at the end of module-level unfold_cascade() in
+#' unfold_cascade.py.
+.bss_cascade_finalize <- function(res, A, b, selected, E_MeV, cc_icrp116,
+                                   save_result, save_result_callback,
+                                   method_label = "Cascade") {
     spectrum <- res$spectrum
     if (is.null(spectrum)) {
         result <- list(
             energy = E_MeV,
             spectrum = NULL,
             spectrum_absolute = NULL,
-            method = "Cascade",
+            method = method_label,
             doserates = numeric(0L),
             iterations = as.integer(res$stages_run),
             converged = FALSE,
@@ -824,7 +989,7 @@ unfold_cascade <- function(detector_names, n_energy_bins, E_MeV,
         effective_readings = stats::setNames(computed_readings, selected),
         residual = residual,
         residual_norm = sqrt(sum(residual^2)),
-        method = "Cascade",
+        method = method_label,
         doserates = if (!is.null(cc_icrp116))
                         calculate_dose_rates(spectrum, cc_icrp116)
                     else numeric(0L),
@@ -838,10 +1003,109 @@ unfold_cascade <- function(detector_names, n_energy_bins, E_MeV,
         status = res$status,
         message = res$message
     )
+    if (!is.null(res$total_time)) result$total_time <- res$total_time
     if (isTRUE(save_result) && is.function(save_result_callback)) {
         save_result_callback(result)
     }
     result
+}
+
+#' Adaptive cascade: stage list grown one method at a time, with the next
+#' method chosen from the intermediate quality metrics
+#' (\code{unfold_adaptive_cascade} in bssunfold/core/unfold_cascade.py:658).
+#' Each round re-runs the whole growing stage list so the next selection sees
+#' fresh metrics (O(max_stages^2) solver calls, same as Python); the final
+#' authoritative run applies \code{calculate_errors} and
+#' \code{multi_resolution}.
+#'
+#' @inheritParams unfold_cascade
+#' @param max_stages Maximum number of cascade stages.
+#' @param initial_method Method for the first stage.
+#' @return A result list as produced by \code{\link{unfold_cascade}}, plus
+#'   \code{total_time}.
+#' @export
+unfold_adaptive_cascade <- function(detector_names, n_energy_bins, E_MeV,
+                                      sensitivities, cc_icrp116,
+                                      save_result_callback, readings,
+                                      max_stages = 5L,
+                                      initial_method = "tsvd",
+                                      calculate_errors = FALSE,
+                                      verbose = FALSE,
+                                      save_result = FALSE,
+                                      multi_resolution = FALSE,
+                                      coarse_bins = NULL) {
+    available_methods <- c(
+        "tsvd", "landweber", "mlem", "cvxpy", "qpsolvers",
+        "statreg", "bayes", "bayes_spline", "cgls", "hybrid_gmres",
+        "parametric2", "hybrid_parametric", "tikhonov_tv", "gravel")
+
+    stages <- list()
+    current_metrics <- list(smoothness = 0.5, chi_square = 10, flux_error = 1)
+    convergence_history <- list()
+    start <- proc.time()["elapsed"]
+
+    for (stage_idx in seq_len(max(1L, as.integer(max_stages)))) {
+        used <- vapply(stages, function(s) s$method, character(1))
+        remaining <- setdiff(available_methods, used)
+        if (stage_idx == 1L) {
+            method <- initial_method
+        } else {
+            # Python selects with the metrics known at loop entry, then
+            # refreshes them from the previous stage (one-stage lag).
+            method <- .bss_select_next_method(current_metrics, remaining,
+                                              stage_idx - 1L)
+            if (length(convergence_history) > 0L) {
+                last <- length(convergence_history)
+                current_metrics <- convergence_history[[last]]
+            }
+        }
+        stages[[length(stages) + 1L]] <- list(
+            method = method,
+            params = list(),
+            use_as_initial = stage_idx > 1L,
+            use_as_prior = stage_idx > 1L &&
+                method %in% c("bayes", "bayes_spline"),
+            store_intermediate = TRUE,
+            quality_threshold = NULL,
+            max_iterations = NULL,
+            coarse = FALSE,
+            coarse_bins = NULL)
+
+        if (verbose) {
+            message(sprintf("Adaptive stage %d: selected %s",
+                            stage_idx, method))
+        }
+
+        # Run incrementally so the next selection can use fresh metrics.
+        result <- .bss_run_cascade_stages(
+            detector_names, n_energy_bins, E_MeV, sensitivities,
+            cc_icrp116, save_result_callback, readings,
+            calculate_errors = FALSE, save_result = save_result,
+            stages = stages, verbose = verbose)
+        if (length(result$convergence_history) > 0L) {
+            convergence_history <- result$convergence_history
+        }
+        if (is.null(result$spectrum)) break
+    }
+
+    final_stages <- stages
+    if (isTRUE(multi_resolution) && length(final_stages) > 0L) {
+        final_stages[[1L]]$coarse <- TRUE
+        final_stages[[1L]]$coarse_bins <- coarse_bins
+    }
+
+    # Final call is authoritative.
+    res <- .bss_run_cascade_stages(
+        detector_names, n_energy_bins, E_MeV, sensitivities, cc_icrp116,
+        save_result_callback, readings,
+        calculate_errors = calculate_errors, save_result = save_result,
+        stages = final_stages, verbose = verbose)
+    res$total_time <- as.numeric(proc.time()["elapsed"] - start)
+
+    sys <- .build_system(readings, detector_names, sensitivities)
+    .bss_cascade_finalize(res, sys$A, sys$b, sys$selected, E_MeV,
+                           cc_icrp116, save_result, save_result_callback,
+                           method_label = "Adaptive Cascade")
 }
 
 #' Wrapper around the confidence-weighted method pool for the unified

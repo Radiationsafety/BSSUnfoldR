@@ -4,7 +4,10 @@
 \alias{.bss_run_cascade_stages}
 \title{Stage-level cascade driver mirroring the module-level unfold_cascade()
 in bssunfold/core/unfold_cascade.py (default "general" stage sequence,
-quality-threshold early stop, Detector-level member calls).}
+quality-threshold early stop, Detector-level member calls). Stages with
+\code{coarse = TRUE} run on a coarsened grid (build_coarse_detector /
+prolongate_spectrum from _multires.py) whose bin totals are prolongated
+back onto the fine grid.}
 \usage{
 .bss_run_cascade_stages(
   detector_names,
@@ -15,11 +18,18 @@ quality-threshold early stop, Detector-level member calls).}
   save_result_callback,
   readings,
   calculate_errors = FALSE,
-  save_result = FALSE
+  save_result = FALSE,
+  stages = NULL,
+  coarse_bins = NULL,
+  verbose = FALSE
 )
 }
 \description{
 Stage-level cascade driver mirroring the module-level unfold_cascade()
 in bssunfold/core/unfold_cascade.py (default "general" stage sequence,
-quality-threshold early stop, Detector-level member calls).
+quality-threshold early stop, Detector-level member calls). Stages with
+\code{coarse = TRUE} run on a coarsened grid (build_coarse_detector /
+prolongate_spectrum from _multires.py) whose bin totals are prolongated
+back onto the fine grid.
 }
+\keyword{internal}

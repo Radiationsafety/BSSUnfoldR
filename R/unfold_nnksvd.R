@@ -13,8 +13,8 @@
 #'
 #' @section Metrics:
 #' The three evaluation metrics of the article (Section 2.2.3) live in
-#' \code{\link{relative_flux_error}}, \code{\link{pearson_correlation}} and
-#' \code{\link{comprehensive_score}}.
+#' \code{relative_flux_error}, \code{pearson_correlation} and
+#' \code{comprehensive_score}.
 #'
 #' @name nnksvd
 NULL

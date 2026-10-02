@@ -50,7 +50,9 @@
 #'   \code{0.0}, which the caller then re-floors.
 #' @keywords internal
 #' @examples
+#' \dontrun{
 #' estimate_noise_1d(c(1, 1.2, 0.9, 1.1, 1.0))
+#' }
 estimate_noise_1d <- function(x) {
     x <- as.numeric(x)
     n <- length(x)
@@ -118,7 +120,9 @@ estimate_noise_1d <- function(x) {
 #'   \code{search_window == 1}.
 #' @keywords internal
 #' @examples
+#' \dontrun{
 #' anlm_filter_1d(c(1, 1.4, 0.2, 1.3, 1.1), h = 0.1)
+#' }
 anlm_filter_1d <- function(x, h = NULL, search_window = 11L,
                            similarity_window = 3L, alpha = 1.0,
                            log_space = TRUE) {

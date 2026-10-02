@@ -38,7 +38,9 @@
 #'   (zeroth-order Tikhonov, standard ridge).
 #' @return The discrete penalty operator \code{L} (shape \code{(k, n)}).
 #' @examples
+#' \dontrun{
 #' .tikhonov_penalty_matrix(4L, "sobolev")
+#' }
 .tikhonov_penalty_matrix <- function(n, penalty = "sobolev") {
     n <- as.integer(n)
     if (penalty == "sobolev") {
