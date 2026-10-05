@@ -19,6 +19,35 @@ averaging (base weight * mean cosine similarity to the other members).}
   n_methods = 5L
 )
 }
+\arguments{
+\item{detector_names}{Character vector of detector names.}
+
+\item{n_energy_bins}{Integer; number of energy bins in the output spectrum.}
+
+\item{E_MeV}{Numeric energy grid (length \code{n_energy_bins}).}
+
+\item{sensitivities}{Named list of numeric sensitivity vectors, one per
+detector (each of length \code{n_energy_bins}).}
+
+\item{cc_icrp116}{Named list of ICRP-116 conversion coefficients (or
+\code{NULL} to skip dose-rate computation).}
+
+\item{save_result_callback}{Function of one argument (the result list)
+invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
+
+\item{readings}{Named numeric vector of detector readings.}
+
+\item{save_result}{Logical; if \code{TRUE}, call
+\code{save_result_callback}. Default \code{FALSE}.}
+
+\item{n_methods}{Integer; number of leading general methods to run.
+Default 5.}
+}
+\value{
+List with the combined \code{spectrum}, \code{successful_methods},
+\code{consistency}, \code{weights}, \code{individual_spectra},
+\code{composite_spectra}, \code{status} and \code{message}.
+}
 \description{
 Pool-level composite driver mirroring the module-level unfold_composite()
 in bssunfold/core/unfold_composite.py: run the general method pool with

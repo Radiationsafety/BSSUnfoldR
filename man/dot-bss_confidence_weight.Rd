@@ -7,6 +7,15 @@ mirroring _confidence_weight() in unfold_composite.py.}
 \usage{
 .bss_confidence_weight(spectrum, others)
 }
+\arguments{
+\item{spectrum}{Numeric candidate spectrum.}
+
+\item{others}{List of the other ensemble spectra.}
+}
+\value{
+Numeric weight between 0 and 1: the mean cosine similarity to
+\code{others}, clipped to that range (1 for a lone member).
+}
 \description{
 Confidence weight of one solution against the rest of the ensemble,
 mirroring _confidence_weight() in unfold_composite.py.

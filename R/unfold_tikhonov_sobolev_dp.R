@@ -30,6 +30,7 @@
 #' discrepancy and diagnostic status codes when no admissible \code{alpha*}
 #' exists (data inconsistent with the supplied \code{delta}).
 #'
+#' @keywords internal
 #' @name tikhonov_sobolev_dp
 #' @param n Integer; number of energy bins.
 #' @param penalty Character; penalty operator \code{"sobolev"} (first
@@ -38,7 +39,7 @@
 #'   (zeroth-order Tikhonov, standard ridge).
 #' @return The discrete penalty operator \code{L} (shape \code{(k, n)}).
 #' @examples
-#' .tikhonov_penalty_matrix(4L, "sobolev")
+#' BSSUnfoldR:::.tikhonov_penalty_matrix(4L, "sobolev")
 .tikhonov_penalty_matrix <- function(n, penalty = "sobolev") {
     n <- as.integer(n)
     if (penalty == "sobolev") {

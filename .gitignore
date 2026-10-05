@@ -48,3 +48,4 @@ BSSUnfoldR.Rcheck
 /public/
 *.pyc
 
+.qoder/settings.local.json

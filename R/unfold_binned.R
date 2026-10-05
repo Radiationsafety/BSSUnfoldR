@@ -478,6 +478,10 @@ solve_binned <- function(A, b, x0, E_MeV, n_super_bins = NULL,
 #' Wrapper around \code{\link{solve_binned}} for the unified workflow.
 #'
 #' @inheritParams run_unfolding
+#' @param n_super_bins Integer; super-bin count reported in \code{extra_output}.
+#'   \code{NULL} (default) uses \code{max(3, n_energy_bins \%/\% 10)}.
+#' @param max_iterations,tolerance Legacy arguments kept for API
+#'   compatibility; unused by the bin-wise assembly.
 #' @param bin_lookup Pre-computed lookup table, or \code{NULL} to load
 #'   \code{lookup_path} (default: the shipped table).
 #' @param lookup_path Path to a JSON lookup file; ignored when \code{bin_lookup}

@@ -8,6 +8,15 @@ letting caller-supplied dots override them (keep-last deduplication).}
 \usage{
 .bss_default_member(solver, kwargs)
 }
+\arguments{
+\item{solver}{Function with signature \code{(A, b, x0, ...)}.}
+
+\item{kwargs}{Named list of defaults injected ahead of the caller's
+\code{...} arguments.}
+}
+\value{
+A solver function suitable for \code{run_unfolding}.
+}
 \description{
 Build a default-ensemble member: solver wrapper that injects Python's
 conservative default kwargs (max_iterations = 200, tolerance = 1e-4),

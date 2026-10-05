@@ -18,6 +18,36 @@ quality-threshold early stop, Detector-level member calls).}
   save_result = FALSE
 )
 }
+\arguments{
+\item{detector_names}{Character vector of detector names.}
+
+\item{n_energy_bins}{Integer; number of energy bins in the output spectrum.}
+
+\item{E_MeV}{Numeric energy grid (length \code{n_energy_bins}).}
+
+\item{sensitivities}{Named list of numeric sensitivity vectors, one per
+detector (each of length \code{n_energy_bins}).}
+
+\item{cc_icrp116}{Named list of ICRP-116 conversion coefficients (or
+\code{NULL} to skip dose-rate computation).}
+
+\item{save_result_callback}{Function of one argument (the result list)
+invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
+
+\item{readings}{Named numeric vector of detector readings.}
+
+\item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
+uncertainty estimation. Default \code{FALSE}.}
+
+\item{save_result}{Logical; if \code{TRUE}, call
+\code{save_result_callback}. Default \code{FALSE}.}
+}
+\value{
+List with the final \code{spectrum}, \code{stages_run},
+\code{method_sequence}, \code{cascade_spectra},
+\code{intermediate_results}, \code{quality_metrics}, \code{status} and
+\code{message}.
+}
 \description{
 Stage-level cascade driver mirroring the module-level unfold_cascade()
 in bssunfold/core/unfold_cascade.py (default "general" stage sequence,

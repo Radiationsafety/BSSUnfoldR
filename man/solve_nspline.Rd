@@ -77,7 +77,8 @@ iteration.
 \code{knots = NULL} builds the automatic log-uniform \emph{segment} grid from
 \code{min(E)} to \code{max(E)} with \code{min(12, max(4, n \%/\% 4))}
 segments, exactly like the Python implementation.  A character value
-selects a preset from \code{\link{NSPLINE_KNOT_PRESETS}}, a numeric value
+selects a preset from the internal \code{NSPLINE_KNOT_PRESETS} table, a
+numeric value
 is read as a full (endpoint inclusive) knot sequence and is clipped to the
 energy range and extended to span the whole grid.  Note that this is
 \emph{not} the interior-knot vector returned by \code{\link{auto_knots}}.

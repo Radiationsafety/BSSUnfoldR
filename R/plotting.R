@@ -194,6 +194,7 @@ convert_to_dict <- function(result) {
 discretize_spectrum <- function(f, E_MeV) {
     E_MeV <- sort(as.numeric(E_MeV))
     edgesL <- log(E_MeV)
+    step <- if (length(E_MeV) > 1L) stats::median(diff(edgesL)) else 1
     lore <- exp(edgesL - step / 2)
     hire <- exp(edgesL + step / 2)
     vapply(seq_len(length(E_MeV)), function(i) {

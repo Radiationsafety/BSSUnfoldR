@@ -167,15 +167,28 @@ solve_epic <- function(A, b, x0 = NULL, sigma_frac = 0.1,
     d
 }
 
+#' Symmetric Moore-Penrose inverse via eigendecomposition.
+#'
+#' Stands in for NumPy's \code{pinv} fallback in \code{_calc_epic_ch.py} when
+#' the covariance matrix is too close to singular for \code{solve()}.
+#' @noRd
+.epic_pinv_sym <- function(M, rcond = 1e-10) {
+    M <- as.matrix(M)
+    eig <- eigen(M, symmetric = TRUE)
+    keep <- eig$values > rcond * max(abs(eig$values))
+    if (!any(keep)) return(matrix(0, nrow = nrow(M), ncol = ncol(M)))
+    V <- eig$vectors[, keep, drop = FALSE]
+    out <- (V / eig$values[keep]) %*% t(V)
+    (out + t(out)) / 2
+}
+
 #' Port of calc_JF from _calc_epic_ch: d F_i / d beta_j.
 #' @noRd
 .epic_calc_JF <- function(beta, P, H, target_var) {
     eb <- exp(pmin(pmax(beta, -700), 700))
     eb[!is.finite(eb)] <- 0
     M <- P + crossprod(H, eb * H)
-    invA <- tryCatch(solve(M), error = function(e) {
-        as.matrix(Matrix::ginv(as.matrix(M)))
-    })
+    invA <- tryCatch(solve(M), error = function(e) .epic_pinv_sym(M))
     if (any(!is.finite(invA))) {
         return(matrix(0, nrow = length(target_var), ncol = length(beta)))
     }

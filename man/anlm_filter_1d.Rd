@@ -64,6 +64,6 @@ non-negativity).  Set \code{log_space = FALSE} to filter in raw units
 exactly as the original CT formulation of the article.
 }
 \examples{
-anlm_filter_1d(c(1, 1.4, 0.2, 1.3, 1.1), h = 0.1)
+BSSUnfoldR:::anlm_filter_1d(c(1, 1.4, 0.2, 1.3, 1.1), h = 0.1)
 }
 \keyword{internal}

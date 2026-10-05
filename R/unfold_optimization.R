@@ -296,7 +296,7 @@ solve_cvxpy <- function(A, b, x0 = NULL, alpha = 1e-4, norm = 2L,
     if (min(d) > tol) {
         cf <- tryCatch(chol(M), error = function(e) NULL)
         if (!is.null(cf)) {
-            sol <- tryCatch(as.numeric(qbacksolve(cf, v, transpose = FALSE)),
+            sol <- tryCatch(as.numeric(backsolve(cf, forwardsolve(t(cf), v))),
                             error = function(e) NULL)
             if (!is.null(sol) && all(is.finite(sol))) return(sol)
         }

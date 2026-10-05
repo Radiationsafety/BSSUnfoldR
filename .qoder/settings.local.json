@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git diff --stat && ls tools/ && ls tests/testthat/ | tail -20)"
+      "Bash(git diff --stat && ls tools/ && ls tests/testthat/ | tail -20)",
+      "Bash(git diff --stat HEAD | tail -30)",
+      "Bash(git show --stat d1cd5ad | head -40 && echo --- && git show --stat b89082f | head -40)",
+      "Bash(cd /Users/spiralfractal/Work/code/BSSUnfoldR && Rscript -e 'for \\(f in list.files\\(\"man\", full.names=TRUE\\)\\) tryCatch\\(tools::parse_Rd\\(f\\), error=function\\(e\\) cat\\(\"ERR\", f, conditionMessage\\(e\\), \"\\\\n\"\\), warning=function\\(w\\) cat\\(\"WARN\", f, conditionMessage\\(w\\), \"\\\\n\"\\)\\)' 2>&1 | head -50)",
+      "Bash(git status --short && git diff --stat HEAD | tail -20)"
     ]
   }
 }

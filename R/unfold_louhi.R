@@ -30,7 +30,7 @@
 #'   \code{(n-2, n)} (order 2) smoothing matrix \code{L}.
 #' @keywords internal
 #' @examples
-#' louhi_smoothing_matrix(4L, 1L)
+#' BSSUnfoldR:::louhi_smoothing_matrix(4L, 1L)
 louhi_smoothing_matrix <- function(n, smooth_order = 1L) {
     n <- as.integer(n)
     smooth_order <- as.integer(smooth_order)
@@ -170,6 +170,7 @@ louhi_smoothing_matrix <- function(n, smooth_order = 1L) {
 #'               0.30, 0.30, 0.40), nrow = 3, byrow = TRUE)
 #' b <- c(1, 0.6, 0.4)
 #' r <- solve_louhi(A, b, rep(1, 3), smoothness = 1.0)
+#' @keywords internal
 solve_louhi <- function(A, b, x0 = NULL, smoothness = 1.0,
                         smooth_order = 1L, max_iterations = 500L,
                         tolerance = 1e-6, relative_uncertainty = 0.1,

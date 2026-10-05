@@ -43,7 +43,7 @@
 #' @examples
 #' Q <- matrix(c(4, 1, 1, 3), nrow = 2)
 #' f <- c(-2, -1)
-#' .nnqp(Q, f, x0 = c(0.5, 0.5))
+#' BSSUnfoldR:::.nnqp(Q, f, x0 = c(0.5, 0.5))
 .nnqp <- function(Q, f, x0 = NULL, tol = 1e-6, max_iterations = 10000L,
                   random_state = NULL) {
     Q <- as.matrix(Q); storage.mode(Q) <- "double"

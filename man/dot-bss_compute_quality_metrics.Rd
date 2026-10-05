@@ -11,6 +11,20 @@
   energy
 )
 }
+\arguments{
+\item{spectrum}{Numeric unfolded spectrum.}
+
+\item{reconstructed_readings}{Numeric readings folded from \code{spectrum}.}
+
+\item{measured_readings}{Numeric measured readings of the same detectors.}
+
+\item{energy}{Numeric energy grid in MeV, used for the hardness ratio.}
+}
+\value{
+List with \code{chi_square}, \code{smoothness}, \code{flux_error},
+\code{negativity_count}, \code{hardness_ratio}, \code{peak_count} and
+\code{overall_quality}.
+}
 \description{
 Quality metrics, mirroring compute_quality_metrics() in unfold_cascade.py.
 }

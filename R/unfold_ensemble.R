@@ -23,6 +23,8 @@ NULL
 
 #' Cosine similarity, mirroring bssunfold.utils.comparison.cosine_similarity.
 #' Returns 0 when either vector has zero norm.
+#' @param p,q Numeric vectors of equal length.
+#' @return Numeric cosine similarity of \code{p} and \code{q}.
 .bss_cosine_similarity <- function(p, q) {
     p <- as.numeric(p); q <- as.numeric(q)
     nrm_p <- sqrt(sum(p^2))
@@ -33,6 +35,10 @@ NULL
 
 #' Confidence weight of one solution against the rest of the ensemble,
 #' mirroring _confidence_weight() in unfold_composite.py.
+#' @param spectrum Numeric candidate spectrum.
+#' @param others List of the other ensemble spectra.
+#' @return Numeric weight between 0 and 1: the mean cosine similarity to
+#'   \code{others}, clipped to that range (1 for a lone member).
 .bss_confidence_weight <- function(spectrum, others) {
     if (length(others) == 0L) return(1)
     sims <- vapply(others, function(o) .bss_cosine_similarity(spectrum, o),
@@ -44,6 +50,13 @@ NULL
 }
 
 #' Quality metrics, mirroring compute_quality_metrics() in unfold_cascade.py.
+#' @param spectrum Numeric unfolded spectrum.
+#' @param reconstructed_readings Numeric readings folded from \code{spectrum}.
+#' @param measured_readings Numeric measured readings of the same detectors.
+#' @param energy Numeric energy grid in MeV, used for the hardness ratio.
+#' @return List with \code{chi_square}, \code{smoothness}, \code{flux_error},
+#'   \code{negativity_count}, \code{hardness_ratio}, \code{peak_count} and
+#'   \code{overall_quality}.
 .bss_compute_quality_metrics <- function(spectrum, reconstructed_readings,
                                           measured_readings, energy) {
     eps <- 1e-10
@@ -100,6 +113,10 @@ NULL
 #' Build a default-ensemble member: solver wrapper that injects Python's
 #' conservative default kwargs (max_iterations = 200, tolerance = 1e-4),
 #' letting caller-supplied dots override them (keep-last deduplication).
+#' @param solver Function with signature \code{(A, b, x0, ...)}.
+#' @param kwargs Named list of defaults injected ahead of the caller's
+#'   \code{...} arguments.
+#' @return A solver function suitable for \code{run_unfolding}.
 .bss_default_member <- function(solver, kwargs) {
     force(solver)
     function(A, b, x0, ...) {
@@ -231,6 +248,11 @@ NULL
 #' Stage-level cascade driver mirroring the module-level unfold_cascade()
 #' in bssunfold/core/unfold_cascade.py (default "general" stage sequence,
 #' quality-threshold early stop, Detector-level member calls).
+#' @inheritParams run_unfolding
+#' @return List with the final \code{spectrum}, \code{stages_run},
+#'   \code{method_sequence}, \code{cascade_spectra},
+#'   \code{intermediate_results}, \code{quality_metrics}, \code{status} and
+#'   \code{message}.
 .bss_run_cascade_stages <- function(detector_names, n_energy_bins, E_MeV,
                                      sensitivities, cc_icrp116,
                                      save_result_callback, readings,
@@ -350,6 +372,12 @@ NULL
 #' in bssunfold/core/unfold_composite.py: run the general method pool with
 #' detector defaults, drop invalid outputs, combine with confidence-weighted
 #' averaging (base weight * mean cosine similarity to the other members).
+#' @inheritParams run_unfolding
+#' @param n_methods Integer; number of leading general methods to run.
+#'   Default 5.
+#' @return List with the combined \code{spectrum}, \code{successful_methods},
+#'   \code{consistency}, \code{weights}, \code{individual_spectra},
+#'   \code{composite_spectra}, \code{status} and \code{message}.
 .bss_run_composite_pool <- function(detector_names, n_energy_bins, E_MeV,
                                      sensitivities, cc_icrp116,
                                      save_result_callback, readings,

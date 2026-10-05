@@ -260,7 +260,7 @@ Unfold with Tikhonov-Sobolev and the discrepancy principle.
 See \code{\link{unfold_tikhonov_sobolev_dp}}.
 
 Unfold with a genetic algorithm on fission/fusion spectra.
-See \code{\link{unfold_fission_ga}}.
+See the \code{unfold_fission_ga} method.
 
 Unfold with the Gurobi QP formulation. See \code{\link{unfold_gurobi}}.
 
@@ -272,7 +272,7 @@ Unfold with the COPT QP formulation. See \code{\link{unfold_copt}}.
 
 Unfold with the XPRESS QP formulation. See \code{\link{unfold_xpress}}.
 
-Unfold with the CUQI Bayesian formulation. See \code{\link{unfold_cuqi}}.
+Unfold with the CUQI Bayesian formulation. See the \code{unfold_cuqi} method.
 
 Retrieve a saved result by history index.
 

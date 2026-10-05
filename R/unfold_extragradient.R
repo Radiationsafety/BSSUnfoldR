@@ -21,6 +21,7 @@
 #'   \code{L = ||A||_2^2 + delta*||A||_2 + 1}.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
+#' @keywords internal
 solve_extragradient <- function(A, b, x0, max_iterations = 2000L,
                                 tolerance = 1e-8, noise_level = 0.02,
                                 step_size = NULL) {

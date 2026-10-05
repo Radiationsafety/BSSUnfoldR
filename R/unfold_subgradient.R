@@ -24,6 +24,7 @@
 #'   used as the \eqn{f^*} estimate in the Polyak rule; default 0.05.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
+#' @keywords internal
 solve_subgradient <- function(A, b, x0, max_iterations = 3000L, tolerance = 1e-8,
                               l1_penalty = 0.0, tv_penalty = 0.0,
                               step_policy = "diminishing", step_size = 1.0,

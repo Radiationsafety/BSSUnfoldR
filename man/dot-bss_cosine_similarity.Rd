@@ -7,6 +7,12 @@ Returns 0 when either vector has zero norm.}
 \usage{
 .bss_cosine_similarity(p, q)
 }
+\arguments{
+\item{p, q}{Numeric vectors of equal length.}
+}
+\value{
+Numeric cosine similarity of \code{p} and \code{q}.
+}
 \description{
 Cosine similarity, mirroring bssunfold.utils.comparison.cosine_similarity.
 Returns 0 when either vector has zero norm.

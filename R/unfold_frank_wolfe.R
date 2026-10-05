@@ -20,6 +20,7 @@
 #'   default \code{"exact"}.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
+#' @keywords internal
 solve_frank_wolfe <- function(A, b, x0, total_fluence, max_iterations = 1000L,
                               tolerance = 1e-8, away_steps = TRUE,
                               line_search = "exact") {

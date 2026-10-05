@@ -48,8 +48,7 @@ solve_smt <- function(A, b, x0 = NULL, nonneg = FALSE,
     reg <- max(as.numeric(regularization), 0)
     if (isTRUE(nonneg)) {
         spec <- tryCatch(as.numeric(lsei::nnls(A, b)$x),
-                         error = function(e) as.numeric(lm(
-                             .null_x <- b ~ A - 1)$coefficients))
+                         error = function(e) as.numeric(stats::lm.fit(A, b)$coefficients))
         spec[!is.finite(spec)] <- 0
         return(list(spectrum = pmax(spec, 0), iterations = 1L,
                     converged = TRUE, objective = "nnls"))

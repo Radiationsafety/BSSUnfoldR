@@ -48,6 +48,12 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
+\item{n_super_bins}{Integer; super-bin count reported in \code{extra_output}.
+\code{NULL} (default) uses \code{max(3, n_energy_bins \%/\% 10)}.}
+
+\item{max_iterations, tolerance}{Legacy arguments kept for API
+compatibility; unused by the bin-wise assembly.}
+
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
 

@@ -63,6 +63,53 @@ invoked when \code{save_result = TRUE}. Default \code{NULL} = no saving.}
 \item{initial_spectrum}{Optional numeric spectrum guess (length
 \code{n_energy_bins}) or \code{NULL} to use \code{default_initial}.}
 
+\item{population}{Positive integer; population size.  Default 25.}
+
+\item{max_gens}{Positive integer; generation cap.  Default 200.}
+
+\item{max_fevals}{Positive integer; fitness-evaluation cap.  Default 5000.}
+
+\item{stall_limit}{Positive integer; evaluations without a timeline
+improvement before termination.  Default 200.}
+
+\item{conv_tol}{Positive numeric; relative improvement required to extend
+the timeline.  Default 1e-6.}
+
+\item{opt_conv_tol}{Positive numeric; absolute fitness-convergence
+tolerance.  Default 1e-2.}
+
+\item{frac_elite}{Numeric between 0 and 1; elite fraction.  Default 0.2.}
+
+\item{frac_levy}{Numeric between 0 and 1; Levy-flight fraction.  Default 1.0.}
+
+\item{frac_mutation}{Numeric between 0 and 1; mutation discovery probability.
+Default 0.2.}
+
+\item{alpha_levy}{Numeric; Levy exponent in (0.3, 1.99).  Default 1.5.}
+
+\item{gamma_levy}{Numeric; Levy scale.  Default 1.0.}
+
+\item{n_levy}{Positive integer; independent Levy samples.  Default 1.}
+
+\item{scaling_factor}{Numeric; Levy step-length divisor.  Default 10.}
+
+\item{init_sampling}{Character; \code{"lhc"} (default) or \code{"random"}.}
+
+\item{regularization}{Numeric; Tikhonov weight.  Default 1e-2.}
+
+\item{norm}{Integer 1 or 2; regularisation norm.  Default 2.}
+
+\item{smoothness_order}{Integer 0, 1 or 2; derivative penalty order.
+Default 2.}
+
+\item{smoothness_weight}{Numeric; smoothness-term weight.  Default 1.0.}
+
+\item{entropy_weight}{Numeric; negative-entropy weight (0 disables).
+Default 0.}
+
+\item{half_range}{Numeric; half-width of the log-space box in decades.
+Default 2.}
+
 \item{calculate_errors}{Logical; if \code{TRUE}, run Monte-Carlo
 uncertainty estimation. Default \code{FALSE}.}
 
@@ -75,6 +122,8 @@ Default 0.01.}
 \code{save_result_callback}. Default \code{FALSE}.}
 
 \item{random_state}{Optional integer seed for Monte-Carlo.}
+
+\item{verbose}{Logical; print progress.  Default \code{FALSE}.}
 
 \item{max_neutron_energy}{Optional numeric energy cutoff in MeV: bins
 above this energy are removed from the response matrix during the

@@ -12,9 +12,10 @@
 #' \code{prior_wt * ||alpha - alpha_prior||^2}.
 #'
 #' @section Metrics:
-#' The three evaluation metrics of the article (Section 2.2.3) live in
-#' \code{\link{relative_flux_error}}, \code{\link{pearson_correlation}} and
-#' \code{\link{comprehensive_score}}.
+#' The article (Section 2.2.3) scores a reconstruction with the relative flux
+#' error, the Pearson correlation coefficient and a comprehensive score.  The
+#' closest equivalents in this port are \code{relative_integral_diff} and
+#' \code{cosine_similarity} from \code{\link{compare_spectra}}.
 #'
 #' @name nnksvd
 NULL

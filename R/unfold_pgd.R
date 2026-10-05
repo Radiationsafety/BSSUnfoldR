@@ -23,6 +23,7 @@
 #'   fails; default \code{FALSE}.
 #' @return A list \code{list(spectrum, iterations, converged)}.
 #' @export
+#' @keywords internal
 solve_pgd <- function(A, b, x0, max_iterations = 1000L, tolerance = 1e-6,
                       step_size = NULL, regularization = 0.0,
                       constraint = "nonnegative", total_fluence = NULL,

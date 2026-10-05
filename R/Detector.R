@@ -1030,7 +1030,7 @@ Detector <- R6::R6Class(
         },
 
         #' @description Unfold with a genetic algorithm on fission/fusion spectra.
-        #'   See \code{\link{unfold_fission_ga}}.
+        #'   See the \code{unfold_fission_ga} method.
         unfold_fission_ga = function(readings, ...) {
             unfold_fission_ga(self$detector_names, self$n_energy_bins,
                         self$E_MeV, self$sensitivities, self$cc_icrp116,
@@ -1072,7 +1072,7 @@ Detector <- R6::R6Class(
                         function(out) self$save_result(out), readings, ...)
         },
 
-        #' @description Unfold with the CUQI Bayesian formulation. See \code{\link{unfold_cuqi}}.
+        #' @description Unfold with the CUQI Bayesian formulation. See the \code{unfold_cuqi} method.
         unfold_cuqi = function(readings, ...) {
             unfold_cuqi(self$detector_names, self$n_energy_bins,
                         self$E_MeV, self$sensitivities, self$cc_icrp116,
