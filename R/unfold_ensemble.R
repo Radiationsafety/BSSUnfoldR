@@ -25,6 +25,7 @@ NULL
 #' Returns 0 when either vector has zero norm.
 #' @param p,q Numeric vectors of equal length.
 #' @return Numeric cosine similarity of \code{p} and \code{q}.
+#' @keywords internal
 .bss_cosine_similarity <- function(p, q) {
     p <- as.numeric(p); q <- as.numeric(q)
     nrm_p <- sqrt(sum(p^2))
@@ -39,6 +40,7 @@ NULL
 #' @param others List of the other ensemble spectra.
 #' @return Numeric weight between 0 and 1: the mean cosine similarity to
 #'   \code{others}, clipped to that range (1 for a lone member).
+#' @keywords internal
 .bss_confidence_weight <- function(spectrum, others) {
     if (length(others) == 0L) return(1)
     sims <- vapply(others, function(o) .bss_cosine_similarity(spectrum, o),
@@ -57,6 +59,7 @@ NULL
 #' @return List with \code{chi_square}, \code{smoothness}, \code{flux_error},
 #'   \code{negativity_count}, \code{hardness_ratio}, \code{peak_count} and
 #'   \code{overall_quality}.
+#' @keywords internal
 .bss_compute_quality_metrics <- function(spectrum, reconstructed_readings,
                                           measured_readings, energy) {
     eps <- 1e-10
@@ -117,6 +120,7 @@ NULL
 #' @param kwargs Named list of defaults injected ahead of the caller's
 #'   \code{...} arguments.
 #' @return A solver function suitable for \code{run_unfolding}.
+#' @keywords internal
 .bss_default_member <- function(solver, kwargs) {
     force(solver)
     function(A, b, x0, ...) {
@@ -130,6 +134,7 @@ NULL
 #' Default ensemble members, mirroring _ensure_default_methods() in
 #' unfold_ensemble.py: MLEM, Bayes, Landweber, CGLS, GRAVEL with
 #' max_iterations = 200 and tolerance = 1e-4 each.
+#' @keywords internal
 .bss_default_ensemble_solvers <- function() {
     kwargs <- list(max_iterations = 200L, tolerance = 1e-4)
     list(
@@ -142,6 +147,7 @@ NULL
 }
 
 #' METHOD_DISPATCH from unfold_cascade.py (short name -> Detector.unfold_*).
+#' @keywords internal
 .bss_cascade_dispatch <- c(
     tsvd = "unfold_tsvd",
     bayes = "unfold_bayes",
@@ -169,6 +175,7 @@ NULL
 )
 
 #' METHOD_DISPATCH from unfold_composite.py.
+#' @keywords internal
 .bss_composite_dispatch <- c(
     tsvd = "unfold_tsvd",
     bayes = "unfold_bayes",
@@ -195,9 +202,11 @@ NULL
 )
 
 #' GENERAL_METHODS from unfold_composite.py (curated fallback pool).
+#' @keywords internal
 .bss_general_methods <- c("tsvd", "mlem", "cvxpy", "qpsolvers", "bayes_spline")
 
 #' DEFAULT_ENSEMBLE_WEIGHTS from unfold_composite.py.
+#' @keywords internal
 .bss_composite_base_weights <- c(
     tsvd = 1.0, bayes = 1.0, cvxpy = 1.0, statreg = 1.0, lanczos = 1.0,
     mlem = 1.0, landweber = 1.0, bayes_spline = 1.0, gravel = 1.0,
@@ -210,6 +219,7 @@ NULL
 #' The QP backends that Python's unfold_qpsolvers delegates to are not
 #' available in this environment (Python raises ImportError; the bssunfold
 #' qpsolvers method is then skipped by the composite/cascade dispatchers).
+#' @keywords internal
 .bss_qp_backend_available <- function() {
     requireNamespace("quadprog", quietly = TRUE) ||
         requireNamespace("osqp", quietly = TRUE)
@@ -225,6 +235,7 @@ NULL
 
 #' Default "general" cascade stages, mirroring
 #' create_default_cascade("general") in unfold_cascade.py.
+#' @keywords internal
 .bss_default_cascade_stages <- function() {
     list(
         list(method = "tsvd",
@@ -253,6 +264,7 @@ NULL
 #'   \code{method_sequence}, \code{cascade_spectra},
 #'   \code{intermediate_results}, \code{quality_metrics}, \code{status} and
 #'   \code{message}.
+#' @keywords internal
 .bss_run_cascade_stages <- function(detector_names, n_energy_bins, E_MeV,
                                      sensitivities, cc_icrp116,
                                      save_result_callback, readings,
@@ -378,6 +390,7 @@ NULL
 #' @return List with the combined \code{spectrum}, \code{successful_methods},
 #'   \code{consistency}, \code{weights}, \code{individual_spectra},
 #'   \code{composite_spectra}, \code{status} and \code{message}.
+#' @keywords internal
 .bss_run_composite_pool <- function(detector_names, n_energy_bins, E_MeV,
                                      sensitivities, cc_icrp116,
                                      save_result_callback, readings,

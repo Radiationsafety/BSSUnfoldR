@@ -795,6 +795,7 @@ solve_commercial <- function(A, b, x0 = NULL, alpha = 1e-4, norm = 2L,
 #'   (\code{regularization_method = "dp"}); estimated from the least-squares
 #'   residual when \code{NULL}.
 #' @name commercial-extra-args
+#' @keywords internal
 NULL
 
 # ---------------------------------------------------------------------------

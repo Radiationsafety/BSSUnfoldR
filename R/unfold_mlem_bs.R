@@ -543,6 +543,7 @@ ks_statistic <- function(measurements, estimate) {
 #' @return A list with \code{ci_low}, \code{ci_high}, \code{ci_level},
 #'   \code{bootstrap_samples}, \code{bootstrap_alpha}, \code{bootstrap_mean},
 #'   \code{bootstrap_std}.
+#' @keywords internal
 .mlem_bs_bootstrap_ci <- function(A, x0, E_MeV, spectrum, n_bootstrap,
                                   ci_alpha, random_state, ...) {
     n_bootstrap <- as.integer(n_bootstrap)

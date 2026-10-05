@@ -28,3 +28,4 @@ List with \code{chi_square}, \code{smoothness}, \code{flux_error},
 \description{
 Quality metrics, mirroring compute_quality_metrics() in unfold_cascade.py.
 }
+\keyword{internal}

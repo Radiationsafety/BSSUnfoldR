@@ -13,4 +13,4 @@ An object of class \code{character} of length 5.
 \description{
 GENERAL_METHODS from unfold_composite.py (curated fallback pool).
 }
-\keyword{datasets}
+\keyword{internal}

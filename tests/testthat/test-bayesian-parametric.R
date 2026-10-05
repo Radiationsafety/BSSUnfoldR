@@ -5,8 +5,9 @@ test_that("solve_bayesian_parametric follows the Python chain conventions", {
     A <- matrix(runif(4 * 40, 0, 1), nrow = 4) * 0.1
     truth <- c(A_th = 4e-5, T_th = 0.025e-6, A_epi = 3e-5, A_f = 2e-5,
                T_ev = 2.5)
-    spec <- .parametric_model(E, truth[[1]], truth[[2]], truth[[3]],
-                              truth[[4]], truth[[5]]) * ls
+    spec <- BSSUnfoldR:::.parametric_model(E, truth[[1]], truth[[2]],
+                                            truth[[3]], truth[[4]],
+                                            truth[[5]]) * ls
     b <- as.numeric(A %*% spec)
 
     expect_named(formals(solve_bayesian_parametric),

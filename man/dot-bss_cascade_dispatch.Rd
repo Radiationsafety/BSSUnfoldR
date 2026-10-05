@@ -13,4 +13,4 @@ An object of class \code{character} of length 23.
 \description{
 METHOD_DISPATCH from unfold_cascade.py (short name -> Detector.unfold_*).
 }
-\keyword{datasets}
+\keyword{internal}

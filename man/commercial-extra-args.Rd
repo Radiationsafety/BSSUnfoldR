@@ -38,3 +38,4 @@ residual when \code{NULL}.}
 \description{
 Arguments accepted for Python API parity
 }
+\keyword{internal}

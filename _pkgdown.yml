@@ -58,6 +58,7 @@ reference:
     contents:
       - solve_osem
       - unfold_osem
+      - unfold_osem_anlm
       - solve_mapem
       - unfold_mapem
       - solve_bsrem
@@ -88,6 +89,9 @@ reference:
       - unfold_epic
       - solve_scipy_direct
       - unfold_scipy_direct_method
+      - solve_tikhonov_sobolev_dp
+      - unfold_tikhonov_sobolev_dp
+      - unfold_louhi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Bayesian / regularised methods (batch 3)
@@ -100,6 +104,7 @@ reference:
       - unfold_bayes
       - solve_directed_divergence
       - unfold_directed_divergence
+      - directed_divergence_iteration
       - solve_express
       - unfold_express
       - solve_iterative_refinement
@@ -132,6 +137,8 @@ reference:
       - unfold_amaxed_regularization
       - solve_fista
       - unfold_fista
+      - solve_lbfgsb
+      - unfold_lbfgsb
 
 # ─────────────────────────────────────────────────────────────────────────────
 # B-spline, catalogue and NSDUAZ methods
@@ -192,6 +199,7 @@ reference:
     contents:
       - solve_binned
       - unfold_binned
+      - unfold_binned_lookup
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Compressed sensing & dictionary learning
@@ -208,6 +216,8 @@ reference:
       - solve_ksvd
       - solve_nnksvd
       - unfold_nnksvd
+      - nnksvd
+      - solve_nnksvd_unfold
       - solve_nn_omp
       - solve_nnls_topk
       - solve_tikhonov_nnls
@@ -231,6 +241,16 @@ reference:
       - solve_smt
       - unfold_smt
       - smt-methods
+      - qpmad
+      - solve_nnqp
+      - unfold_nnqp
+      - commercial-qp-backend
+      - solve_commercial
+      - unfold_gurobi
+      - unfold_cplex
+      - unfold_mosek
+      - unfold_xpress
+      - unfold_copt
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Parametric and FRUIT-like methods
@@ -294,6 +314,8 @@ reference:
       - unfold_qubo
       - solve_eki
       - unfold_eki
+      - solve_gnowee
+      - unfold_gnowee
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AMG / preconditioned Krylov
@@ -318,6 +340,11 @@ reference:
       - unfold_pdhg
       - solve_douglas_rachford
       - unfold_douglas_rachford
+      - odl-advanced-methods
+      - solve_odl_pdhg
+      - unfold_odl_pdhg
+      - solve_odl_douglas_rachford
+      - unfold_odl_douglas_rachford
 
 # ─────────────────────────────────────────────────────────────────────────────
 # GEE (Generalized Estimating Equations)

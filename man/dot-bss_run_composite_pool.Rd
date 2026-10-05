@@ -54,3 +54,4 @@ in bssunfold/core/unfold_composite.py: run the general method pool with
 detector defaults, drop invalid outputs, combine with confidence-weighted
 averaging (base weight * mean cosine similarity to the other members).
 }
+\keyword{internal}

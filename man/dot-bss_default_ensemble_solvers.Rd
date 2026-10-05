@@ -13,3 +13,4 @@ Default ensemble members, mirroring _ensure_default_methods() in
 unfold_ensemble.py: MLEM, Bayes, Landweber, CGLS, GRAVEL with
 max_iterations = 200 and tolerance = 1e-4 each.
 }
+\keyword{internal}

@@ -13,4 +13,4 @@ An object of class \code{character} of length 22.
 \description{
 METHOD_DISPATCH from unfold_composite.py.
 }
-\keyword{datasets}
+\keyword{internal}

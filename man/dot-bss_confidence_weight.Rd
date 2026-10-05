@@ -20,3 +20,4 @@ Numeric weight between 0 and 1: the mean cosine similarity to
 Confidence weight of one solution against the rest of the ensemble,
 mirroring _confidence_weight() in unfold_composite.py.
 }
+\keyword{internal}

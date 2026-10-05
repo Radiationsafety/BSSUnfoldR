@@ -17,3 +17,4 @@ Numeric cosine similarity of \code{p} and \code{q}.
 Cosine similarity, mirroring bssunfold.utils.comparison.cosine_similarity.
 Returns 0 when either vector has zero norm.
 }
+\keyword{internal}

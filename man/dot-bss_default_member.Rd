@@ -22,3 +22,4 @@ Build a default-ensemble member: solver wrapper that injects Python's
 conservative default kwargs (max_iterations = 200, tolerance = 1e-4),
 letting caller-supplied dots override them (keep-last deduplication).
 }
+\keyword{internal}

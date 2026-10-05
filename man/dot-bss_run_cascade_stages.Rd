@@ -53,3 +53,4 @@ Stage-level cascade driver mirroring the module-level unfold_cascade()
 in bssunfold/core/unfold_cascade.py (default "general" stage sequence,
 quality-threshold early stop, Detector-level member calls).
 }
+\keyword{internal}
